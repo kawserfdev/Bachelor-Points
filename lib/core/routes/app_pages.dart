@@ -17,6 +17,17 @@ import '../../modules/expense/expense_binding.dart';
 import '../../modules/balance/views/balance_summary_view.dart';
 import '../../modules/balance/views/add_deposit_view.dart';
 import '../../modules/balance/balance_binding.dart';
+import '../../modules/requests/request_binding.dart';
+import '../../modules/requests/views/create_request_view.dart';
+import '../../modules/requests/views/approval_view.dart';
+import '../../modules/notifications/notification_binding.dart';
+import '../../modules/notifications/views/notification_view.dart';
+import '../../modules/chat/chat_binding.dart';
+import '../../modules/chat/views/chat_view.dart';
+import '../../modules/report/report_binding.dart';
+import '../../modules/report/views/report_view.dart';
+import '../../modules/settings/settings_binding.dart';
+import '../../modules/settings/views/settings_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -71,6 +82,36 @@ class AppPages {
     GetPage(
       name: AppRoutes.addDeposit,
       page: () => const AddDepositView(),
+    ),
+    GetPage(
+      name: AppRoutes.createRequest,
+      page: () => const CreateRequestView(),
+      binding: RequestBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.approvals,
+      page: () => const ApprovalView(),
+      binding: RequestBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.notifications,
+      page: () => const NotificationView(),
+      binding: NotificationBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.chat,
+      page: () => const ChatView(),
+      binding: ChatBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.report,
+      page: () => const ReportView(),
+      binding: ReportBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.settings,
+      page: () => const SettingsView(),
+      binding: SettingsBinding(),
     ),
   ];
 }

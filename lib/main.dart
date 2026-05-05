@@ -11,6 +11,11 @@ import 'core/routes/app_routes.dart';
 import 'services/auth_service.dart';
 import 'services/storage_service.dart';
 import 'services/fcm_service.dart';
+import 'services/realtime_service.dart';
+import 'core/theme/app_theme.dart';
+import 'core/theme/theme_controller.dart';
+//Read Existing Schema then plan it
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,6 +68,16 @@ Future<void> initServices() async {
   } catch (e) {
     debugPrint("FcmService init failed: $e");
   }
+  
+  try {
+    await Get.putAsync(() => RealtimeService().init());
+  } catch (e) {
+    debugPrint("RealtimeService init failed: $e");
+  }
+  
+  // Theme Controller uses GetStorage, so it must be initialized after StorageService
+  Get.put(ThemeController());
+  
   debugPrint('All services started...');
 }
 
@@ -71,12 +86,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeController = Get.find<ThemeController>();
+    
     return GetMaterialApp(
       title: 'Bachelor Points',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeController.themeMode,
       initialRoute: AppRoutes.login,
       getPages: AppPages.pages,
       debugShowCheckedModeBanner: false,

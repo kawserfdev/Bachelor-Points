@@ -2,26 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../services/auth_service.dart';
+import '../../../services/realtime_service.dart';
 import '../mess/mess_controller.dart';
 import '../../../data/models/expense_model.dart';
+import 'dart:async';
 
 class ExpenseController extends GetxController {
   final _supabase = Supabase.instance.client;
   final AuthService _authService = Get.find<AuthService>();
   final MessController _messController = Get.find<MessController>();
+  final RealtimeService _realtime = Get.find<RealtimeService>();
 
   final RxList<ExpenseModel> expenses = <ExpenseModel>[].obs;
   final RxDouble totalMonthlyExpense = 0.0.obs;
   final RxDouble costPerPerson = 0.0.obs;
   final RxBool isLoading = false.obs;
+  
+  StreamSubscription? _expenseSub;
 
   final Rx<DateTime> selectedMonth = DateTime.now().obs;
 
   @override
   void onInit() {
     super.onInit();
-    ever(selectedMonth, (_) => fetchMonthlyExpenses());
-    fetchMonthlyExpenses();
+    ever(selectedMonth, (_) => _listenToExpenses());
+    ever(_messController.activeMess, (_) => _listenToExpenses());
+    _listenToExpenses();
   }
 
   void changeMonth(int offsetMonths) {
@@ -32,36 +38,38 @@ class ExpenseController extends GetxController {
     );
   }
 
-  Future<void> fetchMonthlyExpenses() async {
+  void _listenToExpenses() {
     final messId = _messController.activeMess.value?.id;
     if (messId == null) return;
 
-    try {
-      isLoading.value = true;
-      
+    isLoading.value = true;
+    _expenseSub?.cancel();
+    
+    _expenseSub = _realtime.streamExpenses(messId).listen((data) {
       final startDate = DateTime(selectedMonth.value.year, selectedMonth.value.month, 1);
       final endDate = DateTime(selectedMonth.value.year, selectedMonth.value.month + 1, 0);
 
       final startDateStr = "${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-01";
       final endDateStr = "${endDate.year}-${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}";
 
-      final response = await _supabase
-          .from('expenses')
-          .select('*, profiles(full_name)')
-          .eq('mess_id', messId)
-          .gte('date', startDateStr)
-          .lte('date', endDateStr)
-          .order('date', ascending: false);
-
-      final fetchedExpenses = (response as List).map((e) => ExpenseModel.fromJson(e)).toList();
-      expenses.value = fetchedExpenses;
+      final List<ExpenseModel> fetchedExpenses = [];
+      for (var row in data) {
+         final dateStr = row['date'] as String;
+         if (dateStr.compareTo(startDateStr) >= 0 && dateStr.compareTo(endDateStr) <= 0) {
+            final userId = row['added_by'] as String;
+            row['profiles'] = _messController.getProfileCached(userId);
+            fetchedExpenses.add(ExpenseModel.fromJson(row));
+         }
+      }
       
+      fetchedExpenses.sort((a, b) => b.date.compareTo(a.date));
+      expenses.value = fetchedExpenses;
       calculateSummary();
-    } catch (e) {
-      debugPrint('Error fetching expenses: $e');
-    } finally {
       isLoading.value = false;
-    }
+    }, onError: (e) {
+      debugPrint('Error listening to expenses: $e');
+      isLoading.value = false;
+    });
   }
 
   void calculateSummary() {
@@ -103,10 +111,8 @@ class ExpenseController extends GetxController {
         'date': "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}",
       });
 
-      // Refresh if the added expense belongs to the currently viewed month
-      if (date.year == selectedMonth.value.year && date.month == selectedMonth.value.month) {
-        await fetchMonthlyExpenses();
-      }
+      // No need to manually fetch, the stream will automatically update the UI
+
       
       Get.back();
       Get.snackbar('Success', 'Expense added successfully',
@@ -117,5 +123,10 @@ class ExpenseController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+  @override
+  void onClose() {
+    _expenseSub?.cancel();
+    super.onClose();
   }
 }
