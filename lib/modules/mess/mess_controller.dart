@@ -4,15 +4,21 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../data/models/mess_model.dart';
 import '../../../data/models/member_model.dart';
 import '../../../services/auth_service.dart';
+import '../../../services/realtime_service.dart';
 import 'dart:math';
+import 'dart:async';
 
 class MessController extends GetxController {
   final _supabase = Supabase.instance.client;
   final AuthService _authService = Get.find<AuthService>();
+  final RealtimeService _realtime = Get.find<RealtimeService>();
 
   final Rx<MessModel?> activeMess = Rx<MessModel?>(null);
   final RxList<MemberModel> members = <MemberModel>[].obs;
   final RxBool isLoading = false.obs;
+  
+  final Map<String, Map<String, dynamic>> _profileCache = {};
+  StreamSubscription? _membersSub;
 
   @override
   void onInit() {
@@ -55,30 +61,38 @@ class MessController extends GetxController {
   }
 
   void _listenToMembers(String messId) {
-    _supabase
-        .from('mess_members')
-        .stream(primaryKey: ['id'])
-        .eq('mess_id', messId)
-        .listen((data) async {
-      
-      // Because stream doesn't automatically join, we manually fetch the profile details
-      // Alternatively, we could fetch all profiles for these user_ids.
+    _membersSub?.cancel();
+    _membersSub = _realtime.streamMembers(messId).listen((data) async {
       final List<MemberModel> updatedMembers = [];
       
       for (var row in data) {
-        final userId = row['user_id'];
-        final profileResponse = await _supabase
-            .from('profiles')
-            .select('full_name, email')
-            .eq('id', userId)
-            .maybeSingle();
+        final userId = row['user_id'] as String;
+        
+        if (!_profileCache.containsKey(userId)) {
+          final profileResponse = await _supabase
+              .from('profiles')
+              .select('full_name, email')
+              .eq('id', userId)
+              .maybeSingle();
+          if (profileResponse != null) {
+            _profileCache[userId] = profileResponse;
+          }
+        }
 
-        row['profiles'] = profileResponse;
+        row['profiles'] = _profileCache[userId];
         updatedMembers.add(MemberModel.fromJson(row));
       }
       
       members.value = updatedMembers;
-    });
+    }, onError: (error) => debugPrint('Error in members stream: $error'));
+  }
+  
+  Map<String, dynamic>? getProfileCached(String userId) => _profileCache[userId];
+
+  @override
+  void onClose() {
+    _membersSub?.cancel();
+    super.onClose();
   }
 
   String _generateInviteCode() {
