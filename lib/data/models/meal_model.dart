@@ -6,6 +6,8 @@ class MealModel {
   final double breakfast;
   final double lunch;
   final double dinner;
+  final String status;
+  final String? userName;
 
   MealModel({
     required this.id,
@@ -15,7 +17,9 @@ class MealModel {
     required this.breakfast,
     required this.lunch,
     required this.dinner,
-  });
+    required this.status,
+    this.userName,
+      });
 
   double get totalMeals => breakfast + lunch + dinner;
 
@@ -28,6 +32,8 @@ class MealModel {
       breakfast: (json['breakfast'] as num).toDouble(),
       lunch: (json['lunch'] as num).toDouble(),
       dinner: (json['dinner'] as num).toDouble(),
+      status: json['status'] as String,
+      userName: json['profiles']?['full_name'] as String?,
     );
   }
 
@@ -40,6 +46,7 @@ class MealModel {
       'breakfast': breakfast,
       'lunch': lunch,
       'dinner': dinner,
+      'status': status,
     };
   }
 }

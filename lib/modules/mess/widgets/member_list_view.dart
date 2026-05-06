@@ -71,15 +71,15 @@ class MemberListView extends StatelessWidget {
                             value: 'admin',
                             child: Text('Make Admin'),
                           ),
-                        if (member.role != 'editor')
+                        if (member.role != 'manager')
                           const PopupMenuItem<String>(
-                            value: 'editor',
-                            child: Text('Make Editor'),
+                            value: 'manager',
+                            child: Text('Make Manager'),
                           ),
-                        if (member.role != 'viewer')
+                        if (member.role != 'member')
                           const PopupMenuItem<String>(
-                            value: 'viewer',
-                            child: Text('Make Viewer'),
+                            value: 'member',
+                            child: Text('Make Member'),
                           ),
                         const PopupMenuDivider(),
                         const PopupMenuItem<String>(

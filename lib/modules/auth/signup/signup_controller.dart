@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../services/auth_service.dart';
+import '../../../../core/routes/app_routes.dart';
+
 class SignupController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
 
@@ -97,13 +99,7 @@ class SignupController extends GetxController {
 
       debugPrint('[signup] Signup success');
 
-      Get.snackbar(
-        'Success',
-        'Account created successfully. Please verify your email if required.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
+      Get.offAllNamed(AppRoutes.verifyEmail);
     } catch (e) {
       debugPrint('[signup] Error: $e');
 

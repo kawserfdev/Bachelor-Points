@@ -192,6 +192,7 @@ class MealController extends GetxController {
         'user_id': userId,
         'date': dateStr,
         'breakfast': breakfast.value,
+        'status': 'Pending',
         'lunch': lunch.value,
         'dinner': dinner.value,
         'updated_at': DateTime.now().toIso8601String(),

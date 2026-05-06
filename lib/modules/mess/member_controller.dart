@@ -46,6 +46,7 @@ class MemberController extends GetxController {
 
     try {
       debugPrint('[changeRole] Sending update request to Supabase');
+      debugPrint('[changeRole] memberId: $memberId, newRole: $newRole');
 
       await _supabase
           .from('mess_members')
