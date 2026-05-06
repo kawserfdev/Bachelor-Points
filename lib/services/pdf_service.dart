@@ -3,6 +3,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../data/models/report_summary_model.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart';
 
 class PdfService {
   static Future<void> generateAndPrintReport({
@@ -10,6 +11,7 @@ class PdfService {
     required ReportSummaryModel summary,
     required List<MemberSummaryModel> members,
   }) async {
+    debugPrint('PdfService generateAndPrintReport called for mess: $messName');
     final pdf = pw.Document();
 
     final monthName = DateFormat('MMMM yyyy').format(DateTime(summary.year, summary.month));
