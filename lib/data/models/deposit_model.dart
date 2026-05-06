@@ -4,6 +4,9 @@ class DepositModel {
   final String userId;
   final double amount;
   final DateTime date;
+  final String? receivedById;
+  final String? status;
+
   
   final String? userName;
 
@@ -14,6 +17,8 @@ class DepositModel {
     required this.amount,
     required this.date,
     this.userName,
+    this.receivedById,
+    this.status,
   });
 
   factory DepositModel.fromJson(Map<String, dynamic> json) {
@@ -24,6 +29,8 @@ class DepositModel {
       amount: (json['amount'] as num).toDouble(),
       date: DateTime.parse(json['date'] as String),
       userName: json['profiles']?['full_name'] as String?,
+      receivedById: json['received_by'] as String?,
+      status: json['status'] as String?,
     );
   }
 
@@ -33,6 +40,8 @@ class DepositModel {
       'user_id': userId,
       'amount': amount,
       'date': "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}",
+      'received_by': receivedById,
+      'status': status,
     };
   }
 }

@@ -85,8 +85,7 @@ class ExpenseController extends GetxController {
 
         if (dateStr.compareTo(startDateStr) >= 0 &&
             dateStr.compareTo(endDateStr) <= 0) {
-
-          final userId = row['added_by'] as String;
+          final userId = row['created_by'] as String;
 
           final profile = _messController.getProfileCached(userId);
           debugPrint('[expense row] userId: $userId, profile: $profile');
@@ -165,10 +164,12 @@ class ExpenseController extends GetxController {
 
       await _supabase.from('expenses').insert({
         'mess_id': messId,
-        'added_by': userId,
+        'created_by': userId,
+        'status': 'Pending',
+        
         'amount': amount,
         'category': category,
-        'description': description?.trim(),
+        'note': description?.trim(),
         'date': dateStr,
       });
 

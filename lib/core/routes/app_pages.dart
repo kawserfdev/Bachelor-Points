@@ -18,7 +18,6 @@ import '../../modules/balance/views/balance_summary_view.dart';
 import '../../modules/balance/views/add_deposit_view.dart';
 import '../../modules/balance/balance_binding.dart';
 import '../../modules/requests/request_binding.dart';
-import '../../modules/requests/views/create_request_view.dart';
 import '../../modules/requests/views/approval_view.dart';
 import '../../modules/notifications/notification_binding.dart';
 import '../../modules/notifications/views/notification_view.dart';
@@ -28,6 +27,9 @@ import '../../modules/report/report_binding.dart';
 import '../../modules/report/views/report_view.dart';
 import '../../modules/settings/settings_binding.dart';
 import '../../modules/settings/views/settings_view.dart';
+import '../../modules/auth/verify_email/verify_email_view.dart';
+import '../../modules/profile/create_profile_view.dart';
+import '../../modules/profile/create_profile_binding.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -83,11 +85,7 @@ class AppPages {
       name: AppRoutes.addDeposit,
       page: () => const AddDepositView(),
     ),
-    GetPage(
-      name: AppRoutes.createRequest,
-      page: () => const CreateRequestView(),
-      binding: RequestBinding(),
-    ),
+
     GetPage(
       name: AppRoutes.approvals,
       page: () => const ApprovalView(),
@@ -112,6 +110,15 @@ class AppPages {
       name: AppRoutes.settings,
       page: () => const SettingsView(),
       binding: SettingsBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.verifyEmail,
+      page: () => const VerifyEmailView(),
+    ),
+    GetPage(
+      name: AppRoutes.createProfile,
+      page: () => const CreateProfileView(),
+      binding: CreateProfileBinding(),
     ),
   ];
 }

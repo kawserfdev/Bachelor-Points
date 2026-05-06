@@ -13,6 +13,7 @@ class BalanceController extends GetxController {
 
   final Rx<DateTime> selectedMonth = DateTime.now().obs;
   final RxBool isLoading = false.obs;
+  RxString depositByUserId = ''.obs;
 
   final RxDouble mealRate = 0.0.obs;
   final RxDouble globalTotalBazar = 0.0.obs;
@@ -67,21 +68,26 @@ class BalanceController extends GetxController {
           "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
 
       debugPrint('[addDeposit] formatted date: $dateStr');
+      debugPrint('[addDeposit] received_by: $userId');
+      debugPrint('[addDeposit] status: Approve');
+      debugPrint('[addDeposit] amount: $amount');
 
       await _supabase.from('deposits').insert({
         'mess_id': messId,
         'user_id': userId,
         'amount': amount,
+        'status': 'Pending',
+        'received_by': depositByUserId.value,
         'date': dateStr,
       });
 
       debugPrint('[addDeposit] Deposit inserted successfully');
 
-      if (date.year == selectedMonth.value.year &&
-          date.month == selectedMonth.value.month) {
-        debugPrint('[addDeposit] Recalculating balances (same month)');
-        await calculateBalances();
-      }
+      // if (date.year == selectedMonth.value.year &&
+      //     date.month == selectedMonth.value.month) {
+      //   debugPrint('[addDeposit] Recalculating balances (same month)');
+      //   await calculateBalances();
+      // }
 
       Get.back();
       Get.snackbar('Success', 'Deposit added successfully',
@@ -127,6 +133,7 @@ class BalanceController extends GetxController {
           .from('meals')
           .select()
           .eq('mess_id', messId)
+          .eq('status', 'Approve')
           .gte('date', startDateStr)
           .lte('date', endDateStr);
 
@@ -138,6 +145,7 @@ class BalanceController extends GetxController {
           .from('expenses')
           .select()
           .eq('mess_id', messId)
+          .eq('status', 'Approve')
           .gte('date', startDateStr)
           .lte('date', endDateStr);
 
@@ -145,12 +153,19 @@ class BalanceController extends GetxController {
       final expenses = expensesResponse.map((e) => ExpenseModel.fromJson(e)).toList();
 
       // Deposits
-      final depositsResponse = await _supabase
+      var depositQuery = _supabase
           .from('deposits')
           .select()
           .eq('mess_id', messId)
+          .eq('status', 'Approve')
           .gte('date', startDateStr)
           .lte('date', endDateStr);
+          
+      // if (depositByUserId.value.isNotEmpty) {
+      //   depositQuery = depositQuery.eq('received_by', depositByUserId.value);
+      // }
+      
+      final depositsResponse = await depositQuery;
 
       debugPrint('[calculateBalances] deposits count: ${(depositsResponse as List).length}');
       final deposits = depositsResponse.map((e) => DepositModel.fromJson(e)).toList();

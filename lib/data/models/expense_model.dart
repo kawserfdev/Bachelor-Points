@@ -7,6 +7,7 @@ class ExpenseModel {
   final String? description;
   final DateTime date;
   final DateTime createdAt;
+   String? status;
 
   // Joined from profiles
   final String? addedByName;
@@ -20,6 +21,7 @@ class ExpenseModel {
     this.description,
     required this.date,
     required this.createdAt,
+     this.status,
     this.addedByName,
   });
 
@@ -27,12 +29,13 @@ class ExpenseModel {
     return ExpenseModel(
       id: json['id'] as String,
       messId: json['mess_id'] as String,
-      addedBy: json['added_by'] as String,
+      addedBy: json['created_by'] as String,
       amount: (json['amount'] as num).toDouble(),
       category: json['category'] as String,
-      description: json['description'] as String?,
+      description: json['note'] as String?,
       date: DateTime.parse(json['date'] as String),
       createdAt: DateTime.parse(json['created_at'] as String),
+      status: json['status'] as String?,      
       addedByName: json['profiles']?['full_name'] as String?,
     );
   }
@@ -40,11 +43,12 @@ class ExpenseModel {
   Map<String, dynamic> toJson() {
     return {
       'mess_id': messId,
-      'added_by': addedBy,
+      'created_by': addedBy,
       'amount': amount,
       'category': category,
-      'description': description,
+      'note': description,
       'date': "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}",
+      'status': status,
     };
   }
 }

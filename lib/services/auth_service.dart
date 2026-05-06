@@ -12,20 +12,44 @@ class AuthService extends GetxService {
     debugPrint('AuthService init called');
     currentUser.value = _supabase.auth.currentUser;
     
-    _supabase.auth.onAuthStateChange.listen((data) {
+    _supabase.auth.onAuthStateChange.listen((data) async {
       final AuthChangeEvent event = data.event;
       final Session? session = data.session;
       
       currentUser.value = session?.user;
       
       if (event == AuthChangeEvent.signedIn) {
-        Get.offAllNamed(AppRoutes.home);
+        if (session?.user != null) {
+          await _handleSignIn(session!.user);
+        }
       } else if (event == AuthChangeEvent.signedOut) {
         Get.offAllNamed(AppRoutes.login);
       }
     });
     
     return this;
+  }
+
+  Future<void> _handleSignIn(User user) async {
+    try {
+      debugPrint('Checking profile for user: ${user.id}');
+      final response = await _supabase
+          .from('profiles')
+          .select()
+          .eq('id', user.id)
+          .maybeSingle();
+
+      if (response == null) {
+        debugPrint('No profile found, routing to createProfile');
+        Get.offAllNamed(AppRoutes.createProfile);
+      } else {
+        debugPrint('Profile found, routing to home');
+        Get.offAllNamed(AppRoutes.home);
+      }
+    } catch (e) {
+      debugPrint('Error checking profile during sign in: $e');
+      Get.offAllNamed(AppRoutes.home); 
+    }
   }
 
   Future<void> signIn(String email, String password) async {
