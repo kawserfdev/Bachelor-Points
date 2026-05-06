@@ -8,14 +8,13 @@ class FcmService extends GetxService {
   final _supabase = Supabase.instance.client;
 
   Future<FcmService> init() async {
+    debugPrint('FcmService init called');
     // Request permission for iOS
     await _fcm.requestPermission();
 
     // Get token
     String? token = await _fcm.getToken();
-    if (kDebugMode) {
-      print("FCM Token: $token");
-    }
+    debugPrint("FCM Token: $token");
 
     if (token != null) {
       _syncToken(token);
@@ -48,6 +47,7 @@ class FcmService extends GetxService {
   }
 
   Future<void> _syncToken(String token) async {
+    debugPrint('FcmService _syncToken called');
     final user = _supabase.auth.currentUser;
     if (user != null) {
       try {
@@ -56,9 +56,7 @@ class FcmService extends GetxService {
             .update({'fcm_token': token})
             .eq('id', user.id);
       } catch (e) {
-        if (kDebugMode) {
-          print("Error syncing FCM token: $e");
-        }
+        debugPrint("Error syncing FCM token: $e");
       }
     }
   }

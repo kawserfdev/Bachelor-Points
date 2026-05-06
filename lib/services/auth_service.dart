@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/routes/app_routes.dart';
@@ -8,6 +9,7 @@ class AuthService extends GetxService {
   final Rx<User?> currentUser = Rx<User?>(null);
 
   Future<AuthService> init() async {
+    debugPrint('AuthService init called');
     currentUser.value = _supabase.auth.currentUser;
     
     _supabase.auth.onAuthStateChange.listen((data) {
@@ -27,6 +29,7 @@ class AuthService extends GetxService {
   }
 
   Future<void> signIn(String email, String password) async {
+    debugPrint('AuthService signIn called for email: $email');
     try {
       await _supabase.auth.signInWithPassword(email: email, password: password);
     } on AuthException catch (e) {
@@ -37,6 +40,7 @@ class AuthService extends GetxService {
   }
 
   Future<void> signUp(String email, String password, {String? name}) async {
+    debugPrint('AuthService signUp called for email: $email');
     try {
       await _supabase.auth.signUp(
         email: email,
@@ -51,6 +55,7 @@ class AuthService extends GetxService {
   }
 
   Future<void> resetPassword(String email) async {
+    debugPrint('AuthService resetPassword called for email: $email');
     try {
       await _supabase.auth.resetPasswordForEmail(email);
     } on AuthException catch (e) {
@@ -61,6 +66,7 @@ class AuthService extends GetxService {
   }
 
   Future<void> signOut() async {
+    debugPrint('AuthService signOut called');
     await _supabase.auth.signOut();
   }
   

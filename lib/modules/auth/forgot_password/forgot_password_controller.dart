@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../services/auth_service.dart';
-
 class ForgotPasswordController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
 
@@ -13,23 +12,49 @@ class ForgotPasswordController extends GetxController {
 
   @override
   void onClose() {
+    debugPrint('[ForgotPasswordController] onClose called');
     emailController.dispose();
     super.onClose();
   }
 
   String? validateEmail(String? value) {
-    if (value == null || value.isEmpty) return 'Email is required';
-    if (!GetUtils.isEmail(value)) return 'Please enter a valid email';
+    debugPrint('[validateEmail] input: $value');
+
+    if (value == null || value.isEmpty) {
+      debugPrint('[validateEmail] Email is empty');
+      return 'Email is required';
+    }
+
+    if (!GetUtils.isEmail(value)) {
+      debugPrint('[validateEmail] Invalid email format');
+      return 'Please enter a valid email';
+    }
+
+    debugPrint('[validateEmail] Email is valid');
     return null;
   }
 
   Future<void> resetPassword() async {
-    if (!formKey.currentState!.validate()) return;
+    debugPrint('[resetPassword] Triggered');
+
+    if (!formKey.currentState!.validate()) {
+      debugPrint('[resetPassword] Form validation failed');
+      return;
+    }
+
+    final email = emailController.text.trim();
+    debugPrint('[resetPassword] Email: $email');
 
     try {
       isLoading.value = true;
-      await _authService.resetPassword(emailController.text.trim());
+      debugPrint('[resetPassword] Calling AuthService.resetPassword');
+
+      await _authService.resetPassword(email);
+
+      debugPrint('[resetPassword] Reset link sent successfully');
+
       isSuccess.value = true;
+
       Get.snackbar(
         'Link Sent',
         'Password reset link has been sent to your email.',
@@ -38,6 +63,8 @@ class ForgotPasswordController extends GetxController {
         colorText: Colors.white,
       );
     } catch (e) {
+      debugPrint('[resetPassword] Error: $e');
+
       Get.snackbar(
         'Error',
         e.toString(),
@@ -47,6 +74,7 @@ class ForgotPasswordController extends GetxController {
       );
     } finally {
       isLoading.value = false;
+      debugPrint('[resetPassword] Loading finished');
     }
   }
 }

@@ -87,13 +87,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeController = Get.find<ThemeController>();
+    final authService = Get.find<AuthService>();
     
     return GetMaterialApp(
       title: 'Bachelor Points',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeController.themeMode,
-      initialRoute: AppRoutes.login,
+      initialRoute: authService.isLoggedIn ? AppRoutes.home : AppRoutes.login,
       getPages: AppPages.pages,
       debugShowCheckedModeBanner: false,
     );
