@@ -2,15 +2,15 @@ import 'package:bachelorpoints/modules/mess/mess_controller.dart';
 import 'package:bachelorpoints/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MemberController extends GetxController {
-  final _supabase = Supabase.instance.client;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AuthService _authService = Get.find<AuthService>();
   final MessController _messController = Get.find<MessController>();
 
   bool get isAdmin {
-    final currentUserId = _authService.currentUser.value?.id;
+    final currentUserId = _authService.currentUser.value?.uid;
     debugPrint('[isAdmin] currentUserId: $currentUserId');
 
     if (currentUserId == null) {
@@ -45,13 +45,13 @@ class MemberController extends GetxController {
     }
 
     try {
-      debugPrint('[changeRole] Sending update request to Supabase');
+      debugPrint('[changeRole] Sending update request to Firestore');
       debugPrint('[changeRole] memberId: $memberId, newRole: $newRole');
 
-      await _supabase
-          .from('mess_members')
-          .update({'role': newRole})
-          .eq('id', memberId);
+      await _firestore
+          .collection('mess_members')
+          .doc(memberId)
+          .update({'role': newRole});
 
       debugPrint('[changeRole] Role updated successfully');
 
@@ -83,12 +83,12 @@ class MemberController extends GetxController {
     }
 
     try {
-      debugPrint('[removeMember] Sending delete request to Supabase');
+      debugPrint('[removeMember] Sending delete request to Firestore');
 
-      await _supabase
-          .from('mess_members')
-          .delete()
-          .eq('id', memberId);
+      await _firestore
+          .collection('mess_members')
+          .doc(memberId)
+          .delete();
 
       debugPrint('[removeMember] Member removed successfully');
 

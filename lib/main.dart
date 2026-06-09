@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:get_storage/get_storage.dart';
 
 import 'core/config/env.dart';
@@ -35,16 +34,6 @@ void main() async {
     debugPrint("Firebase init failed (maybe no config provided): $e");
   }
 
-  // 4. Initialize Supabase
-  try {
-    await Supabase.initialize(
-      url: EnvConfig.supabaseUrl,
-      anonKey: EnvConfig.supabaseAnonKey,
-    );
-  } catch (e) {
-    debugPrint("Supabase init failed: $e");
-  }
-
   // 5. Inject Global Services
   await initServices();
 
@@ -53,24 +42,35 @@ void main() async {
 
 Future<void> initServices() async {
   debugPrint('Starting services initialization...');
-  await Get.putAsync(() => StorageService().init());
   
-  // Only init AuthService and FcmService if Supabase/Firebase are ready, 
-  // but for boilerplate we put them here.
+  final storageService = StorageService();
+  Get.put<StorageService>(storageService);
   try {
-    await Get.putAsync(() => AuthService().init());
+    await storageService.init();
+  } catch (e) {
+    debugPrint("StorageService init failed: $e");
+  }
+  
+  final authService = AuthService();
+  Get.put<AuthService>(authService);
+  try {
+    await authService.init();
   } catch (e) {
     debugPrint("AuthService init failed: $e");
   }
 
+  final fcmService = FcmService();
+  Get.put<FcmService>(fcmService);
   try {
-    await Get.putAsync(() => FcmService().init());
+    await fcmService.init();
   } catch (e) {
     debugPrint("FcmService init failed: $e");
   }
   
+  final realtimeService = RealtimeService();
+  Get.put<RealtimeService>(realtimeService);
   try {
-    await Get.putAsync(() => RealtimeService().init());
+    await realtimeService.init();
   } catch (e) {
     debugPrint("RealtimeService init failed: $e");
   }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../data/models/mess_model.dart';
 import '../../../data/models/member_model.dart';
 import '../../../services/auth_service.dart';
@@ -9,7 +9,7 @@ import 'dart:math';
 import 'dart:async';
 
 class MessController extends GetxController {
-  final _supabase = Supabase.instance.client;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AuthService _authService = Get.find<AuthService>();
   final RealtimeService _realtime = Get.find<RealtimeService>();
 
@@ -26,97 +26,85 @@ class MessController extends GetxController {
     _fetchUserMess();
   }
 
-Future<void> _fetchUserMess() async {
-  final userId = _authService.currentUser.value?.id;
-  debugPrint('[_fetchUserMess] userId: $userId');
+  Future<void> _fetchUserMess() async {
+    final userId = _authService.currentUser.value?.uid;
+    debugPrint('[_fetchUserMess] userId: $userId');
 
-  if (userId == null) {
-    debugPrint('[_fetchUserMess] No user found');
-    return;
-  }
-
-  try {
-    isLoading.value = true;
-    debugPrint('[_fetchUserMess] Fetching mess for user...');
-
-    final response = await _supabase
-        .from('mess_members')
-        .select('mess_id')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-    debugPrint('[_fetchUserMess] Response: $response');
-
-    if (response != null) {
-      final messId = response['mess_id'] as String;
-      debugPrint('[_fetchUserMess] Found messId: $messId');
-
-      await _loadMessDetails(messId);
-      _listenToMembers(messId);
-    } else {
-      debugPrint('[_fetchUserMess] No mess found for user');
+    if (userId == null) {
+      debugPrint('[_fetchUserMess] No user found');
+      return;
     }
-  } catch (e) {
-    debugPrint('[_fetchUserMess] Error: $e');
-  } finally {
-    isLoading.value = false;
-  }
-}
-Future<void> _loadMessDetails(String messId) async {
-  debugPrint('[_loadMessDetails] messId: $messId');
 
-  final response = await _supabase
-      .from('messes')
-      .select()
-      .eq('id', messId)
-      .single();
+    try {
+      isLoading.value = true;
+      debugPrint('[_fetchUserMess] Fetching mess for user...');
 
-  debugPrint('[_loadMessDetails] response: $response');
+      final snapshot = await _firestore
+          .collection('mess_members')
+          .where('user_id', isEqualTo: userId)
+          .limit(1)
+          .get();
 
-  activeMess.value = MessModel.fromJson(response);
-}
-void _listenToMembers(String messId) {
-  debugPrint('[_listenToMembers] Listening for messId: $messId');
+      if (snapshot.docs.isNotEmpty) {
+        final messId = snapshot.docs.first.data()['mess_id'] as String;
+        debugPrint('[_fetchUserMess] Found messId: $messId');
 
-  _membersSub?.cancel();
-
-  _membersSub = _realtime.streamMembers(messId).listen((data) async {
-    debugPrint('[_listenToMembers] Raw stream data: $data');
-
-    final List<MemberModel> updatedMembers = [];
-
-    for (var row in data) {
-      final userId = row['user_id'] as String;
-      debugPrint('[_listenToMembers] Processing userId: $userId');
-
-      if (!_profileCache.containsKey(userId)) {
-        debugPrint('[_listenToMembers] Fetching profile for: $userId');
-
-        final profileResponse = await _supabase
-            .from('profiles')
-            .select('full_name, email')
-            .eq('id', userId)
-            .maybeSingle();
-
-        debugPrint('[_listenToMembers] Profile response: $profileResponse');
-
-        if (profileResponse != null) {
-          _profileCache[userId] = profileResponse;
-        }
+        await _loadMessDetails(messId);
+        _listenToMembers(messId);
       } else {
-        debugPrint('[_listenToMembers] Using cached profile for: $userId');
+        debugPrint('[_fetchUserMess] No mess found for user');
+      }
+    } catch (e) {
+      debugPrint('[_fetchUserMess] Error: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> _loadMessDetails(String messId) async {
+    debugPrint('[_loadMessDetails] messId: $messId');
+
+    final doc = await _firestore
+        .collection('messes')
+        .doc(messId)
+        .get();
+
+    if (doc.exists) {
+      activeMess.value = MessModel.fromJson({'id': doc.id, ...doc.data() as Map<String, dynamic>});
+    }
+  }
+
+  void _listenToMembers(String messId) {
+    debugPrint('[_listenToMembers] Listening for messId: $messId');
+
+    _membersSub?.cancel();
+
+    _membersSub = _realtime.streamMembers(messId).listen((data) async {
+      final List<MemberModel> updatedMembers = [];
+
+      for (var row in data) {
+        final userId = row['user_id'] as String;
+
+        if (!_profileCache.containsKey(userId)) {
+          final profileDoc = await _firestore
+              .collection('profiles')
+              .doc(userId)
+              .get();
+
+          if (profileDoc.exists) {
+            _profileCache[userId] = {'id': profileDoc.id, ...profileDoc.data() as Map<String, dynamic>};
+          }
+        }
+
+        row['profiles'] = _profileCache[userId];
+        updatedMembers.add(MemberModel.fromJson(row));
       }
 
-      row['profiles'] = _profileCache[userId];
-      updatedMembers.add(MemberModel.fromJson(row));
-    }
-
-    debugPrint('[_listenToMembers] Total members: ${updatedMembers.length}');
-    members.value = updatedMembers;
-  }, onError: (error) {
-    debugPrint('[_listenToMembers] Stream Error: $error');
-  });
-}
+      members.value = updatedMembers;
+    }, onError: (error) {
+      debugPrint('[_listenToMembers] Stream Error: $error');
+    });
+  }
   
   Map<String, dynamic>? getProfileCached(String userId) => _profileCache[userId];
 
@@ -133,102 +121,90 @@ void _listenToMembers(String messId) {
       6, (_) => chars.codeUnitAt(random.nextInt(chars.length))));
   }
 
- Future<void> createMess(String name) async {
-  final userId = _authService.currentUser.value?.id;
-  debugPrint('[createMess] userId: $userId, name: $name');
+  Future<void> createMess(String name) async {
+    final userId = _authService.currentUser.value?.uid;
+    if (userId == null) return;
 
-  if (userId == null) return;
+    try {
+      isLoading.value = true;
+      final inviteCode = _generateInviteCode();
 
-  try {
-    isLoading.value = true;
+      final docRef = await _firestore.collection('messes').add({
+        'name': name,
+        'invite_code': inviteCode,
+        'created_by': userId,
+        'created_at': FieldValue.serverTimestamp(),
+      });
 
-    final inviteCode = _generateInviteCode();
-    debugPrint('[createMess] Generated inviteCode: $inviteCode');
+      final messId = docRef.id;
 
-    final messResponse = await _supabase.from('messes').insert({
-      'name': name,
-      'invite_code': inviteCode,
-      'created_by': userId,
-    }).select().single();
+      await _firestore.collection('mess_members').add({
+        'mess_id': messId,
+        'user_id': userId,
+        'role': 'admin',
+        'joined_at': FieldValue.serverTimestamp(),
+      });
 
-    debugPrint('[createMess] messResponse: $messResponse');
+      await _loadMessDetails(messId);
+      _listenToMembers(messId);
 
-    final messId = messResponse['id'] as String;
-
-    await _supabase.from('mess_members').insert({
-      'mess_id': messId,
-      'user_id': userId,
-      'role': 'admin',
-    });
-
-    debugPrint('[createMess] Member inserted as admin');
-
-    await _loadMessDetails(messId);
-    _listenToMembers(messId);
-
-    Get.back();
-    Get.snackbar('Success', 'Mess created successfully!');
-  } catch (e) {
-    debugPrint('[createMess] Error: $e');
-    Get.snackbar('Error', e.toString());
-  } finally {
-    isLoading.value = false;
+      Get.back();
+      Get.snackbar('Success', 'Mess created successfully!');
+    } catch (e) {
+      debugPrint('[createMess] Error: $e');
+      Get.snackbar('Error', e.toString());
+    } finally {
+      isLoading.value = false;
+    }
   }
-}
+
   Future<void> joinMess(String inviteCode) async {
-  final userId = _authService.currentUser.value?.id;
-  debugPrint('[joinMess] userId: $userId, inviteCode: $inviteCode');
+    final userId = _authService.currentUser.value?.uid;
+    if (userId == null) return;
 
-  if (userId == null) return;
+    try {
+      isLoading.value = true;
 
-  try {
-    isLoading.value = true;
+      final snapshot = await _firestore
+          .collection('messes')
+          .where('invite_code', isEqualTo: inviteCode.toUpperCase())
+          .limit(1)
+          .get();
 
-    final messResponse = await _supabase
-        .from('messes')
-        .select('id')
-        .eq('invite_code', inviteCode.toUpperCase())
-        .maybeSingle();
+      if (snapshot.docs.isEmpty) {
+        throw 'Invalid invite code';
+      }
 
-    debugPrint('[joinMess] messResponse: $messResponse');
+      final messId = snapshot.docs.first.id;
 
-    if (messResponse == null) {
-      throw 'Invalid invite code';
+      final memberCheck = await _firestore
+          .collection('mess_members')
+          .where('mess_id', isEqualTo: messId)
+          .where('user_id', isEqualTo: userId)
+          .limit(1)
+          .get();
+
+      if (memberCheck.docs.isNotEmpty) {
+        throw 'Already a member';
+      }
+
+      await _firestore.collection('mess_members').add({
+        'mess_id': messId,
+        'user_id': userId,
+        'role': 'viewer',
+        'joined_at': FieldValue.serverTimestamp(),
+      });
+
+      await _loadMessDetails(messId);
+      _listenToMembers(messId);
+
+      Get.back();
+      Get.snackbar('Success', 'Joined mess successfully!');
+    } catch (e) {
+      debugPrint('[joinMess] Error: $e');
+      Get.snackbar('Error', e.toString());
+    } finally {
+      isLoading.value = false;
     }
-
-    final messId = messResponse['id'] as String;
-
-    final memberCheck = await _supabase
-        .from('mess_members')
-        .select('id')
-        .eq('mess_id', messId)
-        .eq('user_id', userId)
-        .maybeSingle();
-
-    debugPrint('[joinMess] memberCheck: $memberCheck');
-
-    if (memberCheck != null) {
-      throw 'Already a member';
-    }
-
-    await _supabase.from('mess_members').insert({
-      'mess_id': messId,
-      'user_id': userId,
-      'role': 'viewer',
-    });
-
-    debugPrint('[joinMess] Member inserted successfully');
-
-    await _loadMessDetails(messId);
-    _listenToMembers(messId);
-
-    Get.back();
-    Get.snackbar('Success', 'Joined mess successfully!');
-  } catch (e) {
-    debugPrint('[joinMess] Error: $e');
-    Get.snackbar('Error', e.toString());
-  } finally {
-    isLoading.value = false;
   }
-}
 }

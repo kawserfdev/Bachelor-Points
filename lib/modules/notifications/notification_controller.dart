@@ -1,10 +1,11 @@
 import 'package:get/get.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../data/models/notification_model.dart';
 import '../../services/auth_service.dart';
+
 class NotificationController extends GetxController {
-  final SupabaseClient _supabase = Supabase.instance.client;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AuthService _authService = Get.find<AuthService>();
 
   final RxList<NotificationModel> notifications =
@@ -19,7 +20,7 @@ class NotificationController extends GetxController {
   }
 
   Future<void> fetchNotifications() async {
-    final userId = _authService.currentUser.value?.id;
+    final userId = _authService.currentUser.value?.uid;
 
     debugPrint('[fetchNotifications] userId: $userId');
 
@@ -32,17 +33,17 @@ class NotificationController extends GetxController {
       isLoading.value = true;
       debugPrint('[fetchNotifications] Fetching notifications...');
 
-      final response = await _supabase
-          .from('notifications')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', ascending: false);
+      final response = await _firestore
+          .collection('notifications')
+          .where('user_id', isEqualTo: userId)
+          .orderBy('created_at', descending: true)
+          .get();
 
       debugPrint(
-          '[fetchNotifications] Raw count: ${(response as List).length}');
+          '[fetchNotifications] Raw count: ${response.docs.length}');
 
-      final list = response
-          .map((e) => NotificationModel.fromJson(e))
+      final list = response.docs
+          .map((doc) => NotificationModel.fromJson({'id': doc.id, ...doc.data() as Map<String, dynamic>}))
           .toList();
 
       notifications.assignAll(list);
@@ -51,9 +52,6 @@ class NotificationController extends GetxController {
           '[fetchNotifications] Parsed count: ${notifications.length}');
     } catch (e) {
       debugPrint('[fetchNotifications] Error: $e');
-
-      // Optional:
-      // Get.snackbar('Error', 'Failed to load notifications');
     } finally {
       isLoading.value = false;
       debugPrint('[fetchNotifications] Loading finished');
@@ -64,12 +62,12 @@ class NotificationController extends GetxController {
     debugPrint('[markAsRead] notificationId: $notificationId');
 
     try {
-      debugPrint('[markAsRead] Sending update to Supabase');
+      debugPrint('[markAsRead] Sending update to Firestore');
 
-      await _supabase
-          .from('notifications')
-          .update({'is_read': true})
-          .eq('id', notificationId);
+      await _firestore
+          .collection('notifications')
+          .doc(notificationId)
+          .update({'is_read': true});
 
       debugPrint('[markAsRead] Update success');
 

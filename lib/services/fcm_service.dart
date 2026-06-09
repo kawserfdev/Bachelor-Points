@@ -1,11 +1,13 @@
 import 'package:get/get.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class FcmService extends GetxService {
-  final FirebaseMessaging _fcm = FirebaseMessaging.instance;
-  final _supabase = Supabase.instance.client;
+  FirebaseMessaging get _fcm => FirebaseMessaging.instance;
+  FirebaseFirestore get _firestore => FirebaseFirestore.instance;
+  FirebaseAuth get _auth => FirebaseAuth.instance;
 
   Future<FcmService> init() async {
     debugPrint('FcmService init called');
@@ -24,8 +26,8 @@ class FcmService extends GetxService {
     _fcm.onTokenRefresh.listen(_syncToken);
 
     // Listen for auth state changes to resync token if a user logs in
-    _supabase.auth.onAuthStateChange.listen((data) async {
-      if (data.event == AuthChangeEvent.signedIn) {
+    _auth.authStateChanges().listen((User? user) async {
+      if (user != null) {
         String? currentToken = await _fcm.getToken();
         if (currentToken != null) {
           _syncToken(currentToken);
@@ -48,13 +50,13 @@ class FcmService extends GetxService {
 
   Future<void> _syncToken(String token) async {
     debugPrint('FcmService _syncToken called');
-    final user = _supabase.auth.currentUser;
+    final user = _auth.currentUser;
     if (user != null) {
       try {
-        await _supabase
-            .from('profiles')
-            .update({'fcm_token': token})
-            .eq('id', user.id);
+        await _firestore
+            .collection('profiles')
+            .doc(user.uid)
+            .set({'fcm_token': token}, SetOptions(merge: true));
       } catch (e) {
         debugPrint("Error syncing FCM token: $e");
       }

@@ -4,12 +4,11 @@ import 'mess_controller.dart';
 import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
 
-class JoinMessView extends StatelessWidget {
+class JoinMessView extends GetView<MessController> {
   const JoinMessView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<MessController>();
     final codeController = TextEditingController();
 
     return Scaffold(

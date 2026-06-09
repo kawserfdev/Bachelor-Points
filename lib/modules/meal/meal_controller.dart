@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/realtime_service.dart';
 import '../mess/mess_controller.dart';
 import '../../../data/models/meal_model.dart';
 import 'dart:async';
+
 class MealController extends GetxController {
-  final _supabase = Supabase.instance.client;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AuthService _authService = Get.find<AuthService>();
   final MessController _messController = Get.find<MessController>();
   final RealtimeService _realtime = Get.find<RealtimeService>();
@@ -40,7 +41,7 @@ class MealController extends GetxController {
 
     if (selectedDayStr == todayStr) {
       if (now.hour >= 10) {
-        debugPrint('[canEdit] Today কিন্তু cutoff passed → NOT editable');
+        debugPrint('[canEdit] Today cutoff passed → NOT editable');
         return false;
       }
     }
@@ -95,13 +96,13 @@ class MealController extends GetxController {
   }
 
   void _listenToMeals() {
-    final userId = _authService.currentUser.value?.id;
+    final userId = _authService.currentUser.value?.uid;
     final messId = _messController.activeMess.value?.id;
 
     debugPrint('[listenToMeals] userId: $userId, messId: $messId');
 
     if (userId == null || messId == null) {
-      debugPrint('[listenToMeals] Missing userId বা messId');
+      debugPrint('[listenToMeals] Missing userId or messId');
       return;
     }
 
@@ -166,7 +167,7 @@ class MealController extends GetxController {
       return;
     }
 
-    final userId = _authService.currentUser.value?.id;
+    final userId = _authService.currentUser.value?.uid;
     final messId = _messController.activeMess.value?.id;
 
     debugPrint('[saveMeal] userId: $userId, messId: $messId');
@@ -187,7 +188,9 @@ class MealController extends GetxController {
       debugPrint('[saveMeal] date: $dateStr');
       debugPrint('[saveMeal] B:${breakfast.value} L:${lunch.value} D:${dinner.value}');
 
-      await _supabase.from('meals').upsert({
+      final docId = '${messId}_${userId}_$dateStr';
+
+      await _firestore.collection('meals').doc(docId).set({
         'mess_id': messId,
         'user_id': userId,
         'date': dateStr,
@@ -195,8 +198,8 @@ class MealController extends GetxController {
         'status': 'Pending',
         'lunch': lunch.value,
         'dinner': dinner.value,
-        'updated_at': DateTime.now().toIso8601String(),
-      }, onConflict: 'mess_id, user_id, date');
+        'updated_at': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
 
       debugPrint('[saveMeal] Upsert success');
 

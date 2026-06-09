@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../services/auth_service.dart';
 import '../mess/mess_controller.dart';
 import '../../../data/models/deposit_model.dart';
 import '../../../data/models/member_balance_model.dart';
 import '../../../data/models/meal_model.dart';
 import '../../../data/models/expense_model.dart';
+
 class BalanceController extends GetxController {
-  final _supabase = Supabase.instance.client;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final _messController = Get.find<MessController>();
 
   final Rx<DateTime> selectedMonth = DateTime.now().obs;
@@ -50,7 +51,7 @@ class BalanceController extends GetxController {
     required double amount,
     required DateTime date,
   }) async {
-    final userId = Get.find<AuthService>().currentUser.value?.id;
+    final userId = Get.find<AuthService>().currentUser.value?.uid;
     final messId = _messController.activeMess.value?.id;
 
     debugPrint('[addDeposit] userId: $userId, messId: $messId');
@@ -69,25 +70,20 @@ class BalanceController extends GetxController {
 
       debugPrint('[addDeposit] formatted date: $dateStr');
       debugPrint('[addDeposit] received_by: $userId');
-      debugPrint('[addDeposit] status: Approve');
+      debugPrint('[addDeposit] status: Pending');
       debugPrint('[addDeposit] amount: $amount');
 
-      await _supabase.from('deposits').insert({
+      await _firestore.collection('deposits').add({
         'mess_id': messId,
         'user_id': userId,
         'amount': amount,
         'status': 'Pending',
         'received_by': depositByUserId.value,
         'date': dateStr,
+        'created_at': FieldValue.serverTimestamp(),
       });
 
       debugPrint('[addDeposit] Deposit inserted successfully');
-
-      // if (date.year == selectedMonth.value.year &&
-      //     date.month == selectedMonth.value.month) {
-      //   debugPrint('[addDeposit] Recalculating balances (same month)');
-      //   await calculateBalances();
-      // }
 
       Get.back();
       Get.snackbar('Success', 'Deposit added successfully',
@@ -129,46 +125,41 @@ class BalanceController extends GetxController {
       debugPrint('[calculateBalances] Date range: $startDateStr → $endDateStr');
 
       // Meals
-      final mealsResponse = await _supabase
-          .from('meals')
-          .select()
-          .eq('mess_id', messId)
-          .eq('status', 'Approve')
-          .gte('date', startDateStr)
-          .lte('date', endDateStr);
+      final mealsResponse = await _firestore
+          .collection('meals')
+          .where('mess_id', isEqualTo: messId)
+          .where('status', isEqualTo: 'Approve')
+          .where('date', isGreaterThanOrEqualTo: startDateStr)
+          .where('date', isLessThanOrEqualTo: endDateStr)
+          .get();
 
-      debugPrint('[calculateBalances] meals count: ${(mealsResponse as List).length}');
-      final meals = mealsResponse.map((e) => MealModel.fromJson(e)).toList();
+      debugPrint('[calculateBalances] meals count: ${mealsResponse.docs.length}');
+      final meals = mealsResponse.docs.map((e) => MealModel.fromJson({'id': e.id, ...e.data() as Map<String, dynamic>})).toList();
 
       // Expenses
-      final expensesResponse = await _supabase
-          .from('expenses')
-          .select()
-          .eq('mess_id', messId)
-          .eq('status', 'Approve')
-          .gte('date', startDateStr)
-          .lte('date', endDateStr);
+      final expensesResponse = await _firestore
+          .collection('expenses')
+          .where('mess_id', isEqualTo: messId)
+          .where('status', isEqualTo: 'Approve')
+          .where('date', isGreaterThanOrEqualTo: startDateStr)
+          .where('date', isLessThanOrEqualTo: endDateStr)
+          .get();
 
-      debugPrint('[calculateBalances] expenses count: ${(expensesResponse as List).length}');
-      final expenses = expensesResponse.map((e) => ExpenseModel.fromJson(e)).toList();
+      debugPrint('[calculateBalances] expenses count: ${expensesResponse.docs.length}');
+      final expenses = expensesResponse.docs.map((e) => ExpenseModel.fromJson({'id': e.id, ...e.data() as Map<String, dynamic>})).toList();
 
       // Deposits
-      var depositQuery = _supabase
-          .from('deposits')
-          .select()
-          .eq('mess_id', messId)
-          .eq('status', 'Approve')
-          .gte('date', startDateStr)
-          .lte('date', endDateStr);
+      var depositQuery = _firestore
+          .collection('deposits')
+          .where('mess_id', isEqualTo: messId)
+          .where('status', isEqualTo: 'Approve')
+          .where('date', isGreaterThanOrEqualTo: startDateStr)
+          .where('date', isLessThanOrEqualTo: endDateStr);
           
-      // if (depositByUserId.value.isNotEmpty) {
-      //   depositQuery = depositQuery.eq('received_by', depositByUserId.value);
-      // }
-      
-      final depositsResponse = await depositQuery;
+      final depositsResponse = await depositQuery.get();
 
-      debugPrint('[calculateBalances] deposits count: ${(depositsResponse as List).length}');
-      final deposits = depositsResponse.map((e) => DepositModel.fromJson(e)).toList();
+      debugPrint('[calculateBalances] deposits count: ${depositsResponse.docs.length}');
+      final deposits = depositsResponse.docs.map((e) => DepositModel.fromJson({'id': e.id, ...e.data() as Map<String, dynamic>})).toList();
 
       // Global Calculation
       double totalBazar = 0.0;

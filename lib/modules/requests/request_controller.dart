@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../data/models/meal_model.dart';
 import '../../data/models/expense_model.dart';
@@ -9,7 +9,7 @@ import '../mess/mess_controller.dart';
 import '../mess/member_controller.dart';
 
 class RequestController extends GetxController {
-  final SupabaseClient _supabase = Supabase.instance.client;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AuthService _authService = Get.find<AuthService>();
   final MessController _messController = Get.find<MessController>();
   final MemberController _memberController = Get.find<MemberController>();
@@ -28,7 +28,7 @@ class RequestController extends GetxController {
   }
 
   Future<void> fetchPendingItems() async {
-    final userId = _authService.currentUser.value?.id;
+    final userId = _authService.currentUser.value?.uid;
     final messId = _messController.activeMess.value?.id;
 
     if (userId == null || messId == null) return;
@@ -42,32 +42,56 @@ class RequestController extends GetxController {
       isLoading.value = true;
 
       // Fetch Pending Meals
-      final mealsResponse = await _supabase
-          .from('meals')
-          .select('*, profiles(full_name)')
-          .eq('mess_id', messId)
-          .eq('status', 'Pending')
-          .order('date', ascending: false);
+      final mealsResponse = await _firestore
+          .collection('meals')
+          .where('mess_id', isEqualTo: messId)
+          .where('status', isEqualTo: 'Pending')
+          .orderBy('date', descending: true)
+          .get();
+
+      final pendingMealsList = <MealModel>[];
+      for (var doc in mealsResponse.docs) {
+          final data = doc.data();
+          final profileDoc = await _firestore.collection('profiles').doc(data['user_id']).get();
+          data['profiles'] = profileDoc.data();
+          pendingMealsList.add(MealModel.fromJson({'id': doc.id, ...data}));
+      }
 
       // Fetch Pending Expenses
-      final expensesResponse = await _supabase
-          .from('expenses')
-          .select('*, profiles(full_name)')
-          .eq('mess_id', messId)
-          .eq('status', 'Pending')
-          .order('date', ascending: false);
+      final expensesResponse = await _firestore
+          .collection('expenses')
+          .where('mess_id', isEqualTo: messId)
+          .where('status', isEqualTo: 'Pending')
+          .orderBy('date', descending: true)
+          .get();
+
+      final pendingExpensesList = <ExpenseModel>[];
+      for (var doc in expensesResponse.docs) {
+          final data = doc.data();
+          final profileDoc = await _firestore.collection('profiles').doc(data['created_by']).get();
+          data['profiles'] = profileDoc.data();
+          pendingExpensesList.add(ExpenseModel.fromJson({'id': doc.id, ...data}));
+      }
 
       // Fetch Pending Deposits
-      final depositsResponse = await _supabase
-          .from('deposits')
-          .select('*, profiles(full_name)')
-          .eq('mess_id', messId)
-          .eq('status', 'Pending')
-          .order('date', ascending: false);
+      final depositsResponse = await _firestore
+          .collection('deposits')
+          .where('mess_id', isEqualTo: messId)
+          .where('status', isEqualTo: 'Pending')
+          .orderBy('date', descending: true)
+          .get();
 
-      pendingMeals.assignAll((mealsResponse as List).map((e) => MealModel.fromJson(e)).toList());
-      pendingExpenses.assignAll((expensesResponse as List).map((e) => ExpenseModel.fromJson(e)).toList());
-      pendingDeposits.assignAll((depositsResponse as List).map((e) => DepositModel.fromJson(e)).toList());
+      final pendingDepositsList = <DepositModel>[];
+      for (var doc in depositsResponse.docs) {
+          final data = doc.data();
+          final profileDoc = await _firestore.collection('profiles').doc(data['user_id']).get();
+          data['profiles'] = profileDoc.data();
+          pendingDepositsList.add(DepositModel.fromJson({'id': doc.id, ...data}));
+      }
+
+      pendingMeals.assignAll(pendingMealsList);
+      pendingExpenses.assignAll(pendingExpensesList);
+      pendingDeposits.assignAll(pendingDepositsList);
 
     } catch (e) {
       debugPrint('[fetchPendingItems] Error: $e');
@@ -87,10 +111,10 @@ class RequestController extends GetxController {
       else if (type == 'deposit') tableName = 'deposits';
       else return;
 
-      await _supabase
-          .from(tableName)
-          .update({'status': newStatus})
-          .eq('id', id);
+      await _firestore
+          .collection(tableName)
+          .doc(id)
+          .update({'status': newStatus, 'updated_at': FieldValue.serverTimestamp()});
 
       Get.snackbar('Success', '${type.capitalizeFirst} $newStatus', 
         backgroundColor: newStatus == 'Approve' ? Colors.green : Colors.red,

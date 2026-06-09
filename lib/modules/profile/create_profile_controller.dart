@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../services/auth_service.dart';
 import '../../../core/routes/app_routes.dart';
 
 class CreateProfileController extends GetxController {
-  final SupabaseClient _supabase = Supabase.instance.client;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AuthService _authService = Get.find<AuthService>();
 
   final formKey = GlobalKey<FormState>();
@@ -19,9 +19,9 @@ class CreateProfileController extends GetxController {
     super.onInit();
     debugPrint('[CreateProfileController] Initialized');
     // Pre-fill name if available from metadata
-    final metadataName = _authService.currentUser.value?.userMetadata?['full_name'];
+    final metadataName = _authService.currentUser.value?.displayName;
     if (metadataName != null) {
-      nameController.text = metadataName.toString();
+      nameController.text = metadataName;
     }
   }
 
@@ -52,15 +52,19 @@ class CreateProfileController extends GetxController {
 
     try {
       isLoading.value = true;
-      debugPrint('[CreateProfile] Saving profile for ${user.id}');
+      debugPrint('[CreateProfile] Saving profile for ${user.uid}');
 
-      await _supabase.from('profiles').upsert({
-        'id': user.id,
+      await _firestore.collection('profiles').doc(user.uid).set({
         'email': user.email,
         'full_name': nameController.text.trim(),
         'phone_number': phoneController.text.trim(),
-        'updated_at': DateTime.now().toIso8601String(),
+        'updated_at': FieldValue.serverTimestamp(),
       });
+
+      // Also update Firebase Auth display name if not already
+      if (user.displayName == null) {
+        await user.updateDisplayName(nameController.text.trim());
+      }
 
       debugPrint('[CreateProfile] Profile saved successfully');
       

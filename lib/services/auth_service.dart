@@ -1,28 +1,25 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/routes/app_routes.dart';
 
 class AuthService extends GetxService {
-  final _supabase = Supabase.instance.client;
+  FirebaseAuth get _auth => FirebaseAuth.instance;
+  FirebaseFirestore get _firestore => FirebaseFirestore.instance;
   
   final Rx<User?> currentUser = Rx<User?>(null);
 
   Future<AuthService> init() async {
     debugPrint('AuthService init called');
-    currentUser.value = _supabase.auth.currentUser;
+    currentUser.value = _auth.currentUser;
     
-    _supabase.auth.onAuthStateChange.listen((data) async {
-      final AuthChangeEvent event = data.event;
-      final Session? session = data.session;
+    _auth.authStateChanges().listen((User? user) async {
+      currentUser.value = user;
       
-      currentUser.value = session?.user;
-      
-      if (event == AuthChangeEvent.signedIn) {
-        if (session?.user != null) {
-          await _handleSignIn(session!.user);
-        }
-      } else if (event == AuthChangeEvent.signedOut) {
+      if (user != null) {
+        await _handleSignIn(user);
+      } else {
         Get.offAllNamed(AppRoutes.login);
       }
     });
@@ -32,14 +29,13 @@ class AuthService extends GetxService {
 
   Future<void> _handleSignIn(User user) async {
     try {
-      debugPrint('Checking profile for user: ${user.id}');
-      final response = await _supabase
-          .from('profiles')
-          .select()
-          .eq('id', user.id)
-          .maybeSingle();
+      debugPrint('Checking profile for user: ${user.uid}');
+      final doc = await _firestore
+          .collection('profiles')
+          .doc(user.uid)
+          .get();
 
-      if (response == null) {
+      if (!doc.exists) {
         debugPrint('No profile found, routing to createProfile');
         Get.offAllNamed(AppRoutes.createProfile);
       } else {
@@ -55,9 +51,9 @@ class AuthService extends GetxService {
   Future<void> signIn(String email, String password) async {
     debugPrint('AuthService signIn called for email: $email');
     try {
-      await _supabase.auth.signInWithPassword(email: email, password: password);
-    } on AuthException catch (e) {
-      throw e.message;
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+    } on FirebaseAuthException catch (e) {
+      throw e.message ?? 'Authentication failed';
     } catch (e) {
       throw 'An unexpected error occurred.';
     }
@@ -66,24 +62,29 @@ class AuthService extends GetxService {
   Future<void> signUp(String email, String password, {String? name}) async {
     debugPrint('AuthService signUp called for email: $email');
     try {
-      await _supabase.auth.signUp(
+      UserCredential credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
-        data: name != null ? {'full_name': name} : null,
       );
-    } on AuthException catch (e) {
-      throw e.message;
+      
+      if (name != null && credential.user != null) {
+        await credential.user!.updateDisplayName(name);
+        // Do not create profile here, it will be done in CreateProfileController
+      }
+    } on FirebaseAuthException catch (e) {
+      throw e.message ?? 'Sign up failed';
     } catch (e) {
-      throw 'An unexpected error occurred.';
+      debugPrint('Error during sign up: $e');
+      throw 'An unexpected error occurred. ';
     }
   }
 
   Future<void> resetPassword(String email) async {
     debugPrint('AuthService resetPassword called for email: $email');
     try {
-      await _supabase.auth.resetPasswordForEmail(email);
-    } on AuthException catch (e) {
-      throw e.message;
+      await _auth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      throw e.message ?? 'Reset password failed';
     } catch (e) {
       throw 'An unexpected error occurred.';
     }
@@ -91,7 +92,7 @@ class AuthService extends GetxService {
 
   Future<void> signOut() async {
     debugPrint('AuthService signOut called');
-    await _supabase.auth.signOut();
+    await _auth.signOut();
   }
   
   bool get isLoggedIn => currentUser.value != null;

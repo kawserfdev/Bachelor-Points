@@ -9,6 +9,7 @@ import '../../modules/home/home_binding.dart';
 import '../../modules/home/home_view.dart';
 import '../../modules/mess/create_mess_view.dart';
 import '../../modules/mess/join_mess_view.dart';
+import '../../modules/mess/mess_binding.dart';
 import '../../modules/meal/meal_entry_view.dart';
 import '../../modules/meal/meal_binding.dart';
 import '../../modules/expense/views/expense_list_view.dart';
@@ -57,10 +58,12 @@ class AppPages {
     GetPage(
       name: AppRoutes.createMess,
       page: () => const CreateMessView(),
+      binding: MessBinding(),
     ),
     GetPage(
       name: AppRoutes.joinMess,
       page: () => const JoinMessView(),
+      binding: MessBinding(),
     ),
     GetPage(
       name: AppRoutes.mealEntry,
@@ -75,6 +78,7 @@ class AppPages {
     GetPage(
       name: AppRoutes.addExpense,
       page: () => const AddExpenseView(),
+      binding: ExpenseBinding(),
     ),
     GetPage(
       name: AppRoutes.balanceSummary,
@@ -84,6 +88,7 @@ class AppPages {
     GetPage(
       name: AppRoutes.addDeposit,
       page: () => const AddDepositView(),
+      binding: BalanceBinding(),
     ),
 
     GetPage(
