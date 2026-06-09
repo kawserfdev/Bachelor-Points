@@ -11,7 +11,7 @@ class MemberListView extends StatelessWidget {
   Widget build(BuildContext context) {
     final messController = Get.find<MessController>();
     final memberController = Get.find<MemberController>();
-    final currentUserId = Get.find<AuthService>().currentUser.value?.id;
+    final currentUserId = Get.find<AuthService>().currentUser.value?.uid;
 
     return Obx(() {
       return ListView.builder(
@@ -23,7 +23,9 @@ class MemberListView extends StatelessWidget {
 
           return Card(
             elevation: 0,
-            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+            color: Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
             margin: const EdgeInsets.only(bottom: 12),
             child: ListTile(
               leading: CircleAvatar(
@@ -43,16 +45,24 @@ class MemberListView extends StatelessWidget {
                 children: [
                   if (isMe)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text('YOU',
-                          style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.primary)),
+                      child: Text(
+                        'YOU',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
                     ),
                   // Only show popup menu if the current user is an admin and it's not their own card
                   if (memberController.isAdmin && !isMe)
@@ -60,36 +70,41 @@ class MemberListView extends StatelessWidget {
                       icon: const Icon(Icons.more_vert),
                       onSelected: (value) {
                         if (value == 'remove') {
-                          _showRemoveDialog(context, member.id, memberController);
+                          _showRemoveDialog(
+                            context,
+                            member.id,
+                            memberController,
+                          );
                         } else {
                           memberController.changeRole(member.id, value);
                         }
                       },
-                      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                        if (member.role != 'admin')
-                          const PopupMenuItem<String>(
-                            value: 'admin',
-                            child: Text('Make Admin'),
-                          ),
-                        if (member.role != 'manager')
-                          const PopupMenuItem<String>(
-                            value: 'manager',
-                            child: Text('Make Manager'),
-                          ),
-                        if (member.role != 'member')
-                          const PopupMenuItem<String>(
-                            value: 'member',
-                            child: Text('Make Member'),
-                          ),
-                        const PopupMenuDivider(),
-                        const PopupMenuItem<String>(
-                          value: 'remove',
-                          child: Text(
-                            'Remove Member',
-                            style: TextStyle(color: Colors.red),
-                          ),
-                        ),
-                      ],
+                      itemBuilder: (BuildContext context) =>
+                          <PopupMenuEntry<String>>[
+                            if (member.role != 'admin')
+                              const PopupMenuItem<String>(
+                                value: 'admin',
+                                child: Text('Make Admin'),
+                              ),
+                            if (member.role != 'manager')
+                              const PopupMenuItem<String>(
+                                value: 'manager',
+                                child: Text('Make Manager'),
+                              ),
+                            if (member.role != 'member')
+                              const PopupMenuItem<String>(
+                                value: 'member',
+                                child: Text('Make Member'),
+                              ),
+                            const PopupMenuDivider(),
+                            const PopupMenuItem<String>(
+                              value: 'remove',
+                              child: Text(
+                                'Remove Member',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
                     ),
                 ],
               ),
@@ -100,13 +115,19 @@ class MemberListView extends StatelessWidget {
     });
   }
 
-  void _showRemoveDialog(BuildContext context, String memberId, MemberController controller) {
+  void _showRemoveDialog(
+    BuildContext context,
+    String memberId,
+    MemberController controller,
+  ) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Remove Member'),
-          content: const Text('Are you sure you want to remove this member from the mess?'),
+          content: const Text(
+            'Are you sure you want to remove this member from the mess?',
+          ),
           actions: <Widget>[
             TextButton(
               child: const Text('Cancel'),

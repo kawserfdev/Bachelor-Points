@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/realtime_service.dart';
 import '../mess/mess_controller.dart';
 import '../../../data/models/expense_model.dart';
 import 'dart:async';
+
 class ExpenseController extends GetxController {
-  final _supabase = Supabase.instance.client;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AuthService _authService = Get.find<AuthService>();
   final MessController _messController = Get.find<MessController>();
   final RealtimeService _realtime = Get.find<RealtimeService>();
@@ -143,7 +144,7 @@ class ExpenseController extends GetxController {
     required DateTime date,
     String? description,
   }) async {
-    final userId = _authService.currentUser.value?.id;
+    final userId = _authService.currentUser.value?.uid;
     final messId = _messController.activeMess.value?.id;
 
     debugPrint('[addExpense] userId: $userId, messId: $messId');
@@ -162,15 +163,15 @@ class ExpenseController extends GetxController {
 
       debugPrint('[addExpense] formatted date: $dateStr');
 
-      await _supabase.from('expenses').insert({
+      await _firestore.collection('expenses').add({
         'mess_id': messId,
         'created_by': userId,
         'status': 'Pending',
-        
         'amount': amount,
         'category': category,
         'note': description?.trim(),
         'date': dateStr,
+        'created_at': FieldValue.serverTimestamp(),
       });
 
       debugPrint('[addExpense] Expense inserted successfully');

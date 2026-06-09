@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class MessageModel {
   final String id;
   final String messId;
@@ -22,7 +24,7 @@ class MessageModel {
       userId: json['user_id'] as String,
       senderName: json['sender_name'] as String? ?? 'Unknown',
       message: json['message'] as String,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: json['created_at'] is Timestamp ? (json['created_at'] as Timestamp).toDate() : DateTime.parse(json['created_at'] as String),
     );
   }
 

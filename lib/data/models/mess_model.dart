@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class MessModel {
   final String id;
   final String name;
@@ -19,7 +21,7 @@ class MessModel {
       name: json['name'] as String,
       inviteCode: json['invite_code'] as String,
       createdBy: json['created_by'] as String,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: json['created_at'] is Timestamp ? (json['created_at'] as Timestamp).toDate() : DateTime.parse(json['created_at'] as String),
     );
   }
 

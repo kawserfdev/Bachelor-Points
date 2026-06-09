@@ -1,12 +1,13 @@
 import 'package:get/get.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../data/models/mess_settings_model.dart';
 import '../../data/models/bazar_schedule_model.dart';
 import '../../data/models/member_model.dart';
 import '../../services/auth_service.dart';
+
 class SettingsController extends GetxController {
-  final SupabaseClient _supabase = Supabase.instance.client;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AuthService _authService = Get.find<AuthService>();
 
   final RxBool isLoading = false.obs;
@@ -31,7 +32,7 @@ class SettingsController extends GetxController {
   }
 
   Future<void> _checkAdminAndLoadData() async {
-    final userId = _authService.currentUser.value?.id;
+    final userId = _authService.currentUser.value?.uid;
 
     debugPrint('[checkAdmin] userId: $userId');
 
@@ -40,21 +41,20 @@ class SettingsController extends GetxController {
     try {
       isLoading.value = true;
 
-      final memberResponse = await _supabase
-          .from('members')
-          .select('mess_id, role')
-          .eq('user_id', userId)
-          .maybeSingle();
+      final memberResponse = await _firestore
+          .collection('mess_members')
+          .where('user_id', isEqualTo: userId)
+          .limit(1)
+          .get();
 
-      debugPrint('[checkAdmin] response: $memberResponse');
-
-      if (memberResponse == null) {
+      if (memberResponse.docs.isEmpty) {
         debugPrint('[checkAdmin] No membership found');
         return;
       }
 
-      _messId = memberResponse['mess_id'] as String;
-      final role = memberResponse['role'] as String;
+      final docData = memberResponse.docs.first.data();
+      _messId = docData['mess_id'] as String;
+      final role = docData['role'] as String;
 
       debugPrint('[checkAdmin] messId: $_messId | role: $role');
 
@@ -89,17 +89,15 @@ class SettingsController extends GetxController {
       debugPrint('[loadSettings] Loading all data...');
 
       // SETTINGS
-      final settingsRes = await _supabase
-          .from('mess_settings')
-          .select()
-          .eq('mess_id', _messId!)
-          .maybeSingle();
+      final settingsRes = await _firestore
+          .collection('mess_settings')
+          .where('mess_id', isEqualTo: _messId)
+          .limit(1)
+          .get();
 
-      debugPrint('[loadSettings] settings: $settingsRes');
-
-      if (settingsRes != null) {
-        messSettings.value =
-            MessSettingsModel.fromJson(settingsRes);
+      if (settingsRes.docs.isNotEmpty) {
+        final doc = settingsRes.docs.first;
+        messSettings.value = MessSettingsModel.fromJson({'id': doc.id, ...doc.data()});
       } else {
         messSettings.value = MessSettingsModel(
           messId: _messId!,
@@ -108,19 +106,23 @@ class SettingsController extends GetxController {
       }
 
       // MEMBERS
-      final membersRes = await _supabase
-          .from('members')
-          .select('*, profiles(full_name, email)')
-          .eq('mess_id', _messId!);
+      final membersRes = await _firestore
+          .collection('mess_members')
+          .where('mess_id', isEqualTo: _messId)
+          .get();
 
       debugPrint(
-          '[loadSettings] members count: ${(membersRes as List).length}');
+          '[loadSettings] members count: ${membersRes.docs.length}');
 
-      members.assignAll(
-        membersRes
-            .map((e) => MemberModel.fromJson(e))
-            .toList(),
-      );
+      final membersList = <MemberModel>[];
+      for (var doc in membersRes.docs) {
+          final data = doc.data();
+          final profileDoc = await _firestore.collection('profiles').doc(data['user_id']).get();
+          data['profiles'] = profileDoc.data();
+          membersList.add(MemberModel.fromJson({'id': doc.id, ...data}));
+      }
+
+      members.assignAll(membersList);
 
       // SCHEDULES
       await fetchSchedules();
@@ -137,20 +139,24 @@ class SettingsController extends GetxController {
     try {
       debugPrint('[fetchSchedules] Fetching...');
 
-      final scheduleRes = await _supabase
-          .from('bazar_schedules')
-          .select('*, profiles(full_name)')
-          .eq('mess_id', _messId!)
-          .order('date', ascending: true);
+      final scheduleRes = await _firestore
+          .collection('bazar_schedules')
+          .where('mess_id', isEqualTo: _messId)
+          .orderBy('date', descending: false)
+          .get();
 
       debugPrint(
-          '[fetchSchedules] count: ${(scheduleRes as List).length}');
+          '[fetchSchedules] count: ${scheduleRes.docs.length}');
 
-      schedules.assignAll(
-        scheduleRes
-            .map((e) => BazarScheduleModel.fromJson(e))
-            .toList(),
-      );
+      final scheduleList = <BazarScheduleModel>[];
+      for (var doc in scheduleRes.docs) {
+          final data = doc.data();
+          final profileDoc = await _firestore.collection('profiles').doc(data['user_id']).get();
+          data['profiles'] = profileDoc.data();
+          scheduleList.add(BazarScheduleModel.fromJson({'id': doc.id, ...data}));
+      }
+
+      schedules.assignAll(scheduleList);
     } catch (e) {
       debugPrint('[fetchSchedules] Error: $e');
     }
@@ -166,10 +172,20 @@ class SettingsController extends GetxController {
     try {
       isLoading.value = true;
 
-      await _supabase.from('mess_settings').upsert({
-        'mess_id': _messId,
-        'meal_cutoff_time': newTime,
-      });
+      // Check if setting document exists
+      final settingsQuery = await _firestore.collection('mess_settings').where('mess_id', isEqualTo: _messId).limit(1).get();
+      if (settingsQuery.docs.isNotEmpty) {
+          await _firestore.collection('mess_settings').doc(settingsQuery.docs.first.id).update({
+              'meal_cutoff_time': newTime,
+              'updated_at': FieldValue.serverTimestamp(),
+          });
+      } else {
+          await _firestore.collection('mess_settings').add({
+              'mess_id': _messId,
+              'meal_cutoff_time': newTime,
+              'created_at': FieldValue.serverTimestamp(),
+          });
+      }
 
       messSettings.value = MessSettingsModel(
         messId: _messId!,
@@ -196,10 +212,10 @@ class SettingsController extends GetxController {
     try {
       isLoading.value = true;
 
-      await _supabase
-          .from('members')
-          .update({'role': newRole})
-          .eq('id', memberId);
+      await _firestore
+          .collection('mess_members')
+          .doc(memberId)
+          .update({'role': newRole, 'updated_at': FieldValue.serverTimestamp()});
 
       final index =
           members.indexWhere((m) => m.id == memberId);
@@ -246,10 +262,11 @@ class SettingsController extends GetxController {
 
       debugPrint('[assignBazar] formattedDate: $formattedDate');
 
-      await _supabase.from('bazar_schedules').insert({
+      await _firestore.collection('bazar_schedules').add({
         'mess_id': _messId,
         'user_id': userId,
         'date': formattedDate,
+        'created_at': FieldValue.serverTimestamp(),
       });
 
       await fetchSchedules();
@@ -270,10 +287,10 @@ class SettingsController extends GetxController {
     try {
       isLoading.value = true;
 
-      await _supabase
-          .from('bazar_schedules')
-          .delete()
-          .eq('id', scheduleId);
+      await _firestore
+          .collection('bazar_schedules')
+          .doc(scheduleId)
+          .delete();
 
       schedules
           .removeWhere((s) => s.id == scheduleId);

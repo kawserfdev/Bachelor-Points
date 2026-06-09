@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../data/models/message_model.dart';
 import '../../services/auth_service.dart';
+
 class ChatController extends GetxController {
-  final SupabaseClient _supabase = Supabase.instance.client;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AuthService _authService = Get.find<AuthService>();
 
   final textController = TextEditingController();
@@ -26,7 +27,7 @@ class ChatController extends GetxController {
   }
 
   Future<void> _initializeChat() async {
-    final userId = _authService.currentUser.value?.id;
+    final userId = _authService.currentUser.value?.uid;
     debugPrint('[initializeChat] userId: $userId');
 
     if (userId == null) {
@@ -37,26 +38,24 @@ class ChatController extends GetxController {
     try {
       debugPrint('[initializeChat] Fetching member + profile info');
 
-      final memberData = await _supabase
-          .from('members')
-          .select('mess_id, profiles(full_name)')
-          .eq('user_id', userId)
-          .single();
+      final memberData = await _firestore
+          .collection('mess_members')
+          .where('user_id', isEqualTo: userId)
+          .limit(1)
+          .get();
 
-      debugPrint('[initializeChat] memberData: $memberData');
+      if (memberData.docs.isNotEmpty) {
+        _messId = memberData.docs.first.data()['mess_id'] as String;
 
-      _messId = memberData['mess_id'] as String?;
-      _userName =
-          memberData['profiles']?['full_name'] as String? ?? 'Unknown';
+        final profileDoc = await _firestore.collection('profiles').doc(userId).get();
+        _userName = profileDoc.data()?['full_name'] as String? ?? 'Unknown';
 
-      debugPrint('[initializeChat] messId: $_messId');
-      debugPrint('[initializeChat] userName: $_userName');
+        debugPrint('[initializeChat] messId: $_messId');
+        debugPrint('[initializeChat] userName: $_userName');
 
-      if (_messId != null) {
         _subscribeToMessages(_messId!);
       } else {
         debugPrint('[initializeChat] User not in any mess');
-
         Get.snackbar('Error', 'You are not in a mess.');
       }
     } catch (e) {
@@ -72,16 +71,16 @@ class ChatController extends GetxController {
 
     _messageSubscription?.cancel();
 
-    _messageSubscription = _supabase
-        .from('messages')
-        .stream(primaryKey: ['id'])
-        .eq('mess_id', messId)
-        .order('created_at', ascending: true)
-        .listen((List<Map<String, dynamic>> data) {
-      debugPrint('[messages stream] received: ${data.length} messages');
+    _messageSubscription = _firestore
+        .collection('messages')
+        .where('mess_id', isEqualTo: messId)
+        .orderBy('created_at', descending: false)
+        .snapshots()
+        .listen((QuerySnapshot snapshot) {
+      debugPrint('[messages stream] received: ${snapshot.docs.length} messages');
 
       messages.assignAll(
-        data.map((json) => MessageModel.fromJson(json)).toList(),
+        snapshot.docs.map((doc) => MessageModel.fromJson({'id': doc.id, ...doc.data() as Map<String, dynamic>})).toList(),
       );
 
       _scrollToBottom();
@@ -106,7 +105,7 @@ class ChatController extends GetxController {
       return;
     }
 
-    final userId = _authService.currentUser.value?.id;
+    final userId = _authService.currentUser.value?.uid;
 
     if (userId == null) {
       debugPrint('[sendMessage] userId is null');
@@ -117,13 +116,14 @@ class ChatController extends GetxController {
     debugPrint('[sendMessage] Text cleared (optimistic)');
 
     try {
-      debugPrint('[sendMessage] Sending message to Supabase');
+      debugPrint('[sendMessage] Sending message to Firestore');
 
-      await _supabase.from('messages').insert({
+      await _firestore.collection('messages').add({
         'mess_id': _messId,
         'user_id': userId,
         'sender_name': _userName,
         'message': text,
+        'created_at': FieldValue.serverTimestamp(),
       });
 
       debugPrint('[sendMessage] Message sent successfully');
@@ -156,7 +156,7 @@ class ChatController extends GetxController {
   }
 
   bool isMyMessage(String messageUserId) {
-    final currentUserId = _authService.currentUser.value?.id;
+    final currentUserId = _authService.currentUser.value?.uid;
     final isMine = currentUserId == messageUserId;
 
     debugPrint('[isMyMessage] currentUser: $currentUserId, '

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class RequestModel {
   final String id;
   final String messId;
@@ -29,7 +31,7 @@ class RequestModel {
       type: json['type'] as String,
       status: json['status'] as String,
       details: json['details'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: json['created_at'] is Timestamp ? (json['created_at'] as Timestamp).toDate() : DateTime.parse(json['created_at'] as String),
       userName: json['profiles']?['full_name'] as String?,
     );
   }
