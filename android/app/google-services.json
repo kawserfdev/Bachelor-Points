@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "225274585167",
+    "project_id": "bachelorpoints-solutions",
+    "storage_bucket": "bachelorpoints-solutions.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:225274585167:android:c5e15ce775ce12e1f80a3a",
+        "android_client_info": {
+          "package_name": "com.messmanager.bachelorpoints"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSAhRkB1o7ba2_KhS2Kb7phbmwoIGMtOc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

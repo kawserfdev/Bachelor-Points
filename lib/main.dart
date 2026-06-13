@@ -1,3 +1,4 @@
+import 'package:bachelorpoints/firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -15,10 +16,9 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 //Read Existing Schema then plan it
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // 1. Load Environment Variables
   await dotenv.load(fileName: ".env");
 
@@ -29,7 +29,9 @@ void main() async {
   // NOTE: You need to run `flutterfire configure` to generate firebase_options.dart
   // and pass options: DefaultFirebaseOptions.currentPlatform if you are using it.
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   } catch (e) {
     debugPrint("Firebase init failed (maybe no config provided): $e");
   }
@@ -42,7 +44,7 @@ void main() async {
 
 Future<void> initServices() async {
   debugPrint('Starting services initialization...');
-  
+
   final storageService = StorageService();
   Get.put<StorageService>(storageService);
   try {
@@ -50,7 +52,7 @@ Future<void> initServices() async {
   } catch (e) {
     debugPrint("StorageService init failed: $e");
   }
-  
+
   final authService = AuthService();
   Get.put<AuthService>(authService);
   try {
@@ -66,7 +68,7 @@ Future<void> initServices() async {
   } catch (e) {
     debugPrint("FcmService init failed: $e");
   }
-  
+
   final realtimeService = RealtimeService();
   Get.put<RealtimeService>(realtimeService);
   try {
@@ -74,10 +76,10 @@ Future<void> initServices() async {
   } catch (e) {
     debugPrint("RealtimeService init failed: $e");
   }
-  
+
   // Theme Controller uses GetStorage, so it must be initialized after StorageService
   Get.put(ThemeController());
-  
+
   debugPrint('All services started...');
 }
 
@@ -88,7 +90,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeController = Get.find<ThemeController>();
     final authService = Get.find<AuthService>();
-    
+
     return GetMaterialApp(
       title: 'Bachelor Points',
       theme: AppTheme.lightTheme,
