@@ -94,6 +94,26 @@ class LoginController extends GetxController {
     }
   }
 
+  Future<void> googleSignIn() async {
+    debugPrint('[googleSignIn] Triggered');
+    try {
+      isLoading.value = true;
+      await _authService.signInWithGoogle();
+      debugPrint('[googleSignIn] Success');
+    } catch (e) {
+      debugPrint('[googleSignIn] Error: $e');
+      Get.snackbar(
+        'Google Sign-In Failed',
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   void goToSignup() {
     debugPrint('[Navigation] Go to Signup');
     Get.toNamed(AppRoutes.signup);
