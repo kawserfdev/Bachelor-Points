@@ -27,11 +27,18 @@ class DepositModel {
       messId: json['mess_id'] as String,
       userId: json['user_id'] as String,
       amount: (json['amount'] as num).toDouble(),
-      date: DateTime.parse(json['date'] as String),
+      date: _parseDateTime(json['date']),
       userName: json['profiles']?['full_name'] as String?,
       receivedById: json['received_by'] as String?,
       status: json['status'] as String?,
     );
+  }
+
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) return DateTime.now();
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.parse(value);
+    return (value as dynamic).toDate() as DateTime;
   }
 
   Map<String, dynamic> toJson() {

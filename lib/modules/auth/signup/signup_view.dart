@@ -73,6 +73,42 @@ class SignupView extends GetView<SignupController> {
                       isLoading: controller.isLoading.value,
                       onPressed: controller.signup,
                     )),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Expanded(child: Divider()),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'OR',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Obx(() => OutlinedButton.icon(
+                      onPressed: controller.isLoading.value
+                          ? null
+                          : controller.googleSignIn,
+                      icon: const Icon(Icons.g_mobiledata, size: 28),
+                      label: const Text(
+                        'Continue with Google',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.black87,
+                        side: const BorderSide(color: Colors.grey),
+                        minimumSize: const Size(double.infinity, 48),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    )),
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

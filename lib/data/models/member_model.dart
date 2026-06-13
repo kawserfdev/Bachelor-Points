@@ -25,9 +25,17 @@ class MemberModel {
       messId: json['mess_id'] as String,
       userId: json['user_id'] as String,
       role: json['role'] as String,
-      joinedAt: DateTime.parse(json['joined_at'] as String),
+      joinedAt: _parseDateTime(json['joined_at']),
       fullName: json['profiles']?['full_name'] as String?,
       email: json['profiles']?['email'] as String?,
     );
+  }
+
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) return DateTime.now();
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.parse(value);
+    // Firestore Timestamp
+    return (value as dynamic).toDate() as DateTime;
   }
 }

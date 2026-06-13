@@ -28,13 +28,20 @@ class MealModel {
       id: json['id'] as String,
       messId: json['mess_id'] as String,
       userId: json['user_id'] as String,
-      date: DateTime.parse(json['date'] as String),
+      date: _parseDateTime(json['date']),
       breakfast: (json['breakfast'] as num).toDouble(),
       lunch: (json['lunch'] as num).toDouble(),
       dinner: (json['dinner'] as num).toDouble(),
       status: json['status'] as String,
       userName: json['profiles']?['full_name'] as String?,
     );
+  }
+
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) return DateTime.now();
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.parse(value);
+    return (value as dynamic).toDate() as DateTime;
   }
 
   Map<String, dynamic> toJson() {
