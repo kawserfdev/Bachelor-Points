@@ -12,7 +12,20 @@
           "package_name": "com.messmanager.bachelorpoints"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "225274585167-bqgv2imosa39925v91sh8poj9dkq4ap5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.messmanager.bachelorpoints",
+            "certificate_hash": "98edc8dfa1c3f2b6db1a35ab45d7dc5a908da96c"
+          }
+        },
+        {
+          "client_id": "225274585167-vgsv0cerincn056up0rqiofgj69fiaut.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDSAhRkB1o7ba2_KhS2Kb7phbmwoIGMtOc"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "225274585167-vgsv0cerincn056up0rqiofgj69fiaut.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "225274585167-n36mjsrouotmfstb2dj8h0ee9di2sm4n.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.messmanager.bachelorpoints"
+              }
+            }
+          ]
         }
       }
     }
