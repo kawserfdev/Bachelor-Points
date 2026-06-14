@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'home_controller.dart';
 import '../mess/mess_controller.dart';
-import '../mess/widgets/member_list_view.dart';
 import '../../../core/routes/app_routes.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -13,17 +12,11 @@ class HomeView extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     final messController = Get.find<MessController>();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => _showLogoutDialog(context),
-          )
-        ],
-      ),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Obx(() {
         if (messController.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
@@ -32,148 +25,587 @@ class HomeView extends GetView<HomeController> {
         final mess = messController.activeMess.value;
 
         if (mess == null) {
-          // No Mess State
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.group_off_rounded, size: 80, color: Colors.grey[400]),
-                  const SizedBox(height: 24),
-                  Text(
-                    'You are not in a Mess',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Create a new mess or join an existing one using an invite code.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 48),
-                  ElevatedButton.icon(
-                    onPressed: () => context.push(AppRoutes.createMess),
-                    icon: const Icon(Icons.add),
-                    label: const Text('CREATE MESS'),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  OutlinedButton.icon(
-                    onPressed: () => context.push(AppRoutes.joinMess),
-                    icon: const Icon(Icons.login),
-                    label: const Text('JOIN MESS'),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
+          return _buildNoMessState(context);
         }
 
-        // Active Mess State
-        return Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
-                ),
-              ),
+        return SafeArea(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              // Pull-to-refresh triggers controller re-subscriptions
+              await Future.delayed(const Duration(milliseconds: 300));
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    mess.name,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Text(
-                        'Invite Code: ${mess.inviteCode}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.copy, size: 20),
-                        onPressed: () {
-                          Clipboard.setData(ClipboardData(text: mess.inviteCode));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Invite code copied to clipboard'),
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        },
-                      )
-                    ],
-                  ),
+                  _buildHeader(context, messController, mess.name, mess.inviteCode),
+                  const SizedBox(height: 24),
+                  _buildSummaryCards(context),
+                  const SizedBox(height: 28),
+                  _buildQuickActions(context),
+                  const SizedBox(height: 28),
+                  _buildMembersPreview(context, messController),
                 ],
               ),
             ),
-            const Expanded(
-              child: MemberListView(),
-            ),
-          ],
+          ),
         );
-      }),
-      floatingActionButton: Obx(() {
-        if (messController.activeMess.value != null && !messController.isLoading.value) {
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              FloatingActionButton.extended(
-                heroTag: 'balance_btn',
-                onPressed: () => context.push(AppRoutes.balanceSummary),
-                icon: const Icon(Icons.account_balance),
-                label: const Text('Balances'),
-                backgroundColor: Colors.teal.shade200,
-                foregroundColor: Colors.teal.shade900,
-              ),
-              const SizedBox(height: 16),
-              FloatingActionButton.extended(
-                heroTag: 'expense_btn',
-                onPressed: () => context.push(AppRoutes.expenses),
-                icon: const Icon(Icons.receipt_long),
-                label: const Text('Expenses'),
-                backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
-                foregroundColor: Theme.of(context).colorScheme.onTertiaryContainer,
-              ),
-              const SizedBox(height: 16),
-              FloatingActionButton.extended(
-                heroTag: 'meal_btn',
-                onPressed: () => context.push(AppRoutes.mealEntry),
-                icon: const Icon(Icons.restaurant_menu),
-                label: const Text('Add Meal'),
-              ),
-            ],
-          );
-        }
-        return const SizedBox.shrink();
       }),
     );
   }
 
+  // ──────────────────────────────────────────
+  // No Mess State
+  // ──────────────────────────────────────────
+  Widget _buildNoMessState(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Theme.of(context).colorScheme.primary.withAlpha(26),
+              ),
+              child: Icon(
+                Icons.group_off_rounded,
+                size: 56,
+                color: Theme.of(context).colorScheme.primary.withAlpha(153),
+              ),
+            ),
+            const SizedBox(height: 28),
+            Text(
+              'You are not in a Mess',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Create a new mess or join an existing one\nusing an invite code.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey[600], fontSize: 15),
+            ),
+            const SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => context.push(AppRoutes.createMess),
+                icon: const Icon(Icons.add),
+                label: const Text('Create Mess'),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 54),
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => context.push(AppRoutes.joinMess),
+                icon: const Icon(Icons.login),
+                label: const Text('Join Mess'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 54),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ──────────────────────────────────────────
+  // Header: Greeting + Mess Info + Actions
+  // ──────────────────────────────────────────
+  Widget _buildHeader(
+    BuildContext context,
+    MessController messController,
+    String messName,
+    String inviteCode,
+  ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Top row: Greeting + notification & logout icons
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Hey ${_userGreeting()}! 👋',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Manage your bachelor mess efficiently',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[500],
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Notification bell
+            Container(
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest.withAlpha(128),
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: Icon(
+                  Icons.notifications_outlined,
+                  color: colorScheme.onSurface,
+                ),
+                onPressed: () => context.push(AppRoutes.notifications),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Logout
+            Container(
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest.withAlpha(128),
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: Icon(
+                  Icons.logout_rounded,
+                  color: colorScheme.error.withAlpha(200),
+                ),
+                onPressed: () => _showLogoutDialog(context),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        // Mess info card
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                colorScheme.primary,
+                colorScheme.primary.withAlpha(204),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: colorScheme.primary.withAlpha(77),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      messName,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.vpn_key_rounded,
+                          size: 16,
+                          color: Colors.white70,
+                        ),
+                        const SizedBox(width: 6),
+                        GestureDetector(
+                          onTap: () {
+                            Clipboard.setData(ClipboardData(text: inviteCode));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Invite code copied!'),
+                                behavior: SnackBarBehavior.floating,
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withAlpha(51),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  inviteCode,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                const Icon(
+                                  Icons.copy,
+                                  size: 16,
+                                  color: Colors.white70,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Colors.white.withAlpha(51),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.home_rounded,
+                  color: Colors.white,
+                  size: 26,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _userGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  }
+
+  // ──────────────────────────────────────────
+  // Summary Cards
+  // ──────────────────────────────────────────
+  Widget _buildSummaryCards(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 12),
+          child: Text(
+            'Overview',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: _SummaryCard(
+                icon: Icons.people_rounded,
+                label: 'Members',
+                value: '${controller.memberCount.value}',
+                color: colorScheme.primary,
+                bgColor: colorScheme.primary.withAlpha(26),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _SummaryCard(
+                icon: Icons.shopping_cart_rounded,
+                label: 'Bazar',
+                value: '৳${controller.totalBazarExpense.value.toStringAsFixed(0)}',
+                color: const Color(0xFFFF6B6B),
+                bgColor: const Color(0xFFFF6B6B).withAlpha(26),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _SummaryCard(
+                icon: Icons.restaurant_rounded,
+                label: 'Total Meals',
+                value: controller.myTotalMeals.value.toStringAsFixed(1),
+                color: const Color(0xFFFFA726),
+                bgColor: const Color(0xFFFFA726).withAlpha(26),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _SummaryCard(
+                icon: Icons.calculate_rounded,
+                label: 'Meal Rate',
+                value: '৳${controller.mealRate.value.toStringAsFixed(1)}',
+                color: const Color(0xFF66BB6A),
+                bgColor: const Color(0xFF66BB6A).withAlpha(26),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // ──────────────────────────────────────────
+  // Quick Actions Grid
+  // ──────────────────────────────────────────
+  Widget _buildQuickActions(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final actions = [
+      _QuickAction(
+        icon: Icons.restaurant_menu_rounded,
+        label: 'Add Meal',
+        color: const Color(0xFFFFA726),
+        onTap: () => context.push(AppRoutes.mealEntry),
+      ),
+      _QuickAction(
+        icon: Icons.receipt_long_rounded,
+        label: 'Add Expense',
+        color: const Color(0xFFFF6B6B),
+        onTap: () => context.push(AppRoutes.addExpense),
+      ),
+      _QuickAction(
+        icon: Icons.account_balance_wallet_rounded,
+        label: 'Add Deposit',
+        color: const Color(0xFF42A5F5),
+        onTap: () => context.push(AppRoutes.addDeposit),
+      ),
+      _QuickAction(
+        icon: Icons.bar_chart_rounded,
+        label: 'Balances',
+        color: const Color(0xFF66BB6A),
+        onTap: () => context.push(AppRoutes.balanceSummary),
+      ),
+      _QuickAction(
+        icon: Icons.analytics_rounded,
+        label: 'Report',
+        color: const Color(0xFFAB47BC),
+        onTap: () => context.push(AppRoutes.report),
+      ),
+      _QuickAction(
+        icon: Icons.chat_bubble_rounded,
+        label: 'Chat',
+        color: const Color(0xFF26A69A),
+        onTap: () => context.push(AppRoutes.chat),
+      ),
+      _QuickAction(
+        icon: Icons.checklist_rounded,
+        label: 'Approvals',
+        color: const Color(0xFF78909C),
+        onTap: () => context.push(AppRoutes.approvals),
+      ),
+      _QuickAction(
+        icon: Icons.settings_rounded,
+        label: 'Settings',
+        color: const Color(0xFF5C6BC0),
+        onTap: () => context.push(AppRoutes.settings),
+      ),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 12),
+          child: Text(
+            'Quick Actions',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4,
+            mainAxisSpacing: 14,
+            crossAxisSpacing: 14,
+            childAspectRatio: 0.85,
+          ),
+          itemCount: actions.length,
+          itemBuilder: (context, index) {
+            final action = actions[index];
+            return GestureDetector(
+              onTap: action.onTap,
+              child: Column(
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: action.color.withAlpha(26),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(
+                      action.icon,
+                      color: action.color,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    action.label,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  // ──────────────────────────────────────────
+  // Members Preview (show top 3-4 members)
+  // ──────────────────────────────────────────
+  Widget _buildMembersPreview(BuildContext context, MessController messController) {
+    final theme = Theme.of(context);
+    final members = messController.members;
+    final displayMembers = members.take(4).toList();
+
+    if (members.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: Text(
+                'Members',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            if (members.length > 4)
+              TextButton(
+                onPressed: () {},
+                child: Text(
+                  'See All (${members.length})',
+                  style: TextStyle(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ...displayMembers.map((member) => Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest.withAlpha(80),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: theme.colorScheme.primary,
+                    child: Text(
+                      (member.fullName ?? 'U').substring(0, 1).toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      member.fullName ?? member.email ?? 'Unknown',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withAlpha(26),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      member.role.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )),
+      ],
+    );
+  }
+
+  // ──────────────────────────────────────────
+  // Logout Dialog
+  // ──────────────────────────────────────────
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Logout'),
         content: const Text(
           'Are you sure you want to logout? All local data will be removed from this device.',
@@ -194,4 +626,86 @@ class HomeView extends GetView<HomeController> {
       ),
     );
   }
+}
+
+// ──────────────────────────────────────────
+// Summary Card Widget
+// ──────────────────────────────────────────
+class _SummaryCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+  final Color bgColor;
+
+  const _SummaryCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.bgColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(80),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.black.withAlpha(13),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 22),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[500],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ──────────────────────────────────────────
+// Quick Action Data
+// ──────────────────────────────────────────
+class _QuickAction {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _QuickAction({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 }

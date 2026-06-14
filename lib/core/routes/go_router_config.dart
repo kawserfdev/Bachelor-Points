@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../main.dart';
+import '../../wrapper.dart';
 import '../providers/auth_providers.dart';
 import '../auth/auth_gate.dart';
 import '../../modules/auth/login/login_view.dart';
@@ -13,6 +14,8 @@ import '../../modules/auth/forgot_password/forgot_password_binding.dart';
 import '../../modules/auth/verify_email/verify_email_view.dart';
 import '../../modules/home/home_view.dart';
 import '../../modules/home/home_binding.dart';
+import '../../modules/explore/explore_view.dart';
+import '../../modules/profile/profile_view.dart';
 import '../../modules/mess/create_mess_view.dart';
 import '../../modules/mess/join_mess_view.dart';
 import '../../modules/mess/mess_binding.dart';
@@ -48,6 +51,8 @@ class GoRoutes {
   static const verifyEmail = '/verify-email';
   static const createProfile = '/create-profile';
   static const home = '/home';
+  static const explore = '/explore';
+  static const profile = '/profile';
   static const createMess = '/create-mess';
   static const joinMess = '/join-mess';
   static const mealEntry = '/meal-entry';
@@ -241,14 +246,31 @@ GoRouter buildGoRouter(Ref ref) {
         },
       ),
 
-      // ── Main App Routes (protected) ──
-      GoRoute(
-        path: GoRoutes.home,
-        builder: (context, state) {
-          HomeBinding().dependencies();
-          return const HomeView();
-        },
+      // ── Main App Shell (Bottom Navigation) ──
+      // ShellRoute wraps the 3 tabs so the bottom nav bar persists
+      // across Home, Explore, and Profile screens.
+      ShellRoute(
+        builder: (context, state, child) => AppWrapper(child: child),
+        routes: [
+          GoRoute(
+            path: GoRoutes.home,
+            builder: (context, state) {
+              HomeBinding().dependencies();
+              return const HomeView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.explore,
+            builder: (context, state) => const ExploreView(),
+          ),
+          GoRoute(
+            path: GoRoutes.profile,
+            builder: (context, state) => const ProfileView(),
+          ),
+        ],
       ),
+
+      // ── Feature Routes (pushed on top of shell) ──
       GoRoute(
         path: GoRoutes.createMess,
         builder: (context, state) {
