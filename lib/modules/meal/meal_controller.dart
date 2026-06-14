@@ -1,8 +1,10 @@
+import 'package:bachelorpoints/shared/helpers/firestore_helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/realtime_service.dart';
+import '../../../shared/helpers/navigation_helper.dart';
 import '../mess/mess_controller.dart';
 import '../../../data/models/meal_model.dart';
 import 'dart:async';
@@ -79,11 +81,10 @@ class MealController extends GetxController {
     if (!canEdit) {
       debugPrint('[updatePortion] Edit blocked by canEdit');
 
-      Get.snackbar(
+      AppNavigation.showSnackBar(
         'Cutoff Time Passed',
         'You can no longer edit meals for this date.',
         backgroundColor: Colors.orangeAccent,
-        colorText: Colors.white,
       );
       return;
     }
@@ -158,11 +159,10 @@ class MealController extends GetxController {
     if (!canEdit) {
       debugPrint('[saveMeal] Blocked by canEdit');
 
-      Get.snackbar(
+      AppNavigation.showSnackBar(
         'Cutoff Time Passed',
         'You can no longer edit meals for this date.',
         backgroundColor: Colors.orangeAccent,
-        colorText: Colors.white,
       );
       return;
     }
@@ -175,7 +175,7 @@ class MealController extends GetxController {
     if (userId == null || messId == null) {
       debugPrint('[saveMeal] Missing user/mess');
 
-      Get.snackbar('Error', 'Missing user or mess data.');
+      AppNavigation.showSnackBar('Error', 'Missing user or mess data.');
       return;
     }
 
@@ -198,25 +198,23 @@ class MealController extends GetxController {
         'status': 'Pending',
         'lunch': lunch.value,
         'dinner': dinner.value,
-        'updated_at': FieldValue.serverTimestamp(),
+        'updated_at': FirestoreTime.serverTimestamp,
       }, SetOptions(merge: true));
 
       debugPrint('[saveMeal] Upsert success');
 
-      Get.snackbar(
+      AppNavigation.showSnackBar(
         'Success',
         'Meals updated successfully!',
         backgroundColor: Colors.green,
-        colorText: Colors.white,
       );
     } catch (e) {
       debugPrint('[saveMeal] Error: $e');
 
-      Get.snackbar(
+      AppNavigation.showSnackBar(
         'Error',
         'Failed to save meals: $e',
         backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
       );
     } finally {
       isLoading.value = false;

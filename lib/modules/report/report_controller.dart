@@ -7,6 +7,7 @@ import '../../data/models/expense_model.dart';
 import '../../data/models/deposit_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/pdf_service.dart';
+import '../../shared/helpers/navigation_helper.dart';
 
 class ReportController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -219,7 +220,7 @@ class ReportController extends GetxController {
     } catch (e) {
       debugPrint('[generateReport] Error: $e');
 
-      Get.snackbar('Error', 'Failed to generate report');
+      AppNavigation.showSnackBar('Error', 'Failed to generate report');
     } finally {
       isLoading.value = false;
     }
@@ -240,7 +241,7 @@ class ReportController extends GetxController {
     if (summary.value == null || memberSummaries.isEmpty) {
       debugPrint('[exportToPdf] No data to export');
 
-      Get.snackbar('Warning', 'No data to export');
+      AppNavigation.showSnackBar('Warning', 'No data to export');
       return;
     }
 

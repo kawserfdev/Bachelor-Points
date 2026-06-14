@@ -1,3 +1,4 @@
+import 'package:bachelorpoints/shared/helpers/firestore_helpers.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import '../../data/models/meal_model.dart';
 import '../../data/models/expense_model.dart';
 import '../../data/models/deposit_model.dart';
 import '../../services/auth_service.dart';
+import '../../shared/helpers/navigation_helper.dart';
 import '../mess/mess_controller.dart';
 import '../mess/member_controller.dart';
 
@@ -95,7 +97,7 @@ class RequestController extends GetxController {
 
     } catch (e) {
       debugPrint('[fetchPendingItems] Error: $e');
-      Get.snackbar('Error', 'Failed to load pending items');
+      AppNavigation.showSnackBar('Error', 'Failed to load pending items');
     } finally {
       isLoading.value = false;
     }
@@ -114,17 +116,16 @@ class RequestController extends GetxController {
       await _firestore
           .collection(tableName)
           .doc(id)
-          .update({'status': newStatus, 'updated_at': FieldValue.serverTimestamp()});
+          .update({'status': newStatus, 'updated_at': FirestoreTime.serverTimestamp});
 
-      Get.snackbar('Success', '${type.capitalizeFirst} $newStatus', 
-        backgroundColor: newStatus == 'Approve' ? Colors.green : Colors.red,
-        colorText: Colors.white);
+      AppNavigation.showSnackBar('Success', '${type.capitalizeFirst} $newStatus',
+        backgroundColor: newStatus == 'Approve' ? Colors.green : Colors.red);
       
       // Refresh the lists
       fetchPendingItems();
     } catch (e) {
       debugPrint('[updateItemStatus] Error: $e');
-      Get.snackbar('Error', 'Failed to update $type status');
+      AppNavigation.showSnackBar('Error', 'Failed to update $type status');
     } finally {
       isLoading.value = false;
     }

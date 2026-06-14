@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../balance_controller.dart';
 import '../../../core/routes/app_routes.dart';
@@ -53,7 +54,7 @@ class BalanceSummaryView extends GetView<BalanceController> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Get.toNamed(AppRoutes.addDeposit),
+        onPressed: () => context.push(AppRoutes.addDeposit),
         icon: const Icon(Icons.account_balance_wallet),
         label: const Text('Add Deposit'),
       ),

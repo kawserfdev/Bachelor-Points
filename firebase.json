@@ -1,1 +1,130 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"bachelorpoints-solutions","appId":"1:225274585167:android:c5e15ce775ce12e1f80a3a","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"bachelorpoints-solutions","appId":"1:225274585167:ios:1335e811e10d64ebf80a3a","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"bachelorpoints-solutions","configurations":{"android":"1:225274585167:android:c5e15ce775ce12e1f80a3a","ios":"1:225274585167:ios:1335e811e10d64ebf80a3a","web":"1:225274585167:web:d92fa3afb4c4fa41f80a3a"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "bachelorpoints-solutions",
+          "appId": "1:225274585167:android:c5e15ce775ce12e1f80a3a",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "bachelorpoints-solutions",
+          "appId": "1:225274585167:ios:1335e811e10d64ebf80a3a",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "bachelorpoints-solutions",
+          "configurations": {
+            "android": "1:225274585167:android:c5e15ce775ce12e1f80a3a",
+            "ios": "1:225274585167:ios:1335e811e10d64ebf80a3a",
+            "web": "1:225274585167:web:d92fa3afb4c4fa41f80a3a"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": [
+      {
+        "collectionGroup": "meals",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "user_id", "order": "ASCENDING" },
+          { "fieldPath": "date", "order": "ASCENDING" }
+        ]
+      },
+      {
+        "collectionGroup": "meals",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "date", "order": "ASCENDING" },
+          { "fieldPath": "status", "order": "ASCENDING" }
+        ]
+      },
+      {
+        "collectionGroup": "expenses",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "date", "order": "DESCENDING" },
+          { "fieldPath": "status", "order": "ASCENDING" }
+        ]
+      },
+      {
+        "collectionGroup": "expenses",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "added_by", "order": "ASCENDING" },
+          { "fieldPath": "date", "order": "DESCENDING" }
+        ]
+      },
+      {
+        "collectionGroup": "deposits",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "user_id", "order": "ASCENDING" },
+          { "fieldPath": "date", "order": "ASCENDING" }
+        ]
+      },
+      {
+        "collectionGroup": "deposits",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "date", "order": "ASCENDING" },
+          { "fieldPath": "status", "order": "ASCENDING" }
+        ]
+      },
+      {
+        "collectionGroup": "notifications",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "user_id", "order": "ASCENDING" },
+          { "fieldPath": "is_read", "order": "ASCENDING" },
+          { "fieldPath": "created_at", "order": "DESCENDING" }
+        ]
+      },
+      {
+        "collectionGroup": "messages",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "created_at", "order": "DESCENDING" }
+        ]
+      },
+      {
+        "collectionGroup": "bazar_schedules",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "date", "order": "ASCENDING" }
+        ]
+      },
+      {
+        "collectionGroup": "requests",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "status", "order": "ASCENDING" },
+          { "fieldPath": "created_at", "order": "DESCENDING" }
+        ]
+      },
+      {
+        "collectionGroup": "auth_logs",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "created_at", "order": "DESCENDING" }
+        ]
+      },
+      {
+        "collectionGroup": "members",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "role", "order": "ASCENDING" },
+          { "fieldPath": "joined_at", "order": "ASCENDING" }
+        ]
+      }
+    ]
+  }
+}

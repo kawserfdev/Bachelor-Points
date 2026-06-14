@@ -1,5 +1,6 @@
 import 'package:bachelorpoints/modules/mess/mess_controller.dart';
 import 'package:bachelorpoints/services/auth_service.dart';
+import 'package:bachelorpoints/shared/helpers/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -35,11 +36,10 @@ class MemberController extends GetxController {
 
     if (!isAdmin) {
       debugPrint('[changeRole] Permission denied (not admin)');
-      Get.snackbar(
+      AppNavigation.showSnackBar(
         'Permission Denied',
         'Only admins can change roles.',
         backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
       );
       return;
     }
@@ -55,15 +55,14 @@ class MemberController extends GetxController {
 
       debugPrint('[changeRole] Role updated successfully');
 
-      Get.snackbar('Success', 'Role updated successfully.');
+      AppNavigation.showSnackBar('Success', 'Role updated successfully.');
     } catch (e) {
       debugPrint('[changeRole] Error: $e');
 
-      Get.snackbar(
+      AppNavigation.showSnackBar(
         'Error',
         e.toString(),
         backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
       );
     }
   }
@@ -73,11 +72,10 @@ class MemberController extends GetxController {
 
     if (!isAdmin) {
       debugPrint('[removeMember] Permission denied (not admin)');
-      Get.snackbar(
+      AppNavigation.showSnackBar(
         'Permission Denied',
         'Only admins can remove members.',
         backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
       );
       return;
     }
@@ -92,15 +90,14 @@ class MemberController extends GetxController {
 
       debugPrint('[removeMember] Member removed successfully');
 
-      Get.snackbar('Success', 'Member removed successfully.');
+      AppNavigation.showSnackBar('Success', 'Member removed successfully.');
     } catch (e) {
       debugPrint('[removeMember] Error: $e');
 
-      Get.snackbar(
+      AppNavigation.showSnackBar(
         'Error',
         e.toString(),
         backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
       );
     }
   }

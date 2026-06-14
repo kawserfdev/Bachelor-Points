@@ -1,37 +1,38 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class MessModel {
-  final String id;
-  final String name;
-  final String inviteCode;
-  final String createdBy;
-  final DateTime createdAt;
+part 'mess_model.freezed.dart';
+part 'mess_model.g.dart';
 
-  MessModel({
-    required this.id,
-    required this.name,
-    required this.inviteCode,
-    required this.createdBy,
-    required this.createdAt,
-  });
+@freezed
+abstract class MessModel with _$MessModel {
+  const factory MessModel({
+    required String id,
+    required String name,
+    required String inviteCode,
+    required String createdBy,
+    @Default(0) int memberCount,
+    @Default(true) bool isActive,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) = _MessModel;
 
-  factory MessModel.fromJson(Map<String, dynamic> json) {
-    return MessModel(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      inviteCode: json['invite_code'] as String,
-      createdBy: json['created_by'] as String,
-      createdAt: json['created_at'] is Timestamp ? (json['created_at'] as Timestamp).toDate() : DateTime.parse(json['created_at'] as String),
-    );
+  factory MessModel.fromJson(Map<String, dynamic> json) =>
+      _$MessModelFromJson(json);
+}
+
+extension MessModelFirestore on MessModel {
+  Map<String, dynamic> toFirestore() {
+    final json = toJson();
+    json.remove('id');
+    return json;
   }
+}
 
-  Map<String, dynamic> toJson() {
-    return {
+extension MessModelFirestoreFactory on MessModel {
+  static MessModel fromFirestore(String id, Map<String, dynamic> data) {
+    return MessModel.fromJson({
       'id': id,
-      'name': name,
-      'invite_code': inviteCode,
-      'created_by': createdBy,
-      'created_at': createdAt.toIso8601String(),
-    };
+      ...data,
+    });
   }
 }

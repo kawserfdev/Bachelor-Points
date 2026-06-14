@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../expense_controller.dart';
 import '../widgets/expense_summary_card.dart';
@@ -95,7 +96,7 @@ class ExpenseListView extends GetView<ExpenseController> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Get.toNamed(AppRoutes.addExpense),
+        onPressed: () => context.push(AppRoutes.addExpense),
         icon: const Icon(Icons.add),
         label: const Text('Add Expense'),
       ),

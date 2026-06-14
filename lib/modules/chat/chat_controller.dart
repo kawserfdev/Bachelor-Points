@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'package:bachelorpoints/shared/helpers/firestore_helpers.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../data/models/message_model.dart';
 import '../../services/auth_service.dart';
+import '../../shared/helpers/navigation_helper.dart';
 
 class ChatController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -56,7 +58,7 @@ class ChatController extends GetxController {
         _subscribeToMessages(_messId!);
       } else {
         debugPrint('[initializeChat] User not in any mess');
-        Get.snackbar('Error', 'You are not in a mess.');
+        AppNavigation.showSnackBar('Error', 'You are not in a mess.');
       }
     } catch (e) {
       debugPrint('[initializeChat] Error: $e');
@@ -123,14 +125,14 @@ class ChatController extends GetxController {
         'user_id': userId,
         'sender_name': _userName,
         'message': text,
-        'created_at': FieldValue.serverTimestamp(),
+        'created_at': FirestoreTime.serverTimestamp,
       });
 
       debugPrint('[sendMessage] Message sent successfully');
     } catch (e) {
       debugPrint('[sendMessage] Error: $e');
 
-      Get.snackbar('Error', 'Failed to send message');
+      AppNavigation.showSnackBar('Error', 'Failed to send message');
 
       textController.text = text; // restore
       debugPrint('[sendMessage] Text restored after failure');

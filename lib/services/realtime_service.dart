@@ -26,6 +26,14 @@ class RealtimeService extends GetxService {
         .map((snapshot) => snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList());
   }
 
+  Stream<List<Map<String, dynamic>>> streamDeposits(String messId) {
+    debugPrint('RealtimeService streamDeposits called for messId: $messId');
+    return _firestore.collection('deposits')
+        .where('mess_id', isEqualTo: messId)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList());
+  }
+
   Stream<List<Map<String, dynamic>>> streamMembers(String messId) {
     debugPrint('RealtimeService streamMembers called for messId: $messId');
     return _firestore.collection('mess_members')

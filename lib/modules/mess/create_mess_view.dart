@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'mess_controller.dart';
 import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
+import '../../shared/helpers/navigation_helper.dart';
 
 class CreateMessView extends GetView<MessController> {
   const CreateMessView({super.key});
@@ -42,7 +43,7 @@ class CreateMessView extends GetView<MessController> {
                     if (nameController.text.trim().isNotEmpty) {
                       controller.createMess(nameController.text.trim());
                     } else {
-                      Get.snackbar('Error', 'Please enter a mess name');
+                      AppNavigation.showSnackBar('Error', 'Please enter a mess name');
                     }
                   },
                 )),

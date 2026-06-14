@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'mess_controller.dart';
 import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
+import '../../shared/helpers/navigation_helper.dart';
 
 class JoinMessView extends GetView<MessController> {
   const JoinMessView({super.key});
@@ -42,7 +43,7 @@ class JoinMessView extends GetView<MessController> {
                     if (codeController.text.trim().length == 6) {
                       controller.joinMess(codeController.text.trim());
                     } else {
-                      Get.snackbar('Error', 'Please enter a valid 6-character code');
+                      AppNavigation.showSnackBar('Error', 'Please enter a valid 6-character code');
                     }
                   },
                 )),

@@ -1,0 +1,206 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─────────────────────────────────────────────
+    // HELPER FUNCTIONS
+    // ─────────────────────────────────────────────
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function getRole(messId) {
+      return get(/databases/$(database)/documents/messes/$(messId)/members/$(request.auth.uid)).data.role;
+    }
+
+    function isMessMember(messId) {
+      return exists(/databases/$(database)/documents/messes/$(messId)/members/$(request.auth.uid));
+    }
+
+    function isMessAdmin(messId) {
+      let role = getRole(messId);
+      return role == 'owner' || role == 'manager';
+    }
+
+    function isMessOwner(messId) {
+      return getRole(messId) == 'owner';
+    }
+
+    function isValidRole(role) {
+      return role in ['owner', 'manager', 'member'];
+    }
+
+    function isValidInviteCode(code) {
+      return code is string && code.size() == 6 && code == code.upper();
+    }
+
+    function isValidMealStatus(status) {
+      return status in ['pending', 'approved', 'rejected'];
+    }
+
+    // ─────────────────────────────────────────────
+    // USERS COLLECTION
+    // ─────────────────────────────────────────────
+
+    match /users/{uid} {
+      allow read: if isAuthenticated() && isOwner(uid);
+      allow create: if isAuthenticated() && isOwner(uid);
+      allow update: if isAuthenticated() && isOwner(uid)
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                       .hasOnly(['phone', 'last_login_at']);
+      allow delete: if false;
+
+      match /fcm_tokens/{token} {
+        allow read, write: if isOwner(uid);
+      }
+
+      match /auth_logs/{logId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid);
+        allow update, delete: if false;
+      }
+
+      match /memberships/{messId} {
+        allow read: if isOwner(uid);
+        allow create, update, delete: if false;
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    // USER PROFILES COLLECTION
+    // ─────────────────────────────────────────────
+
+    match /user_profiles/{uid} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(uid);
+      allow update: if isAuthenticated() && isOwner(uid);
+      allow delete: if false;
+    }
+
+    // ─────────────────────────────────────────────
+    // MESSES COLLECTION
+    // ─────────────────────────────────────────────
+
+    match /messes/{messId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+                    && request.resource.data.created_by == request.auth.uid
+                    && isValidInviteCode(request.resource.data.invite_code)
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() >= 3;
+      allow update: if isMessOwner(messId);
+      allow delete: if isMessOwner(messId);
+
+      // ── MEMBERS ──
+      match /members/{userId} {
+        allow read: if isMessMember(messId);
+        allow create: if isMessAdmin(messId)
+                      && request.resource.data.user_id == userId
+                      && isValidRole(request.resource.data.role)
+                      && request.resource.data.role != 'owner';
+        allow update: if isMessAdmin(messId)
+                      && resource.data.role != 'owner'
+                      && isValidRole(request.resource.data.role);
+        allow delete: if isMessOwner(messId) || isOwner(userId);
+      }
+
+      // ── SETTINGS ──
+      match /settings/{configId} {
+        allow read: if isMessMember(messId);
+        allow write: if isMessAdmin(messId);
+      }
+
+      // ── MEALS ──
+      match /meals/{mealId} {
+        allow read: if isMessMember(messId);
+        allow create: if isMessMember(messId)
+                      && request.resource.data.user_id == request.auth.uid;
+        allow update: if (isOwner(request.resource.data.user_id) || isMessAdmin(messId))
+                      && request.resource.data.user_id == resource.data.user_id;
+        allow delete: if false;
+      }
+
+      // ── EXPENSES ──
+      match /expenses/{expenseId} {
+        allow read: if isMessMember(messId);
+        allow create: if isMessMember(messId)
+                      && request.resource.data.added_by == request.auth.uid
+                      && request.resource.data.amount > 0;
+        allow update: if (isOwner(resource.data.added_by) && resource.data.status == 'pending')
+                      || (isMessAdmin(messId)
+                          && request.resource.data.diff(resource.data).affectedKeys()
+                             .hasOnly(['status', 'reviewed_by', 'updated_at']));
+        allow delete: if false;
+      }
+
+      // ── DEPOSITS ──
+      match /deposits/{depositId} {
+        allow read: if isMessMember(messId);
+        allow create: if isMessMember(messId)
+                      && request.resource.data.user_id == request.auth.uid
+                      && request.resource.data.amount > 0;
+        allow update: if isMessAdmin(messId)
+                      && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status', 'updated_at']);
+        allow delete: if false;
+      }
+
+      // ── BAZAR SCHEDULES ──
+      match /bazar_schedules/{scheduleId} {
+        allow read: if isMessMember(messId);
+        allow write: if isMessAdmin(messId);
+      }
+
+      // ── REQUESTS ──
+      match /requests/{requestId} {
+        allow read: if isMessMember(messId);
+        allow create: if isMessMember(messId)
+                      && request.resource.data.user_id == request.auth.uid;
+        allow update: if isMessAdmin(messId)
+                      && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status', 'reviewed_by', 'reviewed_at']);
+        allow delete: if false;
+      }
+
+      // ── MESSAGES ──
+      match /messages/{messageId} {
+        allow read: if isMessMember(messId);
+        allow create: if isMessMember(messId)
+                      && request.resource.data.user_id == request.auth.uid
+                      && request.resource.data.message.size() <= 2000;
+        allow update, delete: if false;
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    // NOTIFICATIONS COLLECTION
+    // ─────────────────────────────────────────────
+
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated()
+                  && resource.data.user_id == request.auth.uid;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated()
+                    && resource.data.user_id == request.auth.uid
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                       .hasOnly(['is_read', 'read_at']);
+      allow delete: if isAuthenticated()
+                    && resource.data.user_id == request.auth.uid;
+    }
+
+    // ─────────────────────────────────────────────
+    // SUBSCRIPTIONS COLLECTION
+    // ─────────────────────────────────────────────
+
+    match /subscriptions/{subscriptionId} {
+      allow read: if isAuthenticated()
+                  && resource.data.user_id == request.auth.uid;
+      allow create, update, delete: if false;
+    }
+  }
+}

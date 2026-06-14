@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../core/routes/app_routes.dart';
 
 class AuthService extends GetxService {
   FirebaseAuth get _auth => FirebaseAuth.instance;
@@ -15,41 +14,44 @@ class AuthService extends GetxService {
     debugPrint('AuthService init called');
     currentUser.value = _auth.currentUser;
 
-    _auth.authStateChanges().listen((User? user) async {
+    // Keep auth state listener to update currentUser for backward
+    // compatibility with existing GetX controllers that read it.
+    // Navigation is handled by GoRouter (see go_router_config.dart).
+    _auth.authStateChanges().listen((User? user) {
       currentUser.value = user;
-
-      if (user != null) {
-        await _handleSignIn(user);
-      } else {
-        Get.offAllNamed(AppRoutes.login);
-      }
     });
 
     return this;
   }
 
-  Future<void> _handleSignIn(User user) async {
+  /// Exposed for GoRouter redirect to check profile existence during migration.
+  Future<bool> hasProfile(String uid) async {
     try {
-      debugPrint('Checking profile for user: ${user.uid}');
-      final doc = await _firestore.collection('profiles').doc(user.uid).get();
-
-      if (!doc.exists) {
-        debugPrint('No profile found, routing to createProfile');
-        Get.offAllNamed(AppRoutes.createProfile);
-      } else {
-        debugPrint('Profile found, routing to home');
-        Get.offAllNamed(AppRoutes.home);
-      }
+      final doc = await _firestore.collection('profiles').doc(uid).get();
+      return doc.exists;
     } catch (e) {
-      debugPrint('Error checking profile during sign in: $e');
-      Get.offAllNamed(AppRoutes.home);
+      debugPrint('Error checking profile: $e');
+      return false;
     }
   }
 
   Future<void> signIn(String email, String password) async {
     debugPrint('AuthService signIn called for email: $email');
     try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      final credential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // If the user's email is not yet verified, send a new verification email
+      // and let GoRouter redirect them to the verify-email screen.
+      if (credential.user != null && !credential.user!.emailVerified) {
+        await credential.user!.sendEmailVerification();
+        debugPrint('Verification email re-sent to unverified user: $email');
+      }else{
+        
+        debugPrint('User signed in successfully: $email');
+      }
     } on FirebaseAuthException catch (e) {
       throw e.message ?? 'Authentication failed';
     } catch (e) {
@@ -68,6 +70,12 @@ class AuthService extends GetxService {
       if (name != null && credential.user != null) {
         await credential.user!.updateDisplayName(name);
         // Do not create profile here, it will be done in CreateProfileController
+      }
+
+      // Send verification email
+      if (credential.user != null && !credential.user!.emailVerified) {
+        await credential.user!.sendEmailVerification();
+        debugPrint('Verification email sent to: $email');
       }
     } on FirebaseAuthException catch (e) {
       throw e.message ?? 'Sign up failed';

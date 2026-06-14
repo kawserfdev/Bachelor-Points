@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../shared/helpers/navigation_helper.dart';
 
 class FcmService extends GetxService {
   FirebaseMessaging get _fcm => FirebaseMessaging.instance;
@@ -38,7 +39,7 @@ class FcmService extends GetxService {
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (message.notification != null) {
-        Get.snackbar(
+        AppNavigation.showSnackBar(
           message.notification!.title ?? 'New Notification',
           message.notification!.body ?? '',
         );

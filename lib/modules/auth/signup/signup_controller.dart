@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../services/auth_service.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../../../../shared/helpers/navigation_helper.dart';
 
 class SignupController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
@@ -99,16 +100,14 @@ class SignupController extends GetxController {
 
       debugPrint('[signup] Signup success');
 
-      Get.offAllNamed(AppRoutes.verifyEmail);
+      AppNavigation.go(AppRoutes.verifyEmail);
     } catch (e) {
       debugPrint('[signup] Error: $e');
 
-      Get.snackbar(
+      AppNavigation.showSnackBar(
         'Signup Failed',
         e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
       );
     } finally {
       isLoading.value = false;
@@ -122,14 +121,15 @@ class SignupController extends GetxController {
       isLoading.value = true;
       await _authService.signInWithGoogle();
       debugPrint('[googleSignIn] Success');
+
+      // Navigate to home; GoRouter redirect will handle profile check
+      AppNavigation.go('/home');
     } catch (e) {
       debugPrint('[googleSignIn] Error: $e');
-      Get.snackbar(
+      AppNavigation.showSnackBar(
         'Google Sign-In Failed',
         e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
       );
     } finally {
       isLoading.value = false;
@@ -138,6 +138,6 @@ class SignupController extends GetxController {
 
   void goToLogin() {
     debugPrint('[Navigation] Back to Login');
-    Get.back();
+    AppNavigation.back();
   }
 }

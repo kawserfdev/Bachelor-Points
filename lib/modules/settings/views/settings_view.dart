@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../settings_controller.dart';
 import '../../../core/theme/theme_controller.dart';
+import '../../../shared/helpers/navigation_helper.dart';
 
 class SettingsView extends GetView<SettingsController> {
   const SettingsView({super.key});
@@ -147,14 +148,14 @@ class SettingsView extends GetView<SettingsController> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
             ElevatedButton(
               onPressed: () {
                 if (selectedUserId != null && selectedDate != null) {
-                  Get.back();
+                  Navigator.of(context).pop();
                   controller.assignBazarDuty(selectedUserId!, selectedDate!);
                 } else {
-                  Get.snackbar('Error', 'Please select a member and date');
+                  AppNavigation.showSnackBar('Error', 'Please select a member and date');
                 }
               },
               child: const Text('Assign'),
