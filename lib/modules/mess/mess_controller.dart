@@ -1,3 +1,4 @@
+import 'package:bachelorpoints/shared/helpers/firestore_helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -5,6 +6,7 @@ import '../../../data/models/mess_model.dart';
 import '../../../data/models/member_model.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/realtime_service.dart';
+import '../../../shared/helpers/navigation_helper.dart';
 import 'dart:math';
 import 'dart:async';
 
@@ -70,8 +72,24 @@ class MessController extends GetxController {
         .get();
 
     if (doc.exists) {
-      activeMess.value = MessModel.fromJson({'id': doc.id, ...doc.data() as Map<String, dynamic>});
+      final rawData = doc.data()!;
+      final data = _convertFirestoreTimestamps(rawData);
+      activeMess.value = MessModel.fromJson({'id': doc.id, ...data});
     }
+  }
+
+  /// Converts Firestore [Timestamp] values in a map to ISO 8601 strings
+  /// so that freezed-generated [fromJson] (which expects String for dates)
+  /// can parse them without a type-cast error.
+  Map<String, dynamic> _convertFirestoreTimestamps(Map<String, dynamic> raw) {
+    final converted = Map<String, dynamic>.from(raw);
+    for (final key in ['created_at', 'updated_at']) {
+      final value = converted[key];
+      if (value is Timestamp) {
+        converted[key] = value.toDate().toIso8601String();
+      }
+    }
+    return converted;
   }
 
   void _listenToMembers(String messId) {
@@ -122,6 +140,7 @@ class MessController extends GetxController {
   }
 
   Future<void> createMess(String name) async {
+   
     final userId = _authService.currentUser.value?.uid;
     if (userId == null) return;
 
@@ -133,7 +152,7 @@ class MessController extends GetxController {
         'name': name,
         'invite_code': inviteCode,
         'created_by': userId,
-        'created_at': FieldValue.serverTimestamp(),
+        'created_at': FirestoreTime.serverTimestamp,
       });
 
       final messId = docRef.id;
@@ -142,17 +161,17 @@ class MessController extends GetxController {
         'mess_id': messId,
         'user_id': userId,
         'role': 'admin',
-        'joined_at': FieldValue.serverTimestamp(),
+        'joined_at': FirestoreTime.serverTimestamp,
       });
 
       await _loadMessDetails(messId);
       _listenToMembers(messId);
 
-      Get.back();
-      Get.snackbar('Success', 'Mess created successfully!');
+      AppNavigation.back();
+      AppNavigation.showSnackBar('Success', 'Mess created successfully!');
     } catch (e) {
       debugPrint('[createMess] Error: $e');
-      Get.snackbar('Error', e.toString());
+      AppNavigation.showSnackBar('Error', e.toString());
     } finally {
       isLoading.value = false;
     }
@@ -192,17 +211,17 @@ class MessController extends GetxController {
         'mess_id': messId,
         'user_id': userId,
         'role': 'viewer',
-        'joined_at': FieldValue.serverTimestamp(),
+        'joined_at': FirestoreTime.serverTimestamp,
       });
 
       await _loadMessDetails(messId);
       _listenToMembers(messId);
 
-      Get.back();
-      Get.snackbar('Success', 'Joined mess successfully!');
+      AppNavigation.back();
+      AppNavigation.showSnackBar('Success', 'Joined mess successfully!');
     } catch (e) {
       debugPrint('[joinMess] Error: $e');
-      Get.snackbar('Error', e.toString());
+      AppNavigation.showSnackBar('Error', e.toString());
     } finally {
       isLoading.value = false;
     }

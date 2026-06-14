@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../services/auth_service.dart';
+import '../../../../shared/helpers/navigation_helper.dart';
+
 class ForgotPasswordController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
 
@@ -55,22 +57,18 @@ class ForgotPasswordController extends GetxController {
 
       isSuccess.value = true;
 
-      Get.snackbar(
+      AppNavigation.showSnackBar(
         'Link Sent',
         'Password reset link has been sent to your email.',
-        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green,
-        colorText: Colors.white,
       );
     } catch (e) {
       debugPrint('[resetPassword] Error: $e');
 
-      Get.snackbar(
+      AppNavigation.showSnackBar(
         'Error',
         e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
       );
     } finally {
       isLoading.value = false;

@@ -1,8 +1,10 @@
+import 'package:bachelorpoints/shared/helpers/firestore_helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../services/auth_service.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../shared/helpers/navigation_helper.dart';
 
 class CreateProfileController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -46,7 +48,7 @@ class CreateProfileController extends GetxController {
 
     final user = _authService.currentUser.value;
     if (user == null) {
-      Get.snackbar('Error', 'User not found. Please login again.');
+      AppNavigation.showSnackBar('Error', 'User not found. Please login again.');
       return;
     }
 
@@ -58,7 +60,7 @@ class CreateProfileController extends GetxController {
         'email': user.email,
         'full_name': nameController.text.trim(),
         'phone_number': phoneController.text.trim(),
-        'updated_at': FieldValue.serverTimestamp(),
+        'updated_at': FirestoreTime.serverTimestamp,
       });
 
       // Also update Firebase Auth display name if not already
@@ -68,15 +70,13 @@ class CreateProfileController extends GetxController {
 
       debugPrint('[CreateProfile] Profile saved successfully');
       
-      Get.offAllNamed(AppRoutes.home);
+      AppNavigation.go(AppRoutes.home);
     } catch (e) {
       debugPrint('[CreateProfile] Error saving profile: $e');
-      Get.snackbar(
+      AppNavigation.showSnackBar(
         'Error',
         'Failed to save profile: $e',
-        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
       );
     } finally {
       isLoading.value = false;

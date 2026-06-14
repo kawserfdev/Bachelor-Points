@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'home_controller.dart';
 import '../mess/mess_controller.dart';
 import '../mess/widgets/member_list_view.dart';
@@ -19,7 +20,7 @@ class HomeView extends GetView<HomeController> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: controller.logout,
+            onPressed: () => _showLogoutDialog(context),
           )
         ],
       ),
@@ -52,7 +53,7 @@ class HomeView extends GetView<HomeController> {
                   ),
                   const SizedBox(height: 48),
                   ElevatedButton.icon(
-                    onPressed: () => Get.toNamed(AppRoutes.createMess),
+                    onPressed: () => context.push(AppRoutes.createMess),
                     icon: const Icon(Icons.add),
                     label: const Text('CREATE MESS'),
                     style: ElevatedButton.styleFrom(
@@ -61,7 +62,7 @@ class HomeView extends GetView<HomeController> {
                   ),
                   const SizedBox(height: 16),
                   OutlinedButton.icon(
-                    onPressed: () => Get.toNamed(AppRoutes.joinMess),
+                    onPressed: () => context.push(AppRoutes.joinMess),
                     icon: const Icon(Icons.login),
                     label: const Text('JOIN MESS'),
                     style: OutlinedButton.styleFrom(
@@ -112,8 +113,12 @@ class HomeView extends GetView<HomeController> {
                         icon: const Icon(Icons.copy, size: 20),
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: mess.inviteCode));
-                          Get.snackbar('Copied', 'Invite code copied to clipboard',
-                              snackPosition: SnackPosition.BOTTOM);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Invite code copied to clipboard'),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
                         },
                       )
                     ],
@@ -135,7 +140,7 @@ class HomeView extends GetView<HomeController> {
             children: [
               FloatingActionButton.extended(
                 heroTag: 'balance_btn',
-                onPressed: () => Get.toNamed(AppRoutes.balanceSummary),
+                onPressed: () => context.push(AppRoutes.balanceSummary),
                 icon: const Icon(Icons.account_balance),
                 label: const Text('Balances'),
                 backgroundColor: Colors.teal.shade200,
@@ -144,7 +149,7 @@ class HomeView extends GetView<HomeController> {
               const SizedBox(height: 16),
               FloatingActionButton.extended(
                 heroTag: 'expense_btn',
-                onPressed: () => Get.toNamed(AppRoutes.expenses),
+                onPressed: () => context.push(AppRoutes.expenses),
                 icon: const Icon(Icons.receipt_long),
                 label: const Text('Expenses'),
                 backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
@@ -153,7 +158,7 @@ class HomeView extends GetView<HomeController> {
               const SizedBox(height: 16),
               FloatingActionButton.extended(
                 heroTag: 'meal_btn',
-                onPressed: () => Get.toNamed(AppRoutes.mealEntry),
+                onPressed: () => context.push(AppRoutes.mealEntry),
                 icon: const Icon(Icons.restaurant_menu),
                 label: const Text('Add Meal'),
               ),
@@ -162,6 +167,31 @@ class HomeView extends GetView<HomeController> {
         }
         return const SizedBox.shrink();
       }),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text(
+          'Are you sure you want to logout? All local data will be removed from this device.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              controller.logout();
+            },
+            child: const Text('Logout', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
     );
   }
 }

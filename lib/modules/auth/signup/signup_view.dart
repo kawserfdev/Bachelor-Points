@@ -1,11 +1,114 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'signup_controller.dart';
-import '../../../../shared/widgets/custom_text_field.dart';
-import '../../../../shared/widgets/primary_button.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-class SignupView extends GetView<SignupController> {
+import '../../../core/providers/auth_providers.dart';
+import '../../../core/routes/go_router_config.dart';
+import '../../../shared/widgets/custom_text_field.dart';
+import '../../../shared/widgets/primary_button.dart';
+
+/// Signup view migrated from GetX to Riverpod + GoRouter
+class SignupView extends ConsumerStatefulWidget {
   const SignupView({super.key});
+
+  @override
+  ConsumerState<SignupView> createState() => _SignupViewState();
+}
+
+class _SignupViewState extends ConsumerState<SignupView> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  String? _validateName(String? value) {
+    if (value == null || value.isEmpty) return 'Name is required';
+    return null;
+  }
+
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) return 'Email is required';
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(value)) return 'Please enter a valid email';
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) return 'Password is required';
+    if (value.length < 6) return 'Password must be at least 6 characters';
+    return null;
+  }
+
+  Future<void> _signup() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    setState(() => _isLoading = true);
+
+    try {
+      final authService = ref.read(appAuthServiceProvider);
+      await authService.signUpWithEmail(
+        email: email,
+        password: password,
+        displayName: name,
+      );
+
+      if (mounted) {
+        context.go(GoRoutes.verifyEmail);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _googleSignIn() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final authService = ref.read(appAuthServiceProvider);
+      await authService.signInWithGoogle();
+
+      // Navigate to splash to trigger the GoRouter redirect,
+      // which checks auth state + profile and routes accordingly.
+      if (mounted) {
+        context.go(GoRoutes.splash);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,14 +118,14 @@ class SignupView extends GetView<SignupController> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Theme.of(context).primaryColor),
-          onPressed: () => Get.back(),
+          onPressed: () => context.pop(),
         ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Form(
-            key: controller.formKey,
+            key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -47,32 +150,32 @@ class SignupView extends GetView<SignupController> {
                   label: 'Full Name',
                   hint: 'Enter your full name',
                   prefixIcon: Icons.person_outline,
-                  controller: controller.nameController,
-                  validator: controller.validateName,
+                  controller: _nameController,
+                  validator: _validateName,
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
                   label: 'Email',
                   hint: 'Enter your email',
                   prefixIcon: Icons.email_outlined,
-                  controller: controller.emailController,
-                  validator: controller.validateEmail,
+                  controller: _emailController,
+                  validator: _validateEmail,
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
                   label: 'Password',
                   hint: 'Create a password',
                   prefixIcon: Icons.lock_outline,
-                  controller: controller.passwordController,
+                  controller: _passwordController,
                   isPassword: true,
-                  validator: controller.validatePassword,
+                  validator: _validatePassword,
                 ),
                 const SizedBox(height: 40),
-                Obx(() => PrimaryButton(
-                      text: 'SIGN UP',
-                      isLoading: controller.isLoading.value,
-                      onPressed: controller.signup,
-                    )),
+                PrimaryButton(
+                  text: 'SIGN UP',
+                  isLoading: _isLoading,
+                  onPressed: _signup,
+                ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -91,24 +194,22 @@ class SignupView extends GetView<SignupController> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Obx(() => OutlinedButton.icon(
-                      onPressed: controller.isLoading.value
-                          ? null
-                          : controller.googleSignIn,
-                      icon: const Icon(Icons.g_mobiledata, size: 28),
-                      label: const Text(
-                        'Continue with Google',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.black87,
-                        side: const BorderSide(color: Colors.grey),
-                        minimumSize: const Size(double.infinity, 48),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    )),
+                OutlinedButton.icon(
+                  onPressed: _isLoading ? null : _googleSignIn,
+                  icon: const Icon(Icons.g_mobiledata, size: 28),
+                  label: const Text(
+                    'Continue with Google',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.black87,
+                    side: const BorderSide(color: Colors.grey),
+                    minimumSize: const Size(double.infinity, 48),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -118,7 +219,7 @@ class SignupView extends GetView<SignupController> {
                       style: TextStyle(color: Colors.grey[700]),
                     ),
                     TextButton(
-                      onPressed: controller.goToLogin,
+                      onPressed: () => context.pop(),
                       child: const Text(
                         'Login',
                         style: TextStyle(fontWeight: FontWeight.bold),

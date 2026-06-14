@@ -1,8 +1,10 @@
+import 'package:bachelorpoints/shared/helpers/firestore_helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/realtime_service.dart';
+import '../../../shared/helpers/navigation_helper.dart';
 import '../mess/mess_controller.dart';
 import '../../../data/models/expense_model.dart';
 import 'dart:async';
@@ -171,19 +173,19 @@ class ExpenseController extends GetxController {
         'category': category,
         'note': description?.trim(),
         'date': dateStr,
-        'created_at': FieldValue.serverTimestamp(),
+        'created_at': FirestoreTime.serverTimestamp,
       });
 
       debugPrint('[addExpense] Expense inserted successfully');
 
-      Get.back();
-      Get.snackbar('Success', 'Expense added successfully',
-          backgroundColor: Colors.green, colorText: Colors.white);
+      AppNavigation.back();
+      AppNavigation.showSnackBar('Success', 'Expense added successfully',
+          backgroundColor: Colors.green);
     } catch (e) {
       debugPrint('[addExpense] Error: $e');
 
-      Get.snackbar('Error', 'Failed to add expense: $e',
-          backgroundColor: Colors.redAccent, colorText: Colors.white);
+      AppNavigation.showSnackBar('Error', 'Failed to add expense: $e',
+          backgroundColor: Colors.redAccent);
     } finally {
       isLoading.value = false;
       debugPrint('[addExpense] Loading finished');

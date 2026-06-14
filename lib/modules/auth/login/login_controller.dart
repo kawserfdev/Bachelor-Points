@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../services/auth_service.dart';
-import '../../../core/routes/app_routes.dart';
+import '../../../shared/helpers/navigation_helper.dart';
+
 class LoginController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
 
@@ -10,7 +11,7 @@ class LoginController extends GetxController {
   final passwordController = TextEditingController();
 
   final isLoading = false.obs;
-  
+
   @override
   void onInit() {
     super.onInit();
@@ -75,18 +76,18 @@ class LoginController extends GetxController {
 
       debugPrint('[login] Login success');
 
-      // Optional (if navigation not handled inside AuthService)
-      // Get.offAllNamed(AppRoutes.home);
+      // Navigate to home; GoRouter redirect will verify the user is
+      // authenticated/email-verified and route to /create-profile if
+      // no profile exists yet.
+      AppNavigation.go('/home');
 
     } catch (e) {
       debugPrint('[login] Error: $e');
 
-      Get.snackbar(
+      AppNavigation.showSnackBar(
         'Login Failed',
         e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
       );
     } finally {
       isLoading.value = false;
@@ -100,14 +101,15 @@ class LoginController extends GetxController {
       isLoading.value = true;
       await _authService.signInWithGoogle();
       debugPrint('[googleSignIn] Success');
+
+      // Navigate to home; GoRouter redirect will handle profile check
+      AppNavigation.go('/home');
     } catch (e) {
       debugPrint('[googleSignIn] Error: $e');
-      Get.snackbar(
+      AppNavigation.showSnackBar(
         'Google Sign-In Failed',
         e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
       );
     } finally {
       isLoading.value = false;
@@ -116,11 +118,11 @@ class LoginController extends GetxController {
 
   void goToSignup() {
     debugPrint('[Navigation] Go to Signup');
-    Get.toNamed(AppRoutes.signup);
+    AppNavigation.to('/signup');
   }
 
   void goToForgotPassword() {
     debugPrint('[Navigation] Go to ForgotPassword');
-    Get.toNamed(AppRoutes.forgotPassword);
+    AppNavigation.to('/forgot-password');
   }
 }

@@ -1,11 +1,103 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'login_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../core/providers/auth_providers.dart';
+import '../../../core/routes/go_router_config.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 
-class LoginView extends GetView<LoginController> {
+/// Login view migrated from GetX to Riverpod + GoRouter
+class LoginView extends ConsumerStatefulWidget {
   const LoginView({super.key});
+
+  @override
+  ConsumerState<LoginView> createState() => _LoginViewState();
+}
+
+class _LoginViewState extends ConsumerState<LoginView> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) return 'Email is required';
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(value)) return 'Please enter a valid email';
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) return 'Password is required';
+    return null;
+  }
+
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    setState(() => _isLoading = true);
+
+    try {
+      final authService = ref.read(appAuthServiceProvider);
+      await authService.signInWithEmail(email: email, password: password);
+
+      // Navigate to splash to trigger the GoRouter redirect,
+      // which checks auth state + profile and routes accordingly.
+      if (mounted) {
+        context.go(GoRoutes.splash);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _googleSignIn() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final authService = ref.read(appAuthServiceProvider);
+      await authService.signInWithGoogle();
+
+      // Navigate to splash to trigger the GoRouter redirect,
+      // which checks auth state + profile and routes accordingly.
+      if (mounted) {
+        context.go(GoRoutes.splash);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +106,7 @@ class LoginView extends GetView<LoginController> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Form(
-            key: controller.formKey,
+            key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -45,32 +137,32 @@ class LoginView extends GetView<LoginController> {
                   label: 'Email',
                   hint: 'Enter your email',
                   prefixIcon: Icons.email_outlined,
-                  controller: controller.emailController,
-                  validator: controller.validateEmail,
+                  controller: _emailController,
+                  validator: _validateEmail,
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
                   label: 'Password',
                   hint: 'Enter your password',
                   prefixIcon: Icons.lock_outline,
-                  controller: controller.passwordController,
+                  controller: _passwordController,
                   isPassword: true,
-                  validator: controller.validatePassword,
+                  validator: _validatePassword,
                 ),
                 const SizedBox(height: 8),
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: controller.goToForgotPassword,
+                    onPressed: () => context.push(GoRoutes.forgotPassword),
                     child: const Text('Forgot Password?'),
                   ),
                 ),
                 const SizedBox(height: 24),
-                Obx(() => PrimaryButton(
-                      text: 'LOGIN',
-                      isLoading: controller.isLoading.value,
-                      onPressed: controller.login,
-                    )),
+                PrimaryButton(
+                  text: 'LOGIN',
+                  isLoading: _isLoading,
+                  onPressed: _login,
+                ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -89,30 +181,22 @@ class LoginView extends GetView<LoginController> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Obx(() => OutlinedButton.icon(
-                      onPressed: controller.isLoading.value
-                          ? null
-                          : controller.googleSignIn,
-                      icon: Image.asset(
-                        'assets/google_logo.png',
-                        height: 24,
-                        width: 24,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.g_mobiledata, size: 28),
-                      ),
-                      label: const Text(
-                        'Continue with Google',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor:  Theme.of(context).secondaryHeaderColor,
-                        side: const BorderSide(color: Colors.grey),
-                        minimumSize: const Size(double.infinity, 48),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    )),
+                OutlinedButton.icon(
+                  onPressed: _isLoading ? null : _googleSignIn,
+                  icon: const Icon(Icons.g_mobiledata, size: 28),
+                  label: const Text(
+                    'Continue with Google',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Theme.of(context).secondaryHeaderColor,
+                    side: const BorderSide(color: Colors.grey),
+                    minimumSize: const Size(double.infinity, 48),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -122,7 +206,7 @@ class LoginView extends GetView<LoginController> {
                       style: TextStyle(color: Colors.grey[700]),
                     ),
                     TextButton(
-                      onPressed: controller.goToSignup,
+                      onPressed: () => context.push(GoRoutes.signup),
                       child: const Text(
                         'Sign Up',
                         style: TextStyle(fontWeight: FontWeight.bold),

@@ -1,3 +1,4 @@
+import 'package:bachelorpoints/shared/helpers/firestore_helpers.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +6,8 @@ import '../../data/models/mess_settings_model.dart';
 import '../../data/models/bazar_schedule_model.dart';
 import '../../data/models/member_model.dart';
 import '../../services/auth_service.dart';
+import '../../services/storage_service.dart';
+import '../../shared/helpers/navigation_helper.dart';
 
 class SettingsController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -67,7 +70,7 @@ class SettingsController extends GetxController {
       } else {
         debugPrint('[checkAdmin] Access denied');
 
-        Get.snackbar(
+        AppNavigation.showSnackBar(
           'Access Denied',
           'You do not have admin permissions.',
         );
@@ -177,13 +180,13 @@ class SettingsController extends GetxController {
       if (settingsQuery.docs.isNotEmpty) {
           await _firestore.collection('mess_settings').doc(settingsQuery.docs.first.id).update({
               'meal_cutoff_time': newTime,
-              'updated_at': FieldValue.serverTimestamp(),
+              'updated_at': FirestoreTime.serverTimestamp,
           });
       } else {
           await _firestore.collection('mess_settings').add({
               'mess_id': _messId,
               'meal_cutoff_time': newTime,
-              'created_at': FieldValue.serverTimestamp(),
+              'created_at': FirestoreTime.serverTimestamp,
           });
       }
 
@@ -194,11 +197,11 @@ class SettingsController extends GetxController {
 
       debugPrint('[updateCutoff] success');
 
-      Get.snackbar('Success', 'Cutoff time updated to $newTime');
+      AppNavigation.showSnackBar('Success', 'Cutoff time updated to $newTime');
     } catch (e) {
       debugPrint('[updateCutoff] Error: $e');
 
-      Get.snackbar('Error', 'Failed to update time');
+      AppNavigation.showSnackBar('Error', 'Failed to update time');
     } finally {
       isLoading.value = false;
     }
@@ -215,7 +218,7 @@ class SettingsController extends GetxController {
       await _firestore
           .collection('mess_members')
           .doc(memberId)
-          .update({'role': newRole, 'updated_at': FieldValue.serverTimestamp()});
+          .update({'role': newRole, 'updated_at': FirestoreTime.serverTimestamp});
 
       final index =
           members.indexWhere((m) => m.id == memberId);
@@ -236,13 +239,13 @@ class SettingsController extends GetxController {
         );
 
         debugPrint('[changeRole] local updated');
-      }
-
-      Get.snackbar('Success', 'Role updated to $newRole');
-    } catch (e) {
-      debugPrint('[changeRole] Error: $e');
-
-      Get.snackbar('Error', 'Failed to update role');
+        }
+  
+        AppNavigation.showSnackBar('Success', 'Role updated to $newRole');
+      } catch (e) {
+        debugPrint('[changeRole] Error: $e');
+  
+        AppNavigation.showSnackBar('Error', 'Failed to update role');
     } finally {
       isLoading.value = false;
     }
@@ -266,16 +269,16 @@ class SettingsController extends GetxController {
         'mess_id': _messId,
         'user_id': userId,
         'date': formattedDate,
-        'created_at': FieldValue.serverTimestamp(),
+        'created_at': FirestoreTime.serverTimestamp,
       });
 
       await fetchSchedules();
 
-      Get.snackbar('Success', 'Bazar duty assigned');
+      AppNavigation.showSnackBar('Success', 'Bazar duty assigned');
     } catch (e) {
       debugPrint('[assignBazar] Error: $e');
 
-      Get.snackbar('Error', 'Failed to assign bazar duty');
+      AppNavigation.showSnackBar('Error', 'Failed to assign bazar duty');
     } finally {
       isLoading.value = false;
     }
@@ -297,11 +300,11 @@ class SettingsController extends GetxController {
 
       debugPrint('[deleteBazar] deleted successfully');
 
-      Get.snackbar('Success', 'Duty removed');
+      AppNavigation.showSnackBar('Success', 'Duty removed');
     } catch (e) {
       debugPrint('[deleteBazar] Error: $e');
 
-      Get.snackbar('Error', 'Failed to remove duty');
+      AppNavigation.showSnackBar('Error', 'Failed to remove duty');
     } finally {
       isLoading.value = false;
     }
@@ -311,11 +314,12 @@ class SettingsController extends GetxController {
     debugPrint('[logout] Triggered');
     try {
       isLoading.value = true;
+      await Get.find<StorageService>().clearAll();
       await _authService.signOut();
       debugPrint('[logout] Sign out successful');
     } catch (e) {
       debugPrint('[logout] Error: $e');
-      Get.snackbar('Error', 'Failed to logout: $e');
+      AppNavigation.showSnackBar('Error', 'Failed to logout: $e');
     } finally {
       isLoading.value = false;
     }

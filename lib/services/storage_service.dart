@@ -25,4 +25,12 @@ class StorageService extends GetxService {
     debugPrint('StorageService removeData called with key: $key');
     _box.remove(key);
   }
+
+  /// Wipes all data from local storage. Called on logout to ensure
+  /// no stale user-specific data remains on the device.
+  Future<void> clearAll() async {
+    debugPrint('StorageService clearAll called — erasing all local data');
+    await _box.erase();
+    debugPrint('StorageService clearAll completed');
+  }
 }

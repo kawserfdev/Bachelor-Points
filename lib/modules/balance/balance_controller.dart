@@ -1,7 +1,11 @@
+import 'package:bachelorpoints/shared/helpers/firestore_helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
 import '../../../services/auth_service.dart';
+import '../../../services/realtime_service.dart';
+import '../../../shared/helpers/navigation_helper.dart';
 import '../mess/mess_controller.dart';
 import '../../../data/models/deposit_model.dart';
 import '../../../data/models/member_balance_model.dart';
@@ -9,8 +13,8 @@ import '../../../data/models/meal_model.dart';
 import '../../../data/models/expense_model.dart';
 
 class BalanceController extends GetxController {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final _messController = Get.find<MessController>();
+  final _realtime = Get.find<RealtimeService>();
 
   final Rx<DateTime> selectedMonth = DateTime.now().obs;
   final RxBool isLoading = false.obs;
@@ -23,6 +27,14 @@ class BalanceController extends GetxController {
 
   final RxList<MemberBalanceModel> memberBalances = <MemberBalanceModel>[].obs;
 
+  StreamSubscription? _mealsSub;
+  StreamSubscription? _expensesSub;
+  StreamSubscription? _depositsSub;
+
+  List<MealModel> _allMeals = [];
+  List<ExpenseModel> _allExpenses = [];
+  List<DepositModel> _allDeposits = [];
+
   @override
   void onInit() {
     super.onInit();
@@ -30,10 +42,57 @@ class BalanceController extends GetxController {
 
     ever(selectedMonth, (_) {
       debugPrint('[BalanceController] Month changed: ${selectedMonth.value}');
-      calculateBalances();
+      _recalculate();
     });
 
-    calculateBalances();
+    // Listen for activeMess changes (e.g. after joining a mess)
+    ever(_messController.activeMess, (mess) {
+      if (mess != null) {
+        debugPrint('[BalanceController] Active mess changed: ${mess.id}');
+        _listenToData();
+      }
+    });
+
+    _listenToData();
+  }
+
+  @override
+  void onClose() {
+    _mealsSub?.cancel();
+    _expensesSub?.cancel();
+    _depositsSub?.cancel();
+    super.onClose();
+  }
+
+  void _listenToData() {
+    final messId = _messController.activeMess.value?.id;
+    if (messId == null) {
+      debugPrint('[BalanceController] No messId, skipping stream subscriptions');
+      return;
+    }
+
+    debugPrint('[BalanceController] Subscribing to real-time streams for $messId');
+
+    _mealsSub?.cancel();
+    _mealsSub = _realtime.streamMeals(messId).listen((data) {
+      _allMeals = data.map((e) => MealModel.fromJson(e)).toList();
+      debugPrint('[BalanceController] Meals stream updated: ${_allMeals.length} items');
+      _recalculate();
+    }, onError: (e) => debugPrint('[BalanceController] Meals stream error: $e'));
+
+    _expensesSub?.cancel();
+    _expensesSub = _realtime.streamExpenses(messId).listen((data) {
+      _allExpenses = data.map((e) => ExpenseModel.fromJson(e)).toList();
+      debugPrint('[BalanceController] Expenses stream updated: ${_allExpenses.length} items');
+      _recalculate();
+    }, onError: (e) => debugPrint('[BalanceController] Expenses stream error: $e'));
+
+    _depositsSub?.cancel();
+    _depositsSub = _realtime.streamDeposits(messId).listen((data) {
+      _allDeposits = data.map((e) => DepositModel.fromJson(e)).toList();
+      debugPrint('[BalanceController] Deposits stream updated: ${_allDeposits.length} items');
+      _recalculate();
+    }, onError: (e) => debugPrint('[BalanceController] Deposits stream error: $e'));
   }
 
   void changeMonth(int offsetMonths) {
@@ -73,42 +132,35 @@ class BalanceController extends GetxController {
       debugPrint('[addDeposit] status: Pending');
       debugPrint('[addDeposit] amount: $amount');
 
-      await _firestore.collection('deposits').add({
+      await FirebaseFirestore.instance.collection('deposits').add({
         'mess_id': messId,
         'user_id': userId,
         'amount': amount,
         'status': 'Pending',
         'received_by': depositByUserId.value,
         'date': dateStr,
-        'created_at': FieldValue.serverTimestamp(),
+        'created_at': FirestoreTime.serverTimestamp,
       });
 
       debugPrint('[addDeposit] Deposit inserted successfully');
 
-      Get.back();
-      Get.snackbar('Success', 'Deposit added successfully',
-          backgroundColor: Colors.green, colorText: Colors.white);
+      AppNavigation.back();
+      AppNavigation.showSnackBar('Success', 'Deposit added successfully',
+          backgroundColor: Colors.green);
     } catch (e) {
       debugPrint('[addDeposit] Error: $e');
 
-      Get.snackbar('Error', 'Failed to add deposit: $e',
-          backgroundColor: Colors.redAccent, colorText: Colors.white);
+      AppNavigation.showSnackBar('Error', 'Failed to add deposit: $e',
+          backgroundColor: Colors.redAccent);
     } finally {
       isLoading.value = false;
       debugPrint('[addDeposit] Loading finished');
     }
   }
 
-  Future<void> calculateBalances() async {
-    final messId = _messController.activeMess.value?.id;
-
-    debugPrint('[calculateBalances] messId: $messId');
-
-    if (messId == null) {
-      debugPrint('[calculateBalances] No messId found');
-      return;
-    }
-
+  /// Recalculates balances from in-memory data (derived from real-time streams).
+  /// Filters by the selected month and approved status.
+  void _recalculate() {
     try {
       isLoading.value = true;
 
@@ -122,44 +174,22 @@ class BalanceController extends GetxController {
       final endDateStr =
           "${endDate.year}-${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}";
 
-      debugPrint('[calculateBalances] Date range: $startDateStr → $endDateStr');
+      debugPrint('[recalculate] Date range: $startDateStr → $endDateStr');
 
-      // Meals
-      final mealsResponse = await _firestore
-          .collection('meals')
-          .where('mess_id', isEqualTo: messId)
-          .where('status', isEqualTo: 'Approve')
-          .where('date', isGreaterThanOrEqualTo: startDateStr)
-          .where('date', isLessThanOrEqualTo: endDateStr)
-          .get();
+      // Filter approved items within the selected month
+      final meals = _allMeals.where((m) =>
+          m.status == 'Approve' &&
+          _isDateInRange(m.date, startDate, endDate)).toList();
 
-      debugPrint('[calculateBalances] meals count: ${mealsResponse.docs.length}');
-      final meals = mealsResponse.docs.map((e) => MealModel.fromJson({'id': e.id, ...e.data() as Map<String, dynamic>})).toList();
+      final expenses = _allExpenses.where((e) =>
+          e.status == 'Approve' &&
+          _isDateInRange(e.date, startDate, endDate)).toList();
 
-      // Expenses
-      final expensesResponse = await _firestore
-          .collection('expenses')
-          .where('mess_id', isEqualTo: messId)
-          .where('status', isEqualTo: 'Approve')
-          .where('date', isGreaterThanOrEqualTo: startDateStr)
-          .where('date', isLessThanOrEqualTo: endDateStr)
-          .get();
+      final deposits = _allDeposits.where((d) =>
+          d.status == 'Approve' &&
+          _isDateInRange(d.date, startDate, endDate)).toList();
 
-      debugPrint('[calculateBalances] expenses count: ${expensesResponse.docs.length}');
-      final expenses = expensesResponse.docs.map((e) => ExpenseModel.fromJson({'id': e.id, ...e.data() as Map<String, dynamic>})).toList();
-
-      // Deposits
-      var depositQuery = _firestore
-          .collection('deposits')
-          .where('mess_id', isEqualTo: messId)
-          .where('status', isEqualTo: 'Approve')
-          .where('date', isGreaterThanOrEqualTo: startDateStr)
-          .where('date', isLessThanOrEqualTo: endDateStr);
-          
-      final depositsResponse = await depositQuery.get();
-
-      debugPrint('[calculateBalances] deposits count: ${depositsResponse.docs.length}');
-      final deposits = depositsResponse.docs.map((e) => DepositModel.fromJson({'id': e.id, ...e.data() as Map<String, dynamic>})).toList();
+      debugPrint('[recalculate] meals: ${meals.length} | expenses: ${expenses.length} | deposits: ${deposits.length}');
 
       // Global Calculation
       double totalBazar = 0.0;
@@ -178,9 +208,9 @@ class BalanceController extends GetxController {
         totalMeals += meal.totalMeals;
       }
 
-      debugPrint('[calculateBalances] totalBazar: $totalBazar');
-      debugPrint('[calculateBalances] totalFixed: $totalFixed');
-      debugPrint('[calculateBalances] totalMeals: $totalMeals');
+      debugPrint('[recalculate] totalBazar: $totalBazar');
+      debugPrint('[recalculate] totalFixed: $totalFixed');
+      debugPrint('[recalculate] totalMeals: $totalMeals');
 
       globalTotalBazar.value = totalBazar;
       globalTotalFixed.value = totalFixed;
@@ -188,10 +218,10 @@ class BalanceController extends GetxController {
 
       mealRate.value = totalMeals > 0 ? (totalBazar / totalMeals) : 0.0;
 
-      debugPrint('[calculateBalances] mealRate: ${mealRate.value}');
+      debugPrint('[recalculate] mealRate: ${mealRate.value}');
 
       final members = _messController.members;
-      debugPrint('[calculateBalances] members count: ${members.length}');
+      debugPrint('[recalculate] members count: ${members.length}');
 
       final fixedCostPerPerson =
           members.isNotEmpty ? (totalFixed / members.length) : 0.0;
@@ -229,12 +259,20 @@ class BalanceController extends GetxController {
 
       memberBalances.value = newBalances;
 
-      debugPrint('[calculateBalances] Calculation completed');
+      debugPrint('[recalculate] Calculation completed with ${newBalances.length} members');
     } catch (e) {
-      debugPrint('[calculateBalances] Error: $e');
+      debugPrint('[recalculate] Error: $e');
     } finally {
       isLoading.value = false;
-      debugPrint('[calculateBalances] Loading finished');
+      debugPrint('[recalculate] Loading finished');
     }
+  }
+
+  /// Checks whether [date] falls within [start] and [end] (inclusive).
+  bool _isDateInRange(DateTime date, DateTime start, DateTime end) {
+    final d = DateTime(date.year, date.month, date.day);
+    final s = DateTime(start.year, start.month, start.day);
+    final e = DateTime(end.year, end.month, end.day);
+    return !d.isBefore(s) && !d.isAfter(e);
   }
 }
