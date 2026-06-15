@@ -12,9 +12,16 @@ class ReportView extends GetView<ReportController> {
       appBar: AppBar(
         title: const Text('Monthly Report'),
         actions: [
+          // Download / share PDF
           IconButton(
-            icon: const Icon(Icons.picture_as_pdf),
-            tooltip: 'Export as PDF',
+            icon: const Icon(Icons.download),
+            tooltip: 'Download PDF',
+            onPressed: () => controller.exportToPdf(downloadOnly: true),
+          ),
+          // Print PDF
+          IconButton(
+            icon: const Icon(Icons.print),
+            tooltip: 'Print PDF',
             onPressed: () => controller.exportToPdf(),
           ),
         ],
@@ -25,6 +32,7 @@ class ReportView extends GetView<ReportController> {
         }
 
         return CustomScrollView(
+          controller: controller.scrollController,
           slivers: [
             SliverToBoxAdapter(
               child: _buildMonthSelector(),

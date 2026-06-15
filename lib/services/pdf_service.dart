@@ -10,11 +10,16 @@ class PdfService {
     required String messName,
     required ReportSummaryModel summary,
     required List<MemberSummaryModel> members,
+    bool downloadOnly = false,
   }) async {
-    debugPrint('PdfService generateAndPrintReport called for mess: $messName');
+    debugPrint(
+        'PdfService generateAndPrintReport called for mess: $messName, '
+        'downloadOnly=$downloadOnly');
     final pdf = pw.Document();
 
-    final monthName = DateFormat('MMMM yyyy').format(DateTime(summary.year, summary.month));
+    final monthName =
+        DateFormat('MMMM yyyy').format(DateTime(summary.year, summary.month));
+    final fileName = 'Mess_Report_$monthName.pdf';
 
     pdf.addPage(
       pw.MultiPage(
@@ -34,10 +39,17 @@ class PdfService {
       ),
     );
 
-    await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => pdf.save(),
-      name: 'Mess_Report_$monthName.pdf',
-    );
+    if (downloadOnly) {
+      // Use the printing package's sharePdf which opens the native share sheet
+      // so the user can save, share, or send the PDF.
+      final bytes = await pdf.save();
+      await Printing.sharePdf(bytes: bytes, filename: fileName);
+    } else {
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => pdf.save(),
+        name: fileName,
+      );
+    }
   }
 
   static pw.Widget _buildHeader(String messName, String monthName) {
