@@ -1,8 +1,10 @@
+import 'package:bachelorpoints/services/storage_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../shared/helpers/navigation_helper.dart';
 
 class AuthService extends GetxService {
   FirebaseAuth get _auth => FirebaseAuth.instance;
@@ -133,9 +135,42 @@ class AuthService extends GetxService {
     }
   }
 
+  /// Signs out the current user and wipes ALL local state:
+  ///   - Firebase Auth session
+  ///   - Google Sign-In session
+  ///   - GetStorage (GetX local storage)
+  ///   - GetX controllers & dependencies
+  ///   - Navigation stack (redirect to login)
   Future<void> signOut() async {
-    debugPrint('AuthService signOut called');
+    debugPrint('AuthService signOut called — wiping all local state');
+
+    // 1. Clear GetStorage (local key-value storage)
+    await Get.find<StorageService>().clearAll();
+
+    // 2. Sign out of Google (no-op if not signed in via Google)
+    try {
+      await GoogleSignIn.instance.signOut();
+      debugPrint('Google Sign-In session cleared');
+    } catch (e) {
+      debugPrint('Google Sign-In clear error (non-fatal): $e');
+    }
+
+    // 3. Sign out of Firebase Auth
     await _auth.signOut();
+
+    // 4. Reset current user observable in this service
+    currentUser.value = null;
+
+    // 5. Delete all non-permanent GetX controllers
+    //    Lazy controllers (mess, balance, profile, etc.) are destroyed;
+    //    permanent services (auth, storage, theme, etc.) survive.
+    Get.deleteAll();
+
+    // 6. Navigate to login and clear the entire navigation stack
+    //    Use GoRouter.go() so the redirect guard sends the user to login
+    AppNavigation.go('/login');
+
+    debugPrint('AuthService signOut — all state wiped, redirected to login');
   }
 
   bool get isLoggedIn => currentUser.value != null;

@@ -6,6 +6,7 @@ class MealModel {
   final double breakfast;
   final double lunch;
   final double dinner;
+  final double guestMeals;
   final String status;
   final String? userName;
 
@@ -17,11 +18,12 @@ class MealModel {
     required this.breakfast,
     required this.lunch,
     required this.dinner,
+    this.guestMeals = 0.0,
     required this.status,
     this.userName,
       });
 
-  double get totalMeals => breakfast + lunch + dinner;
+  double get totalMeals => breakfast + lunch + dinner + guestMeals;
 
   factory MealModel.fromJson(Map<String, dynamic> json) {
     return MealModel(
@@ -32,6 +34,7 @@ class MealModel {
       breakfast: (json['breakfast'] as num).toDouble(),
       lunch: (json['lunch'] as num).toDouble(),
       dinner: (json['dinner'] as num).toDouble(),
+      guestMeals: (json['guest_meals'] as num?)?.toDouble() ?? 0.0,
       status: json['status'] as String,
       userName: json['profiles']?['full_name'] as String?,
     );
@@ -53,6 +56,7 @@ class MealModel {
       'breakfast': breakfast,
       'lunch': lunch,
       'dinner': dinner,
+      'guest_meals': guestMeals,
       'status': status,
     };
   }

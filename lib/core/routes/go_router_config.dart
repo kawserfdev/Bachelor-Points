@@ -1,7 +1,17 @@
+import 'package:bachelorpoints/modules/tolet/views/property_search_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../main.dart';
+import '../../modules/tolet/views/credit_balance_view.dart';
+import '../../modules/tolet/views/kyc_verification_view.dart';
+import '../../modules/tolet/views/listing_management_view.dart';
+import '../../modules/tolet/views/need_based_post_view.dart';
+import '../../modules/tolet/views/property_detail_view.dart';
+import '../../modules/tolet/views/property_map_search_view.dart';
+import '../../modules/tolet/views/property_post_view.dart';
+import '../../modules/tolet/views/referral_view.dart';
+import '../../modules/tolet/views/tolet_chat_view.dart';
 import '../../wrapper.dart';
 import '../providers/auth_providers.dart';
 import '../auth/auth_gate.dart';
@@ -37,9 +47,16 @@ import '../../modules/report/views/report_view.dart';
 import '../../modules/report/report_binding.dart';
 import '../../modules/settings/views/settings_view.dart';
 import '../../modules/settings/settings_binding.dart';
+import '../../modules/profile/profile_binding.dart';
 import '../../modules/profile/create_profile_view.dart';
 import '../../modules/profile/create_profile_binding.dart';
-
+import '../../modules/tolet/property_search/property_search_binding.dart';
+import '../../modules/tolet/bindings/property_post_binding.dart';
+import '../../modules/tolet/bindings/property_detail_binding.dart';
+import '../../modules/tolet/bindings/need_based_post_binding.dart';
+import '../../modules/tolet/bindings/credit_binding.dart';
+import '../../modules/tolet/bindings/tolet_chat_binding.dart';
+import '../../modules/tolet/bindings/listing_management_binding.dart';
 /// Route path constants
 class GoRoutes {
   GoRoutes._();
@@ -65,6 +82,17 @@ class GoRoutes {
   static const chat = '/chat';
   static const report = '/report';
   static const settings = '/settings';
+  static const toletHome = '/tolet';
+  static const propertySearch = '/tolet/search';
+  static const propertyMapSearch = '/tolet/map-search';
+  static const propertyDetail = '/tolet/property';
+  static const propertyPost = '/tolet/post';
+  static const myListings = '/tolet/my-listings';
+  static const needBasedPost = '/tolet/need-based';
+  static const toletChat = '/tolet/chat';
+  static const creditBalance = '/tolet/credits';
+  static const referral = '/tolet/referral';
+  static const kycVerification = '/tolet/kyc';
 }
 
 /// Builds the GoRouter with Riverpod-powered auth redirect.
@@ -265,7 +293,10 @@ GoRouter buildGoRouter(Ref ref) {
           ),
           GoRoute(
             path: GoRoutes.profile,
-            builder: (context, state) => const ProfileView(),
+            builder: (context, state) {
+              ProfileBinding().dependencies();
+              return const ProfileView();
+            },
           ),
         ],
       ),
@@ -353,6 +384,78 @@ GoRouter buildGoRouter(Ref ref) {
         builder: (context, state) {
           SettingsBinding().dependencies();
           return const SettingsView();
+        },
+      ),
+
+      // ── Tolet Feature Routes ──
+      GoRoute(
+        path: GoRoutes.propertySearch,
+        builder: (context, state) {
+          PropertySearchBinding().dependencies();
+          return const PropertySearchView();
+        },
+      ),
+      GoRoute(
+        path: GoRoutes.propertyMapSearch,
+        builder: (context, state) {
+          PropertySearchBinding().dependencies();
+          return const PropertyMapSearchView();
+        },
+      ),
+      GoRoute(
+        path: GoRoutes.propertyDetail,
+        builder: (context, state) {
+          PropertyDetailBinding().dependencies();
+          return const PropertyDetailView();
+        },
+      ),
+      GoRoute(
+        path: GoRoutes.propertyPost,
+        builder: (context, state) {
+          PropertyPostBinding().dependencies();
+          return const PropertyPostView();
+        },
+      ),
+      GoRoute(
+        path: GoRoutes.myListings,
+        builder: (context, state) {
+          ListingManagementBinding().dependencies();
+          return const ListingManagementView();
+        },
+      ),
+      GoRoute(
+        path: GoRoutes.needBasedPost,
+        builder: (context, state) {
+          NeedBasedPostBinding().dependencies();
+          return const NeedBasedPostView();
+        },
+      ),
+      GoRoute(
+        path: GoRoutes.toletChat,
+        builder: (context, state) {
+          ToletChatBinding().dependencies();
+          return const ToletChatView();
+        },
+      ),
+      GoRoute(
+        path: GoRoutes.creditBalance,
+        builder: (context, state) {
+          CreditBinding().dependencies();
+          return const CreditBalanceView();
+        },
+      ),
+      GoRoute(
+        path: GoRoutes.referral,
+        builder: (context, state) {
+          CreditBinding().dependencies();
+          return const ReferralView();
+        },
+      ),
+      GoRoute(
+        path: GoRoutes.kycVerification,
+        builder: (context, state) {
+          CreditBinding().dependencies();
+          return const KycVerificationView();
         },
       ),
     ],

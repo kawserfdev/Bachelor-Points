@@ -21,10 +21,11 @@ class MealController extends GetxController {
   final RxDouble breakfast = 0.0.obs;
   final RxDouble lunch = 0.0.obs;
   final RxDouble dinner = 0.0.obs;
+  final RxDouble guestMeals = 0.0.obs;
   final RxBool isLoading = false.obs;
 
   double get totalDailyMeals =>
-      breakfast.value + lunch.value + dinner.value;
+      breakfast.value + lunch.value + dinner.value + guestMeals.value;
 
   bool get canEdit {
     final now = DateTime.now();
@@ -92,8 +93,9 @@ class MealController extends GetxController {
     if (type == 'breakfast') breakfast.value = value;
     if (type == 'lunch') lunch.value = value;
     if (type == 'dinner') dinner.value = value;
+    if (type == 'guest') guestMeals.value = value;
 
-    debugPrint('[updatePortion] Updated → B:$breakfast L:$lunch D:$dinner');
+    debugPrint('[updatePortion] Updated → B:$breakfast L:$lunch D:$dinner G:$guestMeals');
   }
 
   void _listenToMeals() {
@@ -129,8 +131,9 @@ class MealController extends GetxController {
           breakfast.value = meal.breakfast;
           lunch.value = meal.lunch;
           dinner.value = meal.dinner;
+          guestMeals.value = meal.guestMeals;
 
-          debugPrint('[meals found] B:${meal.breakfast} L:${meal.lunch} D:${meal.dinner}');
+          debugPrint('[meals found] B:${meal.breakfast} L:${meal.lunch} D:${meal.dinner} G:${meal.guestMeals}');
 
           found = true;
           break;
@@ -143,6 +146,7 @@ class MealController extends GetxController {
         breakfast.value = 0.0;
         lunch.value = 0.0;
         dinner.value = 0.0;
+        guestMeals.value = 0.0;
       }
 
       isLoading.value = false;
@@ -186,7 +190,7 @@ class MealController extends GetxController {
           "${selectedDate.value.year}-${selectedDate.value.month.toString().padLeft(2, '0')}-${selectedDate.value.day.toString().padLeft(2, '0')}";
 
       debugPrint('[saveMeal] date: $dateStr');
-      debugPrint('[saveMeal] B:${breakfast.value} L:${lunch.value} D:${dinner.value}');
+      debugPrint('[saveMeal] B:${breakfast.value} L:${lunch.value} D:${dinner.value} G:${guestMeals.value}');
 
       final docId = '${messId}_${userId}_$dateStr';
 
@@ -198,6 +202,7 @@ class MealController extends GetxController {
         'status': 'Pending',
         'lunch': lunch.value,
         'dinner': dinner.value,
+        'guest_meals': guestMeals.value,
         'updated_at': FirestoreTime.serverTimestamp,
       }, SetOptions(merge: true));
 

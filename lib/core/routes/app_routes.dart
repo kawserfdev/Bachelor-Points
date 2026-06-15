@@ -20,4 +20,17 @@ abstract class AppRoutes {
   static const chat = '/chat';
   static const report = '/report';
   static const settings = '/settings';
+
+  // Tolet Feature Routes
+  static const toletHome = '/tolet';
+  static const propertySearch = '/tolet/search';
+  static const propertyMapSearch = '/tolet/map-search';
+  static const propertyDetail = '/tolet/property';
+  static const propertyPost = '/tolet/post';
+  static const myListings = '/tolet/my-listings';
+  static const needBasedPost = '/tolet/need-based';
+  static const toletChat = '/tolet/chat';
+  static const creditBalance = '/tolet/credits';
+  static const referral = '/tolet/referral';
+  static const kycVerification = '/tolet/kyc';
 }
