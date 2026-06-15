@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../data/models/report_summary_model.dart';
@@ -12,11 +13,19 @@ import '../../shared/helpers/navigation_helper.dart';
 class ReportController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AuthService _authService = Get.find<AuthService>();
+  final GetStorage _storage = GetStorage();
 
-  final RxInt selectedMonth = DateTime.now().month.obs;
-  final RxInt selectedYear = DateTime.now().year.obs;
+  static const String _keyMonth = 'report_selectedMonth';
+  static const String _keyYear = 'report_selectedYear';
+  static const String _keyScrollOffset = 'report_scrollOffset';
+
+  late final RxInt selectedMonth;
+  late final RxInt selectedYear;
 
   final RxBool isLoading = false.obs;
+
+  /// Scroll controller whose offset is persisted across page navigations.
+  late final ScrollController scrollController;
 
   final Rx<ReportSummaryModel?> summary = Rx<ReportSummaryModel?>(null);
   final RxList<MemberSummaryModel> memberSummaries =
@@ -28,9 +37,39 @@ class ReportController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    debugPrint('[ReportController] Initialized');
+
+    // Restore persisted month/year, defaulting to current month
+    final savedMonth = _storage.read<int>(_keyMonth);
+    final savedYear = _storage.read<int>(_keyYear);
+    selectedMonth = (savedMonth ?? DateTime.now().month).obs;
+    selectedYear = (savedYear ?? DateTime.now().year).obs;
+
+    // Restore persisted scroll offset
+    final savedScrollOffset = _storage.read<double>(_keyScrollOffset) ?? 0.0;
+    scrollController = ScrollController(initialScrollOffset: savedScrollOffset);
+
+    // Persist scroll offset whenever the user scrolls
+    scrollController.addListener(_persistScrollOffset);
+
+    debugPrint(
+        '[ReportController] Initialized — month=${selectedMonth.value} '
+        'year=${selectedYear.value} '
+        'scrollOffset=$savedScrollOffset');
 
     _fetchMessInfoAndData();
+  }
+
+  void _persistScrollOffset() {
+    if (scrollController.hasClients) {
+      _storage.write(_keyScrollOffset, scrollController.offset);
+    }
+  }
+
+  @override
+  void onClose() {
+    scrollController.removeListener(_persistScrollOffset);
+    scrollController.dispose();
+    super.onClose();
   }
 
   Future<void> _fetchMessInfoAndData() async {
@@ -279,11 +318,21 @@ class ReportController extends GetxController {
     selectedMonth.value = month;
     selectedYear.value = year;
 
+    // Persist selection so it survives page refreshes
+    _storage.write(_keyMonth, month);
+    _storage.write(_keyYear, year);
+
+    // Reset scroll position to top when month changes
+    _storage.write(_keyScrollOffset, 0.0);
+    if (scrollController.hasClients) {
+      scrollController.jumpTo(0);
+    }
+
     generateReport();
   }
 
-  void exportToPdf() {
-    debugPrint('[exportToPdf] Triggered');
+  void exportToPdf({bool downloadOnly = false}) {
+    debugPrint('[exportToPdf] Triggered (downloadOnly=$downloadOnly)');
 
     if (summary.value == null || memberSummaries.isEmpty) {
       debugPrint('[exportToPdf] No data to export');
@@ -296,6 +345,7 @@ class ReportController extends GetxController {
       messName: _messName,
       summary: summary.value!,
       members: memberSummaries,
+      downloadOnly: downloadOnly,
     );
 
     debugPrint('[exportToPdf] PDF generated');
