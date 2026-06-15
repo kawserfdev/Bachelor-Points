@@ -94,84 +94,127 @@ class ReportController extends GetxController {
       debugPrint(
           '[generateReport] Date range: $startDateStr → $endDateStr');
 
-      // Meals
-      final mealsResponse = await _firestore
-          .collection('meals')
-          .where('mess_id', isEqualTo: _messId)
-          .where('date', isGreaterThanOrEqualTo: startDateStr)
-          .where('date', isLessThanOrEqualTo: endDateStr)
-          .get();
+      // ── Fetch all data in parallel (no date range in Firestore query
+      //    to avoid needing composite indexes; filter client-side below) ──
+      final results = await Future.wait([
+        _firestore
+            .collection('meals')
+            .where('mess_id', isEqualTo: _messId)
+            .get(),
+        _firestore
+            .collection('expenses')
+            .where('mess_id', isEqualTo: _messId)
+            .get(),
+        _firestore
+            .collection('deposits')
+            .where('mess_id', isEqualTo: _messId)
+            .get(),
+        _firestore
+            .collection('mess_members')
+            .where('mess_id', isEqualTo: _messId)
+            .get(),
+      ]);
+
+      final mealsResponse = results[0] as QuerySnapshot;
+      final expensesResponse = results[1] as QuerySnapshot;
+      final depositsResponse = results[2] as QuerySnapshot;
+      final membersResponse = results[3] as QuerySnapshot;
 
       debugPrint(
-          '[generateReport] meals count: ${mealsResponse.docs.length}');
+          '[generateReport] Raw — meals: ${mealsResponse.docs.length} | '
+          'expenses: ${expensesResponse.docs.length} | '
+          'deposits: ${depositsResponse.docs.length} | '
+          'members: ${membersResponse.docs.length}');
+
+      // ── Filter by status & date range (client-side, no composite index needed) ──
+      bool _dateInRange(DateTime dt) {
+        final d = DateTime(dt.year, dt.month, dt.day);
+        final s = DateTime(startDate.year, startDate.month, startDate.day);
+        final e = DateTime(endDate.year, endDate.month, endDate.day);
+        return !d.isBefore(s) && !d.isAfter(e);
+      }
 
       final meals = mealsResponse.docs
-          .map((doc) => MealModel.fromJson({'id': doc.id, ...doc.data() as Map<String, dynamic>}))
+          .map((doc) => MealModel.fromJson(
+              {'id': doc.id, ...doc.data() as Map<String, dynamic>}))
+          .where((m) =>
+              (m.status == 'Approve' || m.status == 'Pending') &&
+              _dateInRange(m.date))
           .toList();
 
-      // Expenses
-      final expensesResponse = await _firestore
-          .collection('expenses')
-          .where('mess_id', isEqualTo: _messId)
-          .where('date', isGreaterThanOrEqualTo: startDateStr)
-          .where('date', isLessThanOrEqualTo: endDateStr)
-          .get();
+      final expenses = expensesResponse.docs
+          .map((doc) => ExpenseModel.fromJson(
+              {'id': doc.id, ...doc.data() as Map<String, dynamic>}))
+          .where((e) =>
+              (e.status == 'Approve' || e.status == 'Pending') &&
+              _dateInRange(e.date))
+          .toList();
+
+      final deposits = depositsResponse.docs
+          .map((doc) => DepositModel.fromJson(
+              {'id': doc.id, ...doc.data() as Map<String, dynamic>}))
+          .where((d) =>
+              (d.status == 'Approve' || d.status == 'Pending') &&
+              _dateInRange(d.date))
+          .toList();
 
       debugPrint(
-          '[generateReport] expenses count: ${expensesResponse.docs.length}');
+          '[generateReport] Countable — meals: ${meals.length} | '
+          'expenses: ${expenses.length} | deposits: ${deposits.length}');
 
-      final expensesList = <ExpenseModel>[];
-      for (var doc in expensesResponse.docs) {
-          final data = doc.data();
-          final profileDoc = await _firestore.collection('profiles').doc(data['created_by']).get();
-          data['profiles'] = profileDoc.data();
-          expensesList.add(ExpenseModel.fromJson({'id': doc.id, ...data}));
+      // ── Batch-fetch all profile names ──
+      final profileIds = <String>{};
+      for (final doc in membersResponse.docs) {
+        final data = doc.data() as Map<String, dynamic>?;
+        if (data != null) {
+          profileIds.add(data['user_id'] as String? ?? '');
+        }
+      }
+      for (final m in meals) {
+        profileIds.add(m.userId);
+      }
+      for (final d in deposits) {
+        profileIds.add(d.userId);
       }
 
-      final expenses = expensesList;
-
-      // Deposits
-      final depositsResponse = await _firestore
-          .collection('deposits')
-          .where('mess_id', isEqualTo: _messId)
-          .where('date', isGreaterThanOrEqualTo: startDateStr)
-          .where('date', isLessThanOrEqualTo: endDateStr)
-          .get();
-
-      debugPrint(
-          '[generateReport] deposits count: ${depositsResponse.docs.length}');
-
-      final depositsList = <DepositModel>[];
-      for (var doc in depositsResponse.docs) {
-          final data = doc.data();
-          final profileDoc = await _firestore.collection('profiles').doc(data['user_id']).get();
-          data['profiles'] = profileDoc.data();
-          depositsList.add(DepositModel.fromJson({'id': doc.id, ...data}));
+      final profileNames = <String, String>{};
+      if (profileIds.isNotEmpty) {
+        // Firestore allows up to 30 docs in an `whereIn` query; chunk if needed.
+        final ids = profileIds.toList();
+        for (var i = 0; i < ids.length; i += 30) {
+          final chunk = ids.sublist(i, i + 30 > ids.length ? ids.length : i + 30);
+          final profilesSnap = await _firestore
+              .collection('profiles')
+              .where(FieldPath.documentId, whereIn: chunk)
+              .get();
+          for (final p in profilesSnap.docs) {
+            profileNames[p.id] =
+                p.data()['full_name'] as String? ?? 'Unknown';
+          }
+        }
       }
-      final deposits = depositsList;
 
-      // Members
-      final membersResponse = await _firestore
-          .collection('mess_members')
-          .where('mess_id', isEqualTo: _messId)
-          .get();
+      // ── Aggregation ──
+      double totalMessMeals = meals.fold(0.0, (sum, m) => sum + m.totalMeals);
 
-      debugPrint(
-          '[generateReport] members count: ${membersResponse.docs.length}');
+      double totalBazar = 0.0;
+      double totalFixed = 0.0;
+      for (final e in expenses) {
+        if (e.category == 'bazar') {
+          totalBazar += e.amount;
+        } else {
+          totalFixed += e.amount;
+        }
+      }
 
-      // Aggregation
-      double totalMessMeals =
-          meals.fold(0.0, (sum, m) => sum + m.totalMeals);
+      double totalMessExpenses = totalBazar + totalFixed;
 
-      double totalMessExpenses =
-          expenses.fold(0.0, (sum, e) => sum + e.amount);
-
+      // Meal rate = total bazar / total meals (fixed costs are split evenly)
       double currentMealRate =
-          totalMessMeals > 0 ? totalMessExpenses / totalMessMeals : 0.0;
+          totalMessMeals > 0 ? totalBazar / totalMessMeals : 0.0;
 
       debugPrint('[generateReport] totalMeals: $totalMessMeals');
-      debugPrint(
-          '[generateReport] totalExpenses: $totalMessExpenses');
+      debugPrint('[generateReport] totalBazar: $totalBazar, totalFixed: $totalFixed');
       debugPrint('[generateReport] mealRate: $currentMealRate');
 
       summary.value = ReportSummaryModel(
@@ -182,13 +225,16 @@ class ReportController extends GetxController {
         mealRate: currentMealRate,
       );
 
+      final members = membersResponse.docs;
+      final fixedCostPerPerson =
+          members.isNotEmpty ? totalFixed / members.length : 0.0;
+
       final Map<String, MemberSummaryModel> userSummaries = {};
 
-      for (var doc in membersResponse.docs) {
-        final uid = doc.data()['user_id'] as String;
-        final profileDoc = await _firestore.collection('profiles').doc(uid).get();
-        final name =
-            profileDoc.data()?['full_name'] as String? ?? 'Unknown';
+      for (final doc in members) {
+        final data = doc.data() as Map<String, dynamic>?;
+        final uid = data?['user_id'] as String? ?? '';
+        final name = profileNames[uid] ?? 'Unknown';
 
         final userMeals = meals
             .where((meal) => meal.userId == uid)
@@ -198,8 +244,9 @@ class ReportController extends GetxController {
             .where((dep) => dep.userId == uid)
             .fold(0.0, (sum, dep) => sum + dep.amount);
 
-        final userCost = userMeals * currentMealRate;
-        final finalBalance = userDeposits - userCost;
+        final mealCost = userMeals * currentMealRate;
+        final totalCost = mealCost + fixedCostPerPerson;
+        final finalBalance = userDeposits - totalCost;
 
         debugPrint('[MemberSummary] $name | Meals: $userMeals | '
             'Deposits: $userDeposits | Balance: $finalBalance');
@@ -209,7 +256,7 @@ class ReportController extends GetxController {
           userName: name,
           totalMeals: userMeals,
           totalDeposits: userDeposits,
-          totalCost: userCost,
+          totalCost: totalCost,
           finalBalance: finalBalance,
         );
       }

@@ -64,7 +64,8 @@ Future<void> initServices() async {
   debugPrint('Starting services initialization...');
 
   final storageService = StorageService();
-  Get.put<StorageService>(storageService);
+  // permanent: true — survives logout so ThemeController can still read
+  Get.put<StorageService>(storageService, permanent: true);
   try {
     await storageService.init();
   } catch (e) {
@@ -72,7 +73,7 @@ Future<void> initServices() async {
   }
 
   final authService = AuthService();
-  Get.put<AuthService>(authService);
+  Get.put<AuthService>(authService, permanent: true);
   try {
     await authService.init();
   } catch (e) {
@@ -80,7 +81,7 @@ Future<void> initServices() async {
   }
 
   final fcmService = FcmService();
-  Get.put<FcmService>(fcmService);
+  Get.put<FcmService>(fcmService, permanent: true);
   try {
     await fcmService.init();
   } catch (e) {
@@ -88,7 +89,7 @@ Future<void> initServices() async {
   }
 
   final realtimeService = RealtimeService();
-  Get.put<RealtimeService>(realtimeService);
+  Get.put<RealtimeService>(realtimeService, permanent: true);
   try {
     await realtimeService.init();
   } catch (e) {
@@ -96,7 +97,7 @@ Future<void> initServices() async {
   }
 
   // Theme Controller uses GetStorage, so it must be initialized after StorageService
-  Get.put(ThemeController());
+  Get.put(ThemeController(), permanent: true);
 
   debugPrint('All services started...');
 }

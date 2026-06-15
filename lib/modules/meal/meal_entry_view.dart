@@ -59,6 +59,8 @@ class MealEntryView extends GetView<MealController> {
               _buildMealSelector(context, 'Lunch', Icons.lunch_dining, controller.lunch, 'lunch'),
               const SizedBox(height: 24),
               _buildMealSelector(context, 'Dinner', Icons.dinner_dining, controller.dinner, 'dinner'),
+              const SizedBox(height: 24),
+              _buildGuestMealSelector(context),
               const SizedBox(height: 48),
               
               Obx(() => PrimaryButton(
@@ -109,6 +111,58 @@ class MealEntryView extends GetView<MealController> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildGuestMealSelector(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.people, size: 20, color: Colors.grey[700]),
+            const SizedBox(width: 8),
+            const Text(
+              'Guest Meals',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Extra meals for guests (adds to your total)',
+          style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+        ),
+        const SizedBox(height: 12),
+        Obx(() {
+          return Row(
+            children: [
+              Expanded(
+                child: Slider(
+                  value: controller.guestMeals.value,
+                  min: 0.0,
+                  max: 10.0,
+                  divisions: 20,
+                  label: controller.guestMeals.value.toStringAsFixed(1),
+                  onChanged: controller.canEdit
+                      ? (v) => controller.updatePortion('guest', v)
+                      : null,
+                ),
+              ),
+              SizedBox(
+                width: 48,
+                child: Text(
+                  controller.guestMeals.value.toStringAsFixed(1),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          );
+        }),
+      ],
     );
   }
 

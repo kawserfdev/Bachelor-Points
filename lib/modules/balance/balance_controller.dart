@@ -18,7 +18,6 @@ class BalanceController extends GetxController {
 
   final Rx<DateTime> selectedMonth = DateTime.now().obs;
   final RxBool isLoading = false.obs;
-  RxString depositByUserId = ''.obs;
 
   final RxDouble mealRate = 0.0.obs;
   final RxDouble globalTotalBazar = 0.0.obs;
@@ -67,32 +66,53 @@ class BalanceController extends GetxController {
   void _listenToData() {
     final messId = _messController.activeMess.value?.id;
     if (messId == null) {
-      debugPrint('[BalanceController] No messId, skipping stream subscriptions');
+      debugPrint(
+        '[BalanceController] No messId, skipping stream subscriptions',
+      );
       return;
     }
 
-    debugPrint('[BalanceController] Subscribing to real-time streams for $messId');
+    debugPrint(
+      '[BalanceController] Subscribing to real-time streams for $messId',
+    );
 
     _mealsSub?.cancel();
-    _mealsSub = _realtime.streamMeals(messId).listen((data) {
-      _allMeals = data.map((e) => MealModel.fromJson(e)).toList();
-      debugPrint('[BalanceController] Meals stream updated: ${_allMeals.length} items');
-      _recalculate();
-    }, onError: (e) => debugPrint('[BalanceController] Meals stream error: $e'));
+    _mealsSub = _realtime.streamMeals(messId).listen(
+      (data) {
+        _allMeals = data.map((e) => MealModel.fromJson(e)).toList();
+        debugPrint(
+          '[BalanceController] Meals stream updated: ${_allMeals.length} items',
+        );
+        _recalculate();
+      },
+      onError: (e) => debugPrint('[BalanceController] Meals stream error: $e'),
+    );
 
     _expensesSub?.cancel();
-    _expensesSub = _realtime.streamExpenses(messId).listen((data) {
-      _allExpenses = data.map((e) => ExpenseModel.fromJson(e)).toList();
-      debugPrint('[BalanceController] Expenses stream updated: ${_allExpenses.length} items');
-      _recalculate();
-    }, onError: (e) => debugPrint('[BalanceController] Expenses stream error: $e'));
+    _expensesSub = _realtime.streamExpenses(messId).listen(
+      (data) {
+        _allExpenses = data.map((e) => ExpenseModel.fromJson(e)).toList();
+        debugPrint(
+          '[BalanceController] Expenses stream updated: ${_allExpenses.length} items',
+        );
+        _recalculate();
+      },
+      onError: (e) =>
+          debugPrint('[BalanceController] Expenses stream error: $e'),
+    );
 
     _depositsSub?.cancel();
-    _depositsSub = _realtime.streamDeposits(messId).listen((data) {
-      _allDeposits = data.map((e) => DepositModel.fromJson(e)).toList();
-      debugPrint('[BalanceController] Deposits stream updated: ${_allDeposits.length} items');
-      _recalculate();
-    }, onError: (e) => debugPrint('[BalanceController] Deposits stream error: $e'));
+    _depositsSub = _realtime.streamDeposits(messId).listen(
+      (data) {
+        _allDeposits = data.map((e) => DepositModel.fromJson(e)).toList();
+        debugPrint(
+          '[BalanceController] Deposits stream updated: ${_allDeposits.length} items',
+        );
+        _recalculate();
+      },
+      onError: (e) =>
+          debugPrint('[BalanceController] Deposits stream error: $e'),
+    );
   }
 
   void changeMonth(int offsetMonths) {
@@ -127,31 +147,44 @@ class BalanceController extends GetxController {
       final dateStr =
           "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
 
-      debugPrint('[addDeposit] formatted date: $dateStr');
-      debugPrint('[addDeposit] received_by: $userId');
-      debugPrint('[addDeposit] status: Pending');
-      debugPrint('[addDeposit] amount: $amount');
-
-      await FirebaseFirestore.instance.collection('deposits').add({
+      final docRef = await FirebaseFirestore.instance.collection('deposits').add({
         'mess_id': messId,
         'user_id': userId,
         'amount': amount,
-        'status': 'Pending',
-        'received_by': depositByUserId.value,
+        'status': 'Approve',
+        'received_by': userId,
         'date': dateStr,
         'created_at': FirestoreTime.serverTimestamp,
       });
 
-      debugPrint('[addDeposit] Deposit inserted successfully');
+      debugPrint('[addDeposit] Deposit inserted with id: ${docRef.id}');
+
+      // Immediately add to in-memory list so the balance updates before the
+      // Firestore snapshot listener fires (avoids race condition on back()).
+      _allDeposits.add(DepositModel(
+        id: docRef.id,
+        messId: messId,
+        userId: userId,
+        amount: amount,
+        date: date,
+        status: 'Approve',
+      ));
+      _recalculate();
 
       AppNavigation.back();
-      AppNavigation.showSnackBar('Success', 'Deposit added successfully',
-          backgroundColor: Colors.green);
+      AppNavigation.showSnackBar(
+        'Success',
+        'Deposit added successfully',
+        backgroundColor: Colors.green,
+      );
     } catch (e) {
       debugPrint('[addDeposit] Error: $e');
 
-      AppNavigation.showSnackBar('Error', 'Failed to add deposit: $e',
-          backgroundColor: Colors.redAccent);
+      AppNavigation.showSnackBar(
+        'Error',
+        'Failed to add deposit: $e',
+        backgroundColor: Colors.redAccent,
+      );
     } finally {
       isLoading.value = false;
       debugPrint('[addDeposit] Loading finished');
@@ -164,10 +197,16 @@ class BalanceController extends GetxController {
     try {
       isLoading.value = true;
 
-      final startDate =
-          DateTime(selectedMonth.value.year, selectedMonth.value.month, 1);
-      final endDate =
-          DateTime(selectedMonth.value.year, selectedMonth.value.month + 1, 0);
+      final startDate = DateTime(
+        selectedMonth.value.year,
+        selectedMonth.value.month,
+        1,
+      );
+      final endDate = DateTime(
+        selectedMonth.value.year,
+        selectedMonth.value.month + 1,
+        0,
+      );
 
       final startDateStr =
           "${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-01";
@@ -176,20 +215,37 @@ class BalanceController extends GetxController {
 
       debugPrint('[recalculate] Date range: $startDateStr → $endDateStr');
 
-      // Filter approved items within the selected month
-      final meals = _allMeals.where((m) =>
-          m.status == 'Approve' &&
-          _isDateInRange(m.date, startDate, endDate)).toList();
+      // Include approved and pending items; exclude rejected ones.
+      bool _isCountable(String? status) =>
+          status == 'Approve' || status == 'Pending';
 
-      final expenses = _allExpenses.where((e) =>
-          e.status == 'Approve' &&
-          _isDateInRange(e.date, startDate, endDate)).toList();
+      final meals = _allMeals
+          .where(
+            (m) =>
+                _isCountable(m.status) &&
+                _isDateInRange(m.date, startDate, endDate),
+          )
+          .toList();
 
-      final deposits = _allDeposits.where((d) =>
-          d.status == 'Approve' &&
-          _isDateInRange(d.date, startDate, endDate)).toList();
+      final expenses = _allExpenses
+          .where(
+            (e) =>
+                _isCountable(e.status) &&
+                _isDateInRange(e.date, startDate, endDate),
+          )
+          .toList();
 
-      debugPrint('[recalculate] meals: ${meals.length} | expenses: ${expenses.length} | deposits: ${deposits.length}');
+      final deposits = _allDeposits
+          .where(
+            (d) =>
+                _isCountable(d.status) &&
+                _isDateInRange(d.date, startDate, endDate),
+          )
+          .toList();
+
+      debugPrint(
+        '[recalculate] meals: ${meals.length} | expenses: ${expenses.length} | deposits: ${deposits.length}',
+      );
 
       // Global Calculation
       double totalBazar = 0.0;
@@ -223,8 +279,9 @@ class BalanceController extends GetxController {
       final members = _messController.members;
       debugPrint('[recalculate] members count: ${members.length}');
 
-      final fixedCostPerPerson =
-          members.isNotEmpty ? (totalFixed / members.length) : 0.0;
+      final fixedCostPerPerson = members.isNotEmpty
+          ? (totalFixed / members.length)
+          : 0.0;
 
       List<MemberBalanceModel> newBalances = [];
 
@@ -241,25 +298,31 @@ class BalanceController extends GetxController {
         double memberTotalCost = memberMealCost + fixedCostPerPerson;
         double memberBalance = memberDeposits - memberTotalCost;
 
-        debugPrint('[MemberBalance] ${member.fullName} | '
-            'Meals: $memberMeals | Deposits: $memberDeposits | '
-            'Balance: $memberBalance');
+        debugPrint(
+          '[MemberBalance] ${member.fullName} | '
+          'Meals: $memberMeals | Deposits: $memberDeposits | '
+          'Balance: $memberBalance',
+        );
 
-        newBalances.add(MemberBalanceModel(
-          userId: member.userId,
-          userName: member.fullName ?? 'Unknown',
-          totalMeals: memberMeals,
-          totalDeposits: memberDeposits,
-          mealCost: memberMealCost,
-          fixedCost: fixedCostPerPerson,
-          totalCost: memberTotalCost,
-          balance: memberBalance,
-        ));
+        newBalances.add(
+          MemberBalanceModel(
+            userId: member.userId,
+            userName: member.fullName ?? 'Unknown',
+            totalMeals: memberMeals,
+            totalDeposits: memberDeposits,
+            mealCost: memberMealCost,
+            fixedCost: fixedCostPerPerson,
+            totalCost: memberTotalCost,
+            balance: memberBalance,
+          ),
+        );
       }
 
       memberBalances.value = newBalances;
 
-      debugPrint('[recalculate] Calculation completed with ${newBalances.length} members');
+      debugPrint(
+        '[recalculate] Calculation completed with ${newBalances.length} members',
+      );
     } catch (e) {
       debugPrint('[recalculate] Error: $e');
     } finally {
