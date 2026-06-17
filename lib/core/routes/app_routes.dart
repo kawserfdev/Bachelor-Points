@@ -20,6 +20,7 @@ abstract class AppRoutes {
   static const chat = '/chat';
   static const report = '/report';
   static const settings = '/settings';
+  static const members = '/members';
 
   // Tolet Feature Routes
   static const toletHome = '/tolet';

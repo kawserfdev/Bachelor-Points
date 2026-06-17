@@ -15,7 +15,8 @@ class AddExpenseView extends StatefulWidget {
 class _AddExpenseViewState extends State<AddExpenseView> {
   final controller = Get.find<ExpenseController>();
   final formKey = GlobalKey<FormState>();
-  
+
+  final titleController = TextEditingController();
   final amountController = TextEditingController();
   final descriptionController = TextEditingController();
   String selectedCategory = 'bazar';
@@ -23,6 +24,7 @@ class _AddExpenseViewState extends State<AddExpenseView> {
 
   @override
   void dispose() {
+    titleController.dispose();
     amountController.dispose();
     descriptionController.dispose();
     super.dispose();
@@ -41,15 +43,27 @@ class _AddExpenseViewState extends State<AddExpenseView> {
             children: [
               _buildDateSelector(context),
               const SizedBox(height: 24),
-              
+
+              CustomTextField(
+                label: 'Expense Title',
+                hint: 'e.g. Weekly Bazar',
+                prefixIcon: Icons.title,
+                controller: titleController,
+                validator: (val) {
+                  if (val == null || val.trim().isEmpty) return 'Please enter a title';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
               DropdownButtonFormField<String>(
-                initialValue: selectedCategory,
+                value: selectedCategory,
                 decoration: InputDecoration(
                   labelText: 'Category',
-                  prefixIcon: Icon(Icons.category, color: Theme.of(context).primaryColor),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  prefixIcon: const Icon(Icons.category),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   filled: true,
-                  fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(128),
                 ),
                 items: const [
                   DropdownMenuItem(value: 'bazar', child: Text('Bazar')),
@@ -62,7 +76,7 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                 },
               ),
               const SizedBox(height: 16),
-              
+
               CustomTextField(
                 label: 'Amount (৳)',
                 hint: 'e.g. 500',
@@ -75,17 +89,17 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                 },
               ),
               const SizedBox(height: 16),
-              
+
               CustomTextField(
-                label: 'Description (Optional)',
+                label: 'Note (Optional)',
                 hint: 'e.g. Chicken and Rice',
                 prefixIcon: Icons.description,
                 controller: descriptionController,
               ),
               const SizedBox(height: 48),
-              
+
               Obx(() => PrimaryButton(
-                    text: 'SAVE EXPENSE',
+                    text: 'SUBMIT FOR APPROVAL',
                     isLoading: controller.isLoading.value,
                     onPressed: () {
                       if (formKey.currentState!.validate()) {
@@ -93,7 +107,7 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                           amount: double.parse(amountController.text),
                           category: selectedCategory,
                           date: selectedDate,
-                          description: descriptionController.text,
+                          description: titleController.text.trim(),
                         );
                       }
                     },
@@ -121,7 +135,7 @@ class _AddExpenseViewState extends State<AddExpenseView> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          color: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(128),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(

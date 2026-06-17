@@ -87,7 +87,7 @@ class ExpenseController extends GetxController {
         final dateStr = row['date'] as String;
         final status = row['status'] as String?;
 
-        if (status == 'Approve' &&
+        if (status == 'Approved' &&
             dateStr.compareTo(startDateStr) >= 0 &&
             dateStr.compareTo(endDateStr) <= 0) {
           final userId = row['created_by'] as String;
@@ -142,6 +142,8 @@ class ExpenseController extends GetxController {
     debugPrint('[calculateSummary] costPerPerson: ${costPerPerson.value}');
   }
 
+  /// Submits an expense request — saves to the requests collection with Pending status.
+  /// Does NOT create an expense record or affect balance until approved.
   Future<void> addExpense({
     required double amount,
     required String category,
@@ -167,26 +169,29 @@ class ExpenseController extends GetxController {
 
       debugPrint('[addExpense] formatted date: $dateStr');
 
-      await _firestore.collection('expenses').add({
+      // Save to requests collection instead of expenses
+      await _firestore.collection('requests').add({
         'mess_id': messId,
-        'created_by': userId,
-        'status': 'Pending',
-        'amount': amount,
+        'request_type': 'expense',
+        'title': description?.trim() ?? 'Expense',
         'category': category,
+        'amount': amount,
         'note': description?.trim(),
-        'date': dateStr,
+        'request_date': dateStr,
+        'status': 'Pending',
+        'created_by': userId,
         'created_at': FirestoreTime.serverTimestamp,
       });
 
-      debugPrint('[addExpense] Expense inserted successfully');
+      debugPrint('[addExpense] Expense request submitted successfully');
 
       AppNavigation.back();
-      AppNavigation.showSnackBar('Success', 'Expense added successfully',
+      AppNavigation.showSnackBar('Success', 'Expense request submitted for approval',
           backgroundColor: Colors.green);
     } catch (e) {
       debugPrint('[addExpense] Error: $e');
 
-      AppNavigation.showSnackBar('Error', 'Failed to add expense: $e',
+      AppNavigation.showSnackBar('Error', 'Failed to submit expense request: $e',
           backgroundColor: Colors.redAccent);
     } finally {
       isLoading.value = false;
