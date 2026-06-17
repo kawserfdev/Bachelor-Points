@@ -44,6 +44,7 @@ import '../../modules/notifications/views/notification_view.dart';
 import '../../modules/notifications/notification_binding.dart';
 import '../../modules/chat/views/chat_view.dart';
 import '../../modules/chat/chat_binding.dart';
+import '../../modules/mess/views/members_view.dart';
 import '../../modules/report/views/report_view.dart';
 import '../../modules/report/report_binding.dart';
 import '../../modules/settings/views/settings_view.dart';
@@ -83,6 +84,7 @@ class GoRoutes {
   static const chat = '/chat';
   static const report = '/report';
   static const settings = '/settings';
+  static const members = '/members';
   static const toletHome = '/tolet';
   static const propertySearch = '/tolet/search';
   static const propertyMapSearch = '/tolet/map-search';
@@ -388,6 +390,14 @@ GoRouter buildGoRouter(Ref ref) {
         builder: (context, state) {
           SettingsBinding().dependencies();
           return const SettingsView();
+        },
+      ),
+      GoRoute(
+        path: GoRoutes.members,
+        builder: (context, state) {
+          MessBinding().dependencies();
+          RequestBinding().dependencies();
+          return const MembersView();
         },
       ),
 

@@ -126,9 +126,13 @@ class BalanceController extends GetxController {
     debugPrint('[changeMonth] $oldMonth → ${selectedMonth.value}');
   }
 
+  /// Submits a deposit request — saves to the requests collection with Pending status.
+  /// Does NOT create a deposit record or affect balance until approved.
   Future<void> addDeposit({
     required double amount,
     required DateTime date,
+    String paymentMethod = 'cash',
+    String? note,
   }) async {
     final userId = Get.find<AuthService>().currentUser.value?.uid;
     final messId = _messController.activeMess.value?.id;
@@ -147,22 +151,25 @@ class BalanceController extends GetxController {
       final dateStr =
           "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
 
-      await FirebaseFirestore.instance.collection('deposits').add({
+      // Save to requests collection instead of deposits
+      await FirebaseFirestore.instance.collection('requests').add({
         'mess_id': messId,
-        'user_id': userId,
+        'request_type': 'deposit',
         'amount': amount,
+        'payment_method': paymentMethod,
+        'note': note,
+        'request_date': dateStr,
         'status': 'Pending',
-        'received_by': userId,
-        'date': dateStr,
+        'created_by': userId,
         'created_at': FirestoreTime.serverTimestamp,
       });
 
-      debugPrint('[addDeposit] Deposit inserted with pending status');
+      debugPrint('[addDeposit] Deposit request submitted successfully');
 
       AppNavigation.back();
       AppNavigation.showSnackBar(
         'Success',
-        'Deposit added successfully',
+        'Deposit request submitted for approval',
         backgroundColor: Colors.green,
       );
     } catch (e) {
@@ -170,7 +177,7 @@ class BalanceController extends GetxController {
 
       AppNavigation.showSnackBar(
         'Error',
-        'Failed to add deposit: $e',
+        'Failed to submit deposit request: $e',
         backgroundColor: Colors.redAccent,
       );
     } finally {
@@ -204,7 +211,7 @@ class BalanceController extends GetxController {
       debugPrint('[recalculate] Date range: $startDateStr → $endDateStr');
 
       // Only include approved items; exclude pending and rejected ones.
-      bool _isCountable(String? status) => status == 'Approve';
+      bool _isCountable(String? status) => status == 'Approved';
 
       final meals = _allMeals
           .where(

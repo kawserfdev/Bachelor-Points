@@ -198,6 +198,7 @@ class MessController extends GetxController {
 
       final messId = snapshot.docs.first.id;
 
+      // Check if already a member
       final memberCheck = await _firestore
           .collection('mess_members')
           .where('mess_id', isEqualTo: messId)
@@ -209,18 +210,46 @@ class MessController extends GetxController {
         throw 'Already a member';
       }
 
-      await _firestore.collection('mess_members').add({
+      // Check for existing pending join request
+      final pendingCheck = await _firestore
+          .collection('requests')
+          .where('mess_id', isEqualTo: messId)
+          .where('created_by', isEqualTo: userId)
+          .where('request_type', isEqualTo: 'JOIN_MESS')
+          .where('status', isEqualTo: 'Pending')
+          .limit(1)
+          .get();
+
+      if (pendingCheck.docs.isNotEmpty) {
+        throw 'You already have a pending join request for this mess';
+      }
+
+      // Get user profile for name/email
+      final profileDoc = await _firestore
+          .collection('profiles')
+          .doc(userId)
+          .get();
+      final profileData = profileDoc.data();
+      final userName = profileData?['full_name'] as String? ?? 'Unknown';
+      final userEmail = _authService.currentUser.value?.email ?? '';
+
+      // Create a JOIN_MESS request instead of directly adding
+      await _firestore.collection('requests').add({
         'mess_id': messId,
-        'user_id': userId,
-        'role': 'viewer',
-        'joined_at': FirestoreTime.serverTimestamp,
+        'request_type': 'JOIN_MESS',
+        'user_name': userName,
+        'user_email': userEmail,
+        'photo_url': profileData?['photo_url'],
+        'status': 'Pending',
+        'created_by': userId,
+        'created_at': FirestoreTime.serverTimestamp,
       });
 
-      await _loadMessDetails(messId);
-      _listenToMembers(messId);
-
       AppNavigation.back();
-      AppNavigation.showSnackBar('Success', 'Joined mess successfully!');
+      AppNavigation.showSnackBar(
+        'Success',
+        'Join request submitted! Waiting for admin approval.',
+      );
     } catch (e) {
       debugPrint('[joinMess] Error: $e');
       AppNavigation.showSnackBar('Error', e.toString());

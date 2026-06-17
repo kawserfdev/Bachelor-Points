@@ -86,15 +86,15 @@ class HomeController extends GetxController {
     final now = DateTime.now();
     final startOfMonth = DateTime(now.year, now.month, 1);
 
-    // Filter current month data (all statuses, not just approved)
+    // Filter current month data — only approved items affect dashboard
     final monthMeals = _allMeals
-        .where((m) => !m.date.isBefore(startOfMonth))
+        .where((m) => !m.date.isBefore(startOfMonth) && m.status == 'Approved')
         .toList();
     final monthExpenses = _allExpenses
-        .where((e) => !e.date.isBefore(startOfMonth))
+        .where((e) => !e.date.isBefore(startOfMonth) && e.status == 'Approved')
         .toList();
     final monthDeposits = _allDeposits
-        .where((d) => !d.date.isBefore(startOfMonth))
+        .where((d) => !d.date.isBefore(startOfMonth) && d.status == 'Approved')
         .toList();
 
     // My meals this month

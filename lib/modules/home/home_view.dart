@@ -237,21 +237,21 @@ class HomeView extends GetView<HomeController> {
                 onPressed: () => context.push(AppRoutes.notifications),
               ),
             ),
-            const SizedBox(width: 8),
-            // Logout
-            Container(
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHighest.withAlpha(128),
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: Icon(
-                  Icons.logout_rounded,
-                  color: colorScheme.error.withAlpha(200),
-                ),
-                onPressed: () => _showLogoutDialog(context),
-              ),
-            ),
+            // const SizedBox(width: 8),
+            // // Logout
+            // Container(
+            //   decoration: BoxDecoration(
+            //     color: colorScheme.surfaceContainerHighest.withAlpha(128),
+            //     shape: BoxShape.circle,
+            //   ),
+            //   child: IconButton(
+            //     icon: Icon(
+            //       Icons.logout_rounded,
+            //       color: colorScheme.error.withAlpha(200),
+            //     ),
+            //     onPressed: () => _showLogoutDialog(context),
+            //   ),
+            // ),
           ],
         ),
         const SizedBox(height: 20),
@@ -340,6 +340,36 @@ class HomeView extends GetView<HomeController> {
                         ),
                       ],
                     ),
+                    Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withAlpha(51),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  inviteCode,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                const Icon(
+                                  Icons.copy,
+                                  size: 16,
+                                  color: Colors.white70,
+                                ),
+                              ],
+                            ),
+                          ),
                   ],
                 ),
               ),
@@ -637,7 +667,7 @@ class HomeView extends GetView<HomeController> {
             ),
             if (members.length > 4)
               TextButton(
-                onPressed: () {},
+                onPressed: () => context.push(AppRoutes.members),
                 child: Text(
                   'See All (${members.length})',
                   style: TextStyle(

@@ -199,7 +199,7 @@ class MealController extends GetxController {
         'user_id': userId,
         'date': dateStr,
         'breakfast': breakfast.value,
-        'status': 'Pending',
+        'status': 'Approved',
         'lunch': lunch.value,
         'dinner': dinner.value,
         'guest_meals': guestMeals.value,

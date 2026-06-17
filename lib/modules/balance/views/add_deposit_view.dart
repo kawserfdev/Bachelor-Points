@@ -15,8 +15,9 @@ class AddDepositView extends StatefulWidget {
 class _AddDepositViewState extends State<AddDepositView> {
   final controller = Get.find<BalanceController>();
   final formKey = GlobalKey<FormState>();
-  
+
   final amountController = TextEditingController();
+  String selectedPaymentMethod = 'cash';
   DateTime selectedDate = DateTime.now();
 
   @override
@@ -38,7 +39,7 @@ class _AddDepositViewState extends State<AddDepositView> {
             children: [
               _buildDateSelector(context),
               const SizedBox(height: 24),
-              
+
               CustomTextField(
                 label: 'Deposit Amount (৳)',
                 hint: 'e.g. 5000',
@@ -50,16 +51,38 @@ class _AddDepositViewState extends State<AddDepositView> {
                   return null;
                 },
               ),
+              const SizedBox(height: 16),
+
+              DropdownButtonFormField<String>(
+                value: selectedPaymentMethod,
+                decoration: InputDecoration(
+                  labelText: 'Payment Method',
+                  prefixIcon: const Icon(Icons.payment),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  filled: true,
+                  fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(128),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'cash', child: Text('Cash')),
+                  DropdownMenuItem(value: 'bkash', child: Text('bKash')),
+                  DropdownMenuItem(value: 'nagad', child: Text('Nagad')),
+                  DropdownMenuItem(value: 'bank', child: Text('Bank Transfer')),
+                ],
+                onChanged: (value) {
+                  if (value != null) setState(() => selectedPaymentMethod = value);
+                },
+              ),
               const SizedBox(height: 48),
-              
+
               Obx(() => PrimaryButton(
-                    text: 'SAVE DEPOSIT',
+                    text: 'SUBMIT FOR APPROVAL',
                     isLoading: controller.isLoading.value,
                     onPressed: () {
                       if (formKey.currentState!.validate()) {
                         controller.addDeposit(
                           amount: double.parse(amountController.text),
                           date: selectedDate,
+                          paymentMethod: selectedPaymentMethod,
                         );
                       }
                     },
@@ -87,7 +110,7 @@ class _AddDepositViewState extends State<AddDepositView> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          color: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(128),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
