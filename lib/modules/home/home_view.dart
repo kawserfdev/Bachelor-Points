@@ -1,3 +1,4 @@
+import 'package:bachelorpoints/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -40,7 +41,12 @@ class HomeView extends GetView<HomeController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildHeader(context, messController, mess.name, mess.inviteCode),
+                  _buildHeader(
+                    context,
+                    messController,
+                    mess.name,
+                    mess.inviteCode,
+                  ),
                   const SizedBox(height: 24),
                   _buildSummaryCards(context),
                   const SizedBox(height: 28),
@@ -54,6 +60,60 @@ class HomeView extends GetView<HomeController> {
         );
       }),
     );
+  }
+
+  Widget _buildExpandButton(BuildContext context) {
+    final messController = Get.find<MessController>();
+    final colorScheme = Theme.of(context).colorScheme;
+    return Obx(() {
+      final isExpanded = messController.isExpandedFeatures.value;
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: messController.toggleFeatures,
+          borderRadius: BorderRadius.circular(12),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            decoration: BoxDecoration(
+              color: isExpanded
+                  ? AppTheme.primary.withAlpha(20)
+                  : colorScheme.surfaceContainerHighest.withAlpha(120),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isExpanded
+                    ? AppTheme.primary.withAlpha(50)
+                    : colorScheme.outlineVariant.withAlpha(60),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AnimatedRotation(
+                  turns: isExpanded ? 0.5 : 0,
+                  duration: const Duration(milliseconds: 250),
+                  child: Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 22,
+                    color: AppTheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  isExpanded ? 'Show Less' : 'Show More Features',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
   }
 
   // ──────────────────────────────────────────
@@ -82,9 +142,9 @@ class HomeView extends GetView<HomeController> {
             const SizedBox(height: 28),
             Text(
               'You are not in a Mess',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             Text(
@@ -201,10 +261,7 @@ class HomeView extends GetView<HomeController> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                colorScheme.primary,
-                colorScheme.primary.withAlpha(204),
-              ],
+              colors: [colorScheme.primary, colorScheme.primary.withAlpha(204)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -348,7 +405,8 @@ class HomeView extends GetView<HomeController> {
               child: _SummaryCard(
                 icon: Icons.shopping_cart_rounded,
                 label: 'Bazar',
-                value: '৳${controller.totalBazarExpense.value.toStringAsFixed(0)}',
+                value:
+                    '৳${controller.totalBazarExpense.value.toStringAsFixed(0)}',
                 color: const Color(0xFFFF6B6B),
                 bgColor: const Color(0xFFFF6B6B).withAlpha(26),
               ),
@@ -389,57 +447,104 @@ class HomeView extends GetView<HomeController> {
   Widget _buildQuickActions(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-
     final actions = [
       _QuickAction(
         icon: Icons.restaurant_menu_rounded,
         label: 'Add Meal',
-        color: const Color(0xFFFFA726),
+        color: const Color(0xFFFFA726), // Warm Orange
         onTap: () => context.push(AppRoutes.mealEntry),
       ),
       _QuickAction(
         icon: Icons.receipt_long_rounded,
         label: 'Add Expense',
-        color: const Color(0xFFFF6B6B),
+        color: const Color(0xFFFF6B6B), // Coral Red
         onTap: () => context.push(AppRoutes.addExpense),
       ),
       _QuickAction(
         icon: Icons.account_balance_wallet_rounded,
         label: 'Add Deposit',
-        color: const Color(0xFF42A5F5),
+        color: const Color(0xFF42A5F5), // Sky Blue
         onTap: () => context.push(AppRoutes.addDeposit),
       ),
       _QuickAction(
         icon: Icons.bar_chart_rounded,
         label: 'Balances',
-        color: const Color(0xFF66BB6A),
+        color: const Color(0xFF66BB6A), // Fresh Green
         onTap: () => context.push(AppRoutes.balanceSummary),
       ),
       _QuickAction(
         icon: Icons.analytics_rounded,
         label: 'Report',
-        color: const Color(0xFFAB47BC),
+        color: const Color(0xFFAB47BC), // Orchid Purple
         onTap: () => context.push(AppRoutes.report),
       ),
       _QuickAction(
         icon: Icons.chat_bubble_rounded,
         label: 'Chat',
-        color: const Color(0xFF26A69A),
+        color: const Color(0xFF26A69A), // Deep Teal
         onTap: () => context.push(AppRoutes.chat),
       ),
       _QuickAction(
         icon: Icons.checklist_rounded,
         label: 'Approvals',
-        color: const Color(0xFF78909C),
+        color: const Color(0xFF78909C), // Slate Blue Grey
         onTap: () => context.push(AppRoutes.approvals),
       ),
       _QuickAction(
-        icon: Icons.settings_rounded,
+        icon: Icons.notifications_active_rounded,
+        label: 'Notifications',
+        color: const Color(0xFFFFB74D), // Amber
+        onTap: () => context.push(
+          AppRoutes.settings,
+        ), // Note: update route if app_routes contains specific notifications path
+      ),
+      _QuickAction(
+        icon: Icons.home_work_rounded,
+        label: 'Properties',
+        color: const Color(0xFFE91E63), // Rose/Pink
+        onTap: () => context.push(AppRoutes.settings),
+      ),
+      _QuickAction(
+        icon: Icons.add_business_rounded,
+        label: 'Post Property',
+        color: const Color(0xFF4CAF50), // Olive Green
+        onTap: () => context.push(AppRoutes.settings),
+      ),
+      _QuickAction(
+        icon: Icons.list_alt_rounded,
+        label: 'My Listings',
+        color: const Color(0xFFFF9800), // Dark Amber
+        onTap: () => context.push(AppRoutes.settings),
+      ),
+      _QuickAction(
+        icon: Icons.search_off_rounded,
+        label: 'Need Based',
+        color: const Color(0xFF795548), // Warm Brown
+        onTap: () => context.push(AppRoutes.settings),
+      ),
+      _QuickAction(
+        icon: Icons.monetization_on_rounded,
+        label: 'Credits',
+        color: const Color(0xFFFFC107), // Golden Yellow
+        onTap: () => context.push(AppRoutes.settings),
+      ),
+      _QuickAction(
+        icon: Icons.share_rounded,
+        label: 'Referral',
+        color: const Color(0xFF2196F3), // Indigo Blue
+        onTap: () => context.push(AppRoutes.settings),
+      ),
+      _QuickAction(
+        icon: Icons.settings_suggest_rounded,
         label: 'Settings',
-        color: const Color(0xFF5C6BC0),
+        color: const Color(0xFF5C6BC0), // Soft Blue Indigo
         onTap: () => context.push(AppRoutes.settings),
       ),
     ];
+    // List<_QuickAction> getDisplayFeatures() {
+    //   return actions.take(4).toList();
+    // }
+    final messController = Get.find<MessController>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -462,7 +567,9 @@ class HomeView extends GetView<HomeController> {
             crossAxisSpacing: 14,
             childAspectRatio: 0.85,
           ),
-          itemCount: actions.length,
+          itemCount: messController.isExpandedFeatures.value
+              ? actions.length
+              : 4,
           itemBuilder: (context, index) {
             final action = actions[index];
             return GestureDetector(
@@ -476,11 +583,7 @@ class HomeView extends GetView<HomeController> {
                       color: action.color.withAlpha(26),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Icon(
-                      action.icon,
-                      color: action.color,
-                      size: 28,
-                    ),
+                    child: Icon(action.icon, color: action.color, size: 28),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -498,6 +601,8 @@ class HomeView extends GetView<HomeController> {
             );
           },
         ),
+        const SizedBox(height: 16),
+        _buildExpandButton(context),
       ],
     );
   }
@@ -505,7 +610,10 @@ class HomeView extends GetView<HomeController> {
   // ──────────────────────────────────────────
   // Members Preview (show top 3-4 members)
   // ──────────────────────────────────────────
-  Widget _buildMembersPreview(BuildContext context, MessController messController) {
+  Widget _buildMembersPreview(
+    BuildContext context,
+    MessController messController,
+  ) {
     final theme = Theme.of(context);
     final members = messController.members;
     final displayMembers = members.take(4).toList();
@@ -542,58 +650,60 @@ class HomeView extends GetView<HomeController> {
           ],
         ),
         const SizedBox(height: 8),
-        ...displayMembers.map((member) => Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest.withAlpha(80),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: theme.colorScheme.primary,
-                    child: Text(
-                      (member.fullName ?? 'U').substring(0, 1).toUpperCase(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                      ),
+        ...displayMembers.map(
+          (member) => Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest.withAlpha(80),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: theme.colorScheme.primary,
+                  child: Text(
+                    (member.fullName ?? 'U').substring(0, 1).toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      member.fullName ?? member.email ?? 'Unknown',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    member.fullName ?? member.email ?? 'Unknown',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withAlpha(26),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      member.role.toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: theme.colorScheme.primary,
-                      ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withAlpha(26),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    member.role.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: theme.colorScheme.primary,
                     ),
                   ),
-                ],
-              ),
-            )),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -651,11 +761,11 @@ class _SummaryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(80),
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withAlpha(80),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.black.withAlpha(13),
-        ),
+        border: Border.all(color: Colors.black.withAlpha(13)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

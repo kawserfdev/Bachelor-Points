@@ -9,13 +9,12 @@ class ApprovalView extends GetView<RequestController> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 2,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Pending Approvals'),
           bottom: const TabBar(
             tabs: [
-              Tab(text: 'Meals'),
               Tab(text: 'Expenses'),
               Tab(text: 'Deposits'),
             ],
@@ -23,7 +22,7 @@ class ApprovalView extends GetView<RequestController> {
         ),
         body: TabBarView(
           children: [
-            _buildMealsTab(),
+           // _buildMealsTab(),
             _buildExpensesTab(),
             _buildDepositsTab(),
           ],
