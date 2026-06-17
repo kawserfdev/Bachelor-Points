@@ -177,7 +177,7 @@ class ReportController extends GetxController {
           .map((doc) => MealModel.fromJson(
               {'id': doc.id, ...doc.data() as Map<String, dynamic>}))
           .where((m) =>
-              (m.status == 'Approve' || m.status == 'Pending') &&
+              m.status == 'Approve' &&
               _dateInRange(m.date))
           .toList();
 
@@ -185,7 +185,7 @@ class ReportController extends GetxController {
           .map((doc) => ExpenseModel.fromJson(
               {'id': doc.id, ...doc.data() as Map<String, dynamic>}))
           .where((e) =>
-              (e.status == 'Approve' || e.status == 'Pending') &&
+              e.status == 'Approve' &&
               _dateInRange(e.date))
           .toList();
 
@@ -193,7 +193,7 @@ class ReportController extends GetxController {
           .map((doc) => DepositModel.fromJson(
               {'id': doc.id, ...doc.data() as Map<String, dynamic>}))
           .where((d) =>
-              (d.status == 'Approve' || d.status == 'Pending') &&
+              d.status == 'Approve' &&
               _dateInRange(d.date))
           .toList();
 

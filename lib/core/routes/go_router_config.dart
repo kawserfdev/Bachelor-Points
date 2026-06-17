@@ -25,6 +25,7 @@ import '../../modules/auth/verify_email/verify_email_view.dart';
 import '../../modules/home/home_view.dart';
 import '../../modules/home/home_binding.dart';
 import '../../modules/explore/explore_view.dart';
+import '../../modules/explore/explore_binding.dart';
 import '../../modules/profile/profile_view.dart';
 import '../../modules/mess/create_mess_view.dart';
 import '../../modules/mess/join_mess_view.dart';
@@ -289,7 +290,10 @@ GoRouter buildGoRouter(Ref ref) {
           ),
           GoRoute(
             path: GoRoutes.explore,
-            builder: (context, state) => const ExploreView(),
+            builder: (context, state) {
+              ExploreBinding().dependencies();
+              return const ExploreView();
+            },
           ),
           GoRoute(
             path: GoRoutes.profile,

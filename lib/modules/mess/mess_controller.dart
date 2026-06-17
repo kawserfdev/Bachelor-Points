@@ -21,6 +21,8 @@ class MessController extends GetxController {
   
   final Map<String, Map<String, dynamic>> _profileCache = {};
   StreamSubscription? _membersSub;
+  final RxBool isExpandedFeatures = false.obs;
+  void toggleFeatures() => isExpandedFeatures.toggle();
 
   @override
   void onInit() {

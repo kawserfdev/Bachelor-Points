@@ -147,29 +147,17 @@ class BalanceController extends GetxController {
       final dateStr =
           "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
 
-      final docRef = await FirebaseFirestore.instance.collection('deposits').add({
+      await FirebaseFirestore.instance.collection('deposits').add({
         'mess_id': messId,
         'user_id': userId,
         'amount': amount,
-        'status': 'Approve',
+        'status': 'Pending',
         'received_by': userId,
         'date': dateStr,
         'created_at': FirestoreTime.serverTimestamp,
       });
 
-      debugPrint('[addDeposit] Deposit inserted with id: ${docRef.id}');
-
-      // Immediately add to in-memory list so the balance updates before the
-      // Firestore snapshot listener fires (avoids race condition on back()).
-      _allDeposits.add(DepositModel(
-        id: docRef.id,
-        messId: messId,
-        userId: userId,
-        amount: amount,
-        date: date,
-        status: 'Approve',
-      ));
-      _recalculate();
+      debugPrint('[addDeposit] Deposit inserted with pending status');
 
       AppNavigation.back();
       AppNavigation.showSnackBar(
@@ -215,9 +203,8 @@ class BalanceController extends GetxController {
 
       debugPrint('[recalculate] Date range: $startDateStr → $endDateStr');
 
-      // Include approved and pending items; exclude rejected ones.
-      bool _isCountable(String? status) =>
-          status == 'Approve' || status == 'Pending';
+      // Only include approved items; exclude pending and rejected ones.
+      bool _isCountable(String? status) => status == 'Approve';
 
       final meals = _allMeals
           .where(

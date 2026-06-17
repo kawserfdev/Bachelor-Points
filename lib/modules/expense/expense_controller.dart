@@ -85,8 +85,10 @@ class ExpenseController extends GetxController {
 
       for (var row in data) {
         final dateStr = row['date'] as String;
+        final status = row['status'] as String?;
 
-        if (dateStr.compareTo(startDateStr) >= 0 &&
+        if (status == 'Approve' &&
+            dateStr.compareTo(startDateStr) >= 0 &&
             dateStr.compareTo(endDateStr) <= 0) {
           final userId = row['created_by'] as String;
 
