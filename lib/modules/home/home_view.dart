@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'home_controller.dart';
 import '../mess/mess_controller.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../data/models/member_model.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
@@ -194,10 +195,18 @@ class HomeView extends GetView<HomeController> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    // Get current user's role from members list
+    final currentUserId = controller.authService.currentUser.value?.uid;
+    final currentMember = messController.members
+        .cast<MemberModel?>()
+        .firstWhere((m) => m?.userId == currentUserId, orElse: () => null);
+    final userRole = currentMember?.role ?? 'member';
+    final roleLabel = userRole[0].toUpperCase() + userRole.substring(1);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Top row: Greeting + notification & logout icons
+        // Top row: Greeting + role badge + notification icon
         Row(
           children: [
             Expanded(
@@ -237,21 +246,6 @@ class HomeView extends GetView<HomeController> {
                 onPressed: () => context.push(AppRoutes.notifications),
               ),
             ),
-            // const SizedBox(width: 8),
-            // // Logout
-            // Container(
-            //   decoration: BoxDecoration(
-            //     color: colorScheme.surfaceContainerHighest.withAlpha(128),
-            //     shape: BoxShape.circle,
-            //   ),
-            //   child: IconButton(
-            //     icon: Icon(
-            //       Icons.logout_rounded,
-            //       color: colorScheme.error.withAlpha(200),
-            //     ),
-            //     onPressed: () => _showLogoutDialog(context),
-            //   ),
-            // ),
           ],
         ),
         const SizedBox(height: 20),
@@ -280,12 +274,38 @@ class HomeView extends GetView<HomeController> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      messName,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          messName,
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary.withAlpha(77),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: Colors.white.withAlpha(77),
+                            ),
+                          ),
+                          child: Text(
+                            roleLabel,
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 6),
                     Row(
@@ -340,36 +360,6 @@ class HomeView extends GetView<HomeController> {
                         ),
                       ],
                     ),
-                    Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withAlpha(51),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  inviteCode,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 16,
-                                    letterSpacing: 1.2,
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                const Icon(
-                                  Icons.copy,
-                                  size: 16,
-                                  color: Colors.white70,
-                                ),
-                              ],
-                            ),
-                          ),
                   ],
                 ),
               ),

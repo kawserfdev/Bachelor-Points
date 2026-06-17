@@ -30,8 +30,8 @@ class SettingsView extends GetView<SettingsController> {
             _buildGeneralSettings(context),
             const SizedBox(height: 16),
             _buildBazarScheduleCard(context),
-            const SizedBox(height: 16),
-            _buildRoleManagementCard(),
+            // const SizedBox(height: 16),
+            // _buildRoleManagementCard(),
           ],
         );
       }),
@@ -42,6 +42,7 @@ class SettingsView extends GetView<SettingsController> {
     return Card(
       elevation: 2,
       child: ExpansionTile(
+        
         title: const Text('General Settings', style: TextStyle(fontWeight: FontWeight.bold)),
         initiallyExpanded: true,
         children: [
@@ -166,39 +167,39 @@ class SettingsView extends GetView<SettingsController> {
     );
   }
 
-  Widget _buildRoleManagementCard() {
-    return Card(
-      elevation: 2,
-      child: ExpansionTile(
-        title: const Text('Role Management', style: TextStyle(fontWeight: FontWeight.bold)),
-        children: [
-          Obx(() => ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: controller.members.length,
-            itemBuilder: (context, index) {
-              final member = controller.members[index];
-              return ListTile(
-                title: Text(member.fullName ?? 'Unknown'),
-                subtitle: Text(member.email ?? ''),
-                trailing: DropdownButton<String>(
-                  value: member.role,
-                  items: const [
-                    DropdownMenuItem(value: 'member', child: Text('Member')),
-                    DropdownMenuItem(value: 'manager', child: Text('Manager')),
-                    DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                  ],
-                  onChanged: (newRole) {
-                    if (newRole != null && newRole != member.role) {
-                      controller.changeMemberRole(member.id, newRole);
-                    }
-                  },
-                ),
-              );
-            },
-          )),
-        ],
-      ),
-    );
-  }
+  // Widget _buildRoleManagementCard() {
+  //   return Card(
+  //     elevation: 2,
+  //     child: ExpansionTile(
+  //       title: const Text('Role Management', style: TextStyle(fontWeight: FontWeight.bold)),
+  //       children: [
+  //         Obx(() => ListView.builder(
+  //           shrinkWrap: true,
+  //           physics: const NeverScrollableScrollPhysics(),
+  //           itemCount: controller.members.length,
+  //           itemBuilder: (context, index) {
+  //             final member = controller.members[index];
+  //             return ListTile(
+  //               title: Text(member.fullName ?? 'Unknown'),
+  //               subtitle: Text(member.email ?? ''),
+  //               trailing: DropdownButton<String>(
+  //                 value: member.role,
+  //                 items: const [
+  //                   DropdownMenuItem(value: 'member', child: Text('Member')),
+  //                   DropdownMenuItem(value: 'manager', child: Text('Manager')),
+  //                   DropdownMenuItem(value: 'admin', child: Text('Admin')),
+  //                 ],
+  //                 onChanged: (newRole) {
+  //                   if (newRole != null && newRole != member.role) {
+  //                     controller.changeMemberRole(member.id, newRole);
+  //                   }
+  //                 },
+  //               ),
+  //             );
+  //           },
+  //         )),
+  //       ],
+  //     ),
+  //   );
+  // }
 }
