@@ -50,8 +50,7 @@ class AuthService extends GetxService {
       if (credential.user != null && !credential.user!.emailVerified) {
         await credential.user!.sendEmailVerification();
         debugPrint('Verification email re-sent to unverified user: $email');
-      }else{
-        
+      } else {
         debugPrint('User signed in successfully: $email');
       }
     } on FirebaseAuthException catch (e) {
@@ -103,24 +102,32 @@ class AuthService extends GetxService {
 
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn.instance;
+      if (kIsWeb) {
+        // Use Firebase Auth signInWithPopup on web
+        final GoogleAuthProvider googleProvider = GoogleAuthProvider();
+        googleProvider.setCustomParameters({'prompt': 'select_account'});
+        await _auth.signInWithPopup(googleProvider);
+      } else {
+        // Initialize Google Sign-In
+        await googleSignIn.initialize();
 
-      // Initialize Google Sign-In
-      await googleSignIn.initialize();
+        // Authenticate user
+        final GoogleSignInAccount googleUser = await googleSignIn
+            .authenticate();
 
-      // Authenticate user
-      final GoogleSignInAccount googleUser = await googleSignIn.authenticate();
+        // Get authentication tokens
+        final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+        //final GoogleSignInClientAuthorization googleAuthAccessToken = await googleUser.getClientAuthorization();
 
-      // Get authentication tokens
-      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+        // Create Firebase credential
+        final OAuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.idToken,
+          idToken: googleAuth.idToken,
+        );
 
-      // Create Firebase credential
-      final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.idToken,
-        idToken: googleAuth.idToken,
-      );
-
-      // Sign in to Firebase
-      await _auth.signInWithCredential(credential);
+        // Sign in to Firebase
+        await _auth.signInWithCredential(credential);
+      }
 
       debugPrint('Google Sign-In successful');
     } on GoogleSignInException catch (e) {

@@ -86,22 +86,29 @@ class AppAuthService {
     debugPrint('AppAuthService.signInWithGoogle');
 
     try {
-      // Ensure the Google Sign-In native plugin is initialized
-      await _googleSignIn.initialize();
+      if (kIsWeb) {
+        // Use Firebase Auth signInWithPopup on web
+        final GoogleAuthProvider googleProvider = GoogleAuthProvider();
+        googleProvider.setCustomParameters({'prompt': 'select_account'});
+        return await _auth.signInWithPopup(googleProvider);
+      } else {
+        // Ensure the Google Sign-In native plugin is initialized
+        await _googleSignIn.initialize();
 
-      // Prompt the user to select/authenticate a Google account
-      final googleUser = await _googleSignIn.authenticate();
-      final googleAuth = googleUser.authentication;
+        // Prompt the user to select/authenticate a Google account
+        final googleUser = await _googleSignIn.authenticate();
+        final googleAuth = googleUser.authentication;
 
-      // Create a Firebase credential from the Google auth tokens.
-      // google_sign_in >= 7.0.0 only exposes idToken on
-      // GoogleSignInAuthentication; the idToken is sufficient for
-      // Firebase sign-in.
-      final credential = GoogleAuthProvider.credential(
-        idToken: googleAuth.idToken,
-      );
+        // Create a Firebase credential from the Google auth tokens.
+        // google_sign_in >= 7.0.0 only exposes idToken on
+        // GoogleSignInAuthentication; the idToken is sufficient for
+        // Firebase sign-in.
+        final credential = GoogleAuthProvider.credential(
+          idToken: googleAuth.idToken,
+        );
 
-      return await _auth.signInWithCredential(credential);
+        return await _auth.signInWithCredential(credential);
+      }
     } on GoogleSignInException catch (e) {
       debugPrint('Google Sign-In Error: ${e.code} - ${e.description}');
       throw Exception(e.description ?? 'Google Sign-In failed');
