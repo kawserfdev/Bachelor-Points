@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 import '../../services/auth_service.dart';
@@ -13,23 +14,23 @@ final getStorageProvider = Provider<GetStorage>((ref) {
 
 /// StorageService — wraps GetStorage with typed read/write
 final storageServiceProvider = Provider<StorageService>((ref) {
-  return StorageService();
+  return Get.find<StorageService>();
 });
 
 /// AuthService — wraps Firebase Auth + Google Sign-In business logic
 /// Kept as a bridge during GetX → Riverpod migration
 final authServiceProvider = Provider<AuthService>((ref) {
-  return AuthService();
+  return Get.find<AuthService>();
 });
 
 /// FCM Service — handles push notification token management
 final fcmServiceProvider = Provider<FcmService>((ref) {
-  return FcmService();
+  return Get.find<FcmService>();
 });
 
 /// Realtime Service — handles Firestore real-time listeners
 final realtimeServiceProvider = Provider<RealtimeService>((ref) {
-  return RealtimeService();
+  return Get.find<RealtimeService>();
 });
 
 /// Current active mess ID (set when user enters a mess)
