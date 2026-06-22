@@ -526,45 +526,44 @@ class HomeView extends GetView<HomeController> {
         icon: Icons.notifications_active_rounded,
         label: 'Notifications',
         color: const Color(0xFFFFB74D), // Amber
-        onTap: () => context.push(
-          AppRoutes.settings,
-        ), // Note: update route if app_routes contains specific notifications path
+        onTap: () => context.push(AppRoutes.notifications), // Note: update route if app_routes contains specific notifications path
+        
       ),
-      _QuickAction(
-        icon: Icons.home_work_rounded,
-        label: 'Properties',
-        color: const Color(0xFFE91E63), // Rose/Pink
-        onTap: () => context.push(AppRoutes.settings),
-      ),
+      // _QuickAction(
+      //   icon: Icons.home_work_rounded,
+      //   label: 'Properties',
+      //   color: const Color(0xFFE91E63), // Rose/Pink
+      //   onTap: () => context.push(AppRoutes.explore),
+      // ),
       _QuickAction(
         icon: Icons.add_business_rounded,
         label: 'Post Property',
         color: const Color(0xFF4CAF50), // Olive Green
-        onTap: () => context.push(AppRoutes.settings),
+        onTap: () => context.push(AppRoutes.propertyPost),
       ),
       _QuickAction(
         icon: Icons.list_alt_rounded,
         label: 'My Listings',
         color: const Color(0xFFFF9800), // Dark Amber
-        onTap: () => context.push(AppRoutes.settings),
+        onTap: () => context.push(AppRoutes.myListings),
       ),
       _QuickAction(
         icon: Icons.search_off_rounded,
         label: 'Need Based',
         color: const Color(0xFF795548), // Warm Brown
-        onTap: () => context.push(AppRoutes.settings),
+        onTap: () => context.push(AppRoutes.needBasedPost),
       ),
       _QuickAction(
         icon: Icons.monetization_on_rounded,
         label: 'Credits',
         color: const Color(0xFFFFC107), // Golden Yellow
-        onTap: () => context.push(AppRoutes.settings),
+        onTap: () => context.push(AppRoutes.creditBalance),
       ),
       _QuickAction(
         icon: Icons.share_rounded,
         label: 'Referral',
         color: const Color(0xFF2196F3), // Indigo Blue
-        onTap: () => context.push(AppRoutes.settings),
+        onTap: () => context.push(AppRoutes.referral),
       ),
       _QuickAction(
         icon: Icons.settings_suggest_rounded,

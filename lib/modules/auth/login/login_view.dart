@@ -120,16 +120,16 @@ class _LoginViewState extends ConsumerState<LoginView> {
                 Text(
                   'Welcome Back!',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Sign in to continue',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 48),
@@ -183,10 +183,18 @@ class _LoginViewState extends ConsumerState<LoginView> {
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
                   onPressed: _isLoading ? null : _googleSignIn,
-                  icon: const Icon(Icons.g_mobiledata, size: 28),
-                  label: const Text(
+                  icon: Image.asset(
+                    'assets/google_logo.png',
+                    width: 22,
+                    height: 22,
+                  ),
+                  label:  Text(
                     'Continue with Google',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).unselectedWidgetColor,
+                    ),
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Theme.of(context).secondaryHeaderColor,
