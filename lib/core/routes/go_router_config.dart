@@ -191,9 +191,9 @@ GoRouter buildGoRouter(Ref ref) {
       return GoRoutes.login;
     }
 
-    // If authenticated and on a public auth route
-    if (isAuthenticated && isPublicAuthRoute) {
-      debugPrint("Authenticated user is on Auth Route");
+    // If authenticated and on a public auth route or verify-email route
+    if (isAuthenticated && (isPublicAuthRoute || isVerifyEmail)) {
+      debugPrint("Authenticated user is on Auth/Verify Route");
 
       if (hasProfileAsync.isLoading) {
         debugPrint("Profile check loading -> Stay");
@@ -225,6 +225,15 @@ GoRouter buildGoRouter(Ref ref) {
       if (hasProfile == false) {
         debugPrint("No profile found -> Redirect to Create Profile");
         return GoRoutes.createProfile;
+      }
+    }
+
+    // If authenticated and on create-profile route but already has a profile
+    if (isAuthenticated && isCreateProfile) {
+      final hasProfile = hasProfileAsync.asData?.value;
+      if (hasProfile == true) {
+        debugPrint("User already has a profile -> Redirect to Home");
+        return GoRoutes.home;
       }
     }
 

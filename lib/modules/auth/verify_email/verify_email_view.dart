@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
@@ -13,30 +16,85 @@ class VerifyEmailView extends StatefulWidget {
 class _VerifyEmailViewState extends State<VerifyEmailView> {
   bool _isResending = false;
   bool _isChecking = false;
+  Timer? _autoCheckTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Auto-poll every 5 seconds. The moment the user clicks the verification
+    // link in their inbox, the next poll will detect it and navigate them
+    // forward — no manual button press needed.
+    _autoCheckTimer = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) => _checkVerificationStatus(silent: true),
+    );
+  }
+
+  @override
+  void dispose() {
+    _autoCheckTimer?.cancel();
+    super.dispose();
+  }
 
   /// Reload the current user and check if the email has been verified.
-  Future<void> _checkVerificationStatus() async {
+  /// When [silent] is true (auto-poll), no snackbar is shown on failure.
+  ///
+  /// We navigate DIRECTLY to the correct destination instead of relying on
+  /// GoRouter redirect, which has a timing race: the redirect may fire before
+  /// idTokenChanges() re-emits the updated auth state, causing the user to
+  /// bounce back to /verify-email.
+  Future<void> _checkVerificationStatus({bool silent = false}) async {
+    if (_isChecking) return;
     setState(() => _isChecking = true);
     try {
       final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        await user.reload();
-        // Re-fetch the user after reload to get the updated emailVerified flag
-        final refreshedUser = FirebaseAuth.instance.currentUser;
-        if (refreshedUser != null && refreshedUser.emailVerified) {
-          if (!mounted) return;
-          context.go(AppRoutes.login);
-          return;
+      if (user == null) return;
+
+      // Reload fetches the latest emailVerified state from Firebase servers.
+      await user.reload();
+      final refreshedUser = FirebaseAuth.instance.currentUser;
+
+      if (refreshedUser == null || !refreshedUser.emailVerified) {
+        // Not verified yet — show snackbar only if user pressed button.
+        if (!silent && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Email not verified yet. Please check your inbox.'),
+            ),
+          );
         }
+        return;
       }
+
+      // ✅ Email is verified — stop polling.
+      _autoCheckTimer?.cancel();
+      debugPrint('[VerifyEmail] Email verified for ${refreshedUser.uid}');
+
+      // Check whether a profile document already exists in Firestore.
+      // We do this directly here so we can navigate to the exact destination
+      // without waiting for Riverpod providers to re-evaluate after the
+      // idTokenChanges() stream re-emits (which would cause the timing race).
+      final profileDoc = await FirebaseFirestore.instance
+          .collection('profiles')
+          .doc(refreshedUser.uid)
+          .get();
+
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Email not verified yet. Please check your inbox.'),
-        ),
-      );
+
+      if (profileDoc.exists) {
+        debugPrint('[VerifyEmail] Profile exists → navigating to home');
+        context.go(AppRoutes.home);
+      } else {
+        debugPrint('[VerifyEmail] No profile → navigating to create-profile');
+        context.go(AppRoutes.createProfile);
+      }
     } catch (e) {
-      debugPrint('Error checking verification: $e');
+      debugPrint('[VerifyEmail] Error checking verification: $e');
+      if (!silent && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Something went wrong: $e')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isChecking = false);
     }
@@ -132,7 +190,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('I have verified, Go to Login'),
+                    : const Text("I've verified my email"),
               ),
               const SizedBox(height: 16),
 

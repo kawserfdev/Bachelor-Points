@@ -61,7 +61,7 @@ class CreateProfileView extends GetView<CreateProfileController> {
                 Obx(() => ElevatedButton(
                   onPressed: controller.isLoading.value
                       ? null
-                      : controller.saveProfile,
+                      : () => controller.saveProfile(),
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 50),
                     shape: RoundedRectangleBorder(

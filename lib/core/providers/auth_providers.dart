@@ -1,8 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../auth/auth_service.dart';
-import 'service_providers.dart';
 
 /// AppAuthService instance provider
 final appAuthServiceProvider = Provider<AppAuthService>((ref) {
@@ -58,12 +58,14 @@ final authStateProvider = Provider<AuthState>((ref) {
 /// Whether the current user has a Firestore profile document.
 /// Used by GoRouter redirect to route to createProfile if no profile exists.
 /// Watches the auth stream so it re-evaluates on sign-in/sign-out.
-final hasProfileProvider = FutureProvider<bool>((ref) async {
+final hasProfileProvider = StreamProvider.autoDispose<bool>((ref) {
   final userAsync = ref.watch(authUserStreamProvider);
   final user = userAsync.asData?.value;
-  if (user == null) return false;
+  if (user == null) return Stream.value(false);
 
-  // Use the old AuthService bridge during migration
-  final authService = ref.watch(authServiceProvider);
-  return authService.hasProfile(user.uid);
+  return FirebaseFirestore.instance
+      .collection('profiles')
+      .doc(user.uid)
+      .snapshots()
+      .map((snapshot) => snapshot.exists);
 });
