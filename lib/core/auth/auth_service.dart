@@ -20,8 +20,11 @@ class AppAuthService {
   final FirebaseFirestore _firestore;
   final GoogleSignIn _googleSignIn;
 
-  /// Stream of Firebase auth state changes
-  Stream<User?> get authStateChanges => _auth.authStateChanges();
+  /// Stream of Firebase auth token changes.
+  /// Using idTokenChanges() instead of authStateChanges() ensures the stream
+  /// re-emits when the user's email is verified (after user.reload()), which
+  /// triggers GoRouter's redirect logic automatically.
+  Stream<User?> get authStateChanges => _auth.idTokenChanges();
 
   /// Current logged-in user (or null)
   User? get currentUser => _auth.currentUser;
