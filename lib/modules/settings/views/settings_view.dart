@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../settings_controller.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../../shared/helpers/navigation_helper.dart';
+import '../../notifications/providers/notification_providers.dart';
 
 class SettingsView extends GetView<SettingsController> {
   const SettingsView({super.key});
@@ -32,6 +33,8 @@ class SettingsView extends GetView<SettingsController> {
             _buildGeneralSettings(context),
             const SizedBox(height: 16),
             _buildAppearanceCard(context),
+            const SizedBox(height: 16),
+            _buildNotificationPreferencesCard(context),
             const SizedBox(height: 16),
             _buildBazarScheduleCard(context),
             // const SizedBox(height: 16),
@@ -150,6 +153,113 @@ class SettingsView extends GetView<SettingsController> {
                   ),
                   const SizedBox(height: 8),
                 ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationPreferencesCard(BuildContext context) {
+    return Card(
+      elevation: 2,
+      child: ExpansionTile(
+        title: const Text(
+          'Notification Preferences',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        initiallyExpanded: false,
+        children: [
+          Consumer(
+            builder: (context, ref, child) {
+              final prefsAsync = ref.watch(notificationPrefsProvider);
+
+              return prefsAsync.when(
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+                error: (error, stack) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Error loading preferences: $error',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ),
+                data: (prefs) {
+                  final controller = ref.read(
+                    notificationPrefsProvider.notifier,
+                  );
+
+                  return Column(
+                    children: [
+                      SwitchListTile(
+                        title: const Text('Meal Notifications'),
+                        subtitle: const Text(
+                          'Get notified when meals are added or changed',
+                        ),
+                        value: prefs.mealNotifications,
+                        onChanged: (val) =>
+                            controller.toggleMealNotifications(val),
+                      ),
+                      const Divider(),
+                      SwitchListTile(
+                        title: const Text('Expense Notifications'),
+                        subtitle: const Text(
+                          'Get notified when a new expense is logged',
+                        ),
+                        value: prefs.expenseNotifications,
+                        onChanged: (val) =>
+                            controller.toggleExpenseNotifications(val),
+                      ),
+                      const Divider(),
+                      SwitchListTile(
+                        title: const Text('Deposit Notifications'),
+                        subtitle: const Text(
+                          'Get notified when deposits are recorded or approved',
+                        ),
+                        value: prefs.depositNotifications,
+                        onChanged: (val) =>
+                            controller.toggleDepositNotifications(val),
+                      ),
+                      const Divider(),
+                      SwitchListTile(
+                        title: const Text('Shopping Notifications'),
+                        subtitle: const Text('Receive shopping duty reminders'),
+                        value: prefs.shoppingNotifications,
+                        onChanged: (val) =>
+                            controller.toggleShoppingNotifications(val),
+                      ),
+                      const Divider(),
+                      SwitchListTile(
+                        title: const Text('Push Notifications'),
+                        subtitle: const Text(
+                          'Enable push notifications to this device',
+                        ),
+                        value: prefs.pushNotifications,
+                        onChanged: (val) =>
+                            controller.togglePushNotifications(val),
+                      ),
+                      const Divider(),
+                      SwitchListTile(
+                        title: const Text('Notification Sound'),
+                        value: prefs.sound,
+                        onChanged: (val) => controller.toggleSound(val),
+                      ),
+                      const Divider(),
+                      SwitchListTile(
+                        title: const Text('Vibration'),
+                        value: prefs.vibration,
+                        onChanged: (val) => controller.toggleVibration(val),
+                      ),
+                    ],
+                  );
+                },
               );
             },
           ),

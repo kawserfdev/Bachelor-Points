@@ -2,12 +2,14 @@ import 'package:bachelorpoints/shared/helpers/firestore_helpers.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../../data/models/mess_settings_model.dart';
 import '../../data/models/bazar_schedule_model.dart';
 import '../../data/models/member_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/storage_service.dart';
 import '../../shared/helpers/navigation_helper.dart';
+import '../notifications/data/notification_repository.dart';
 
 class SettingsController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -239,13 +241,31 @@ class SettingsController extends GetxController {
         );
 
         debugPrint('[changeRole] local updated');
-        }
+
+        // Trigger notification asynchronously
+        unawaited(() async {
+          try {
+            debugPrint('[SettingsController] Dispatching direct role change notification to target user: ${old.userId}');
+            final notificationRepo = NotificationRepositoryImpl();
+            await notificationRepo.sendNotification(
+              targetUserId: old.userId,
+              messId: _messId ?? '',
+              title: 'Role Updated',
+              body: 'Your role in the mess has been updated to $newRole.',
+              type: 'manager',
+              route: '/settings',
+            );
+          } catch (ne) {
+            debugPrint('Failed to send role change notification: $ne');
+          }
+        }());
+      }
   
-        AppNavigation.showSnackBar('Success', 'Role updated to $newRole');
-      } catch (e) {
-        debugPrint('[changeRole] Error: $e');
+      AppNavigation.showSnackBar('Success', 'Role updated to $newRole');
+    } catch (e) {
+      debugPrint('[changeRole] Error: $e');
   
-        AppNavigation.showSnackBar('Error', 'Failed to update role');
+      AppNavigation.showSnackBar('Error', 'Failed to update role');
     } finally {
       isLoading.value = false;
     }
