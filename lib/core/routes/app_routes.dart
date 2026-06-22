@@ -33,5 +33,4 @@ abstract class AppRoutes {
   static const toletChat = '/tolet/chat';
   static const creditBalance = '/tolet/credits';
   static const referral = '/tolet/referral';
-  static const kycVerification = '/tolet/kyc';
 }

@@ -112,8 +112,8 @@ class ProfileView extends GetView<ProfileController> {
               _buildCompletionCard(theme),
               const SizedBox(height: 16),
 
-              // ── Credit & KYC Summary ──
-              _buildCreditKycRow(theme, colorScheme),
+              // ── Credit Summary ──
+              _buildCreditCard(theme, colorScheme),
               const SizedBox(height: 16),
 
               // ── Account Section ──
@@ -124,18 +124,6 @@ class ProfileView extends GetView<ProfileController> {
                 iconColor: const Color(0xFF42A5F5),
                 label: 'Edit Profile',
                 onTap: () => context.push(AppRoutes.createProfile),
-              ),
-              _ProfileMenuItem(
-                icon: Icons.verified_user_rounded,
-                iconBgColor: controller.isKycVerified.value
-                    ? const Color(0xFF66BB6A).withAlpha(26)
-                    : const Color(0xFFFFA726).withAlpha(26),
-                iconColor: controller.isKycVerified.value
-                    ? const Color(0xFF66BB6A)
-                    : const Color(0xFFFFA726),
-                label: _kycLabel(),
-                trailing: _kycChip(),
-                onTap: () => context.push(AppRoutes.kycVerification),
               ),
               _ProfileMenuItem(
                 icon: Icons.monetization_on_rounded,
@@ -326,99 +314,48 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
-  // ── Credit & KYC Row ──
-  Widget _buildCreditKycRow(ThemeData theme, ColorScheme colorScheme) {
-    return Row(
-      children: [
-        // Credit card
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFFFC107), Color(0xFFFF8F00)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+  // ── Credit Card ──
+  Widget _buildCreditCard(ThemeData theme, ColorScheme colorScheme) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFFC107), Color(0xFFFF8F00)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.monetization_on_rounded,
+                  color: Colors.white, size: 18),
+              const SizedBox(width: 6),
+              const Text(
+                'Credits',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
               ),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.monetization_on_rounded,
-                        color: Colors.white, size: 18),
-                    const SizedBox(width: 6),
-                    const Text(
-                      'Credits',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '${controller.creditBalance.value}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 22,
-                  ),
-                ),
-              ],
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '${controller.creditBalance.value}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+              fontSize: 22,
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        // KYC card
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: _kycCardColor(),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      controller.isKycVerified.value
-                          ? Icons.verified_rounded
-                          : Icons.gpp_bad_rounded,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 6),
-                    const Text(
-                      'KYC',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  _kycStatusLabel(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -444,83 +381,7 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
-  // ── Helpers ──
-  String _kycLabel() {
-    switch (controller.kycStatus.value) {
-      case 'verified':
-        return 'KYC Verified';
-      case 'pending':
-        return 'KYC Pending';
-      case 'rejected':
-        return 'KYC Rejected';
-      default:
-        return 'KYC Verification';
-    }
-  }
 
-  Widget? _kycChip() {
-    final status = controller.kycStatus.value;
-    if (status == 'unverified') return null;
-    Color color;
-    String label;
-    switch (status) {
-      case 'verified':
-        color = const Color(0xFF4CAF50);
-        label = 'Verified';
-        break;
-      case 'pending':
-        color = const Color(0xFFFFA726);
-        label = 'Pending';
-        break;
-      case 'rejected':
-        color = const Color(0xFFFF6B6B);
-        label = 'Rejected';
-        break;
-      default:
-        return null;
-    }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withAlpha(26),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontWeight: FontWeight.w700,
-          fontSize: 11,
-        ),
-      ),
-    );
-  }
-
-  String _kycStatusLabel() {
-    switch (controller.kycStatus.value) {
-      case 'verified':
-        return 'Verified';
-      case 'pending':
-        return 'Pending';
-      case 'rejected':
-        return 'Rejected';
-      default:
-        return 'Not Verified';
-    }
-  }
-
-  Color _kycCardColor() {
-    switch (controller.kycStatus.value) {
-      case 'verified':
-        return const Color(0xFF4CAF50);
-      case 'pending':
-        return const Color(0xFFFFA726);
-      case 'rejected':
-        return const Color(0xFFFF6B6B);
-      default:
-        return const Color(0xFF78909C);
-    }
-  }
 
   String _completionMessage(double pct) {
     if (pct >= 1.0) return 'Your profile is fully complete!';

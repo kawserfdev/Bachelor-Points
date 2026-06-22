@@ -13,7 +13,6 @@ class ReferralController extends GetxController {
   final RxBool isLoadingReferrals = false.obs;
 
   // Verification
-  final RxBool isKycVerified = false.obs;
   final RxList<VerificationBadge> badges = <VerificationBadge>[].obs;
   final RxBool isLoadingVerification = false.obs;
   final RxString error = ''.obs;
@@ -40,33 +39,13 @@ class ReferralController extends GetxController {
   /// Load verification status and badges.
   void loadVerificationStatus(String userId) {
     isLoadingVerification.value = true;
-    _verificationService.isKycVerified(userId).then((verified) {
-      isKycVerified.value = verified;
-    });
     _verificationService.getUserBadges(userId).listen((b) {
       badges.value = b;
       isLoadingVerification.value = false;
     });
   }
 
-  /// Submit KYC verification (NID).
-  Future<bool> submitKycVerification({
-    required String documentUrl,
-    String? documentNumber,
-  }) async {
-    error.value = '';
-    try {
-      await _verificationService.submitVerification(
-        type: 'user_nid',
-        documentUrl: documentUrl,
-        documentNumber: documentNumber,
-      );
-      return true;
-    } catch (e) {
-      error.value = e.toString();
-      return false;
-    }
-  }
+
 
   /// Submit property verification.
   Future<bool> submitPropertyVerification({

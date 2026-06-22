@@ -23,20 +23,6 @@ class ReferralView extends GetView<ReferralController> {
           Obx(() => Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.white.withAlpha(30), borderRadius: BorderRadius.circular(10)), child: Row(children: [Expanded(child: Text(controller.getReferralLink('userId'), style: const TextStyle(color: Colors.white, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)), const SizedBox(width: 8), IconButton(icon: const Icon(Icons.copy, color: Colors.white), onPressed: () {})]))),
         ])),
         const SizedBox(height: 20),
-        // KYC section
-        Text('KYC Verification', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 12),
-        Card(child: Padding(padding: const EdgeInsets.all(16), child: Row(children: [
-          Icon(Icons.verified_user, size: 40, color: controller.isKycVerified.value ? Colors.green : Colors.grey),
-          const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(controller.isKycVerified.value ? 'Verified' : 'Not Verified', style: const TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 2),
-            Text(controller.isKycVerified.value ? 'Your NID is verified' : 'Verify your NID to earn badges', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-          ])),
-          if (!controller.isKycVerified.value) FilledButton(onPressed: () {}, child: const Text('Verify')),
-        ]))),
-        const SizedBox(height: 12),
         Text('Badges', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
         Obx(() => Wrap(spacing: 8, runSpacing: 8, children: controller.badges.map((b) => Chip(avatar: const Icon(Icons.verified, size: 16, color: Colors.green), label: Text(b.badgeType.replaceAll('_', ' ').capitalizeFirst ?? ''))).toList())),
