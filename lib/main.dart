@@ -16,6 +16,7 @@ import 'core/theme/theme_controller.dart';
 //
 
 import 'core/routes/go_router_config.dart';
+
 /// Global navigator key for use outside the widget tree (e.g., FCM)
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -46,7 +47,9 @@ void main() async {
       // for production.
       androidProvider: AndroidProvider.debug,
       appleProvider: AppleProvider.debug,
-      webProvider: ReCaptchaV3Provider('6Lf-TiQrAAAAAMjFh0k6sDgMZ7dYPZ0gUvo0GVmI'),
+      webProvider: ReCaptchaV3Provider(
+        '6Lf-TiQrAAAAAMjFh0k6sDgMZ7dYPZ0gUvo0GVmI',
+      ),
     );
     debugPrint('Firebase App Check activated');
   } catch (e) {
@@ -96,8 +99,7 @@ Future<void> initServices() async {
     debugPrint("RealtimeService init failed: $e");
   }
 
-  // Theme Controller uses GetStorage, so it must be initialized after StorageService
-  Get.put(ThemeController(), permanent: true);
+  // ThemeController is now managed by Riverpod and initialized on demand.
 
   debugPrint('All services started...');
 }
@@ -109,13 +111,13 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     debugPrint('Building MyApp...');
     final goRouter = ref.watch(goRouterProvider);
-    final themeController = Get.find<ThemeController>();
+    final themeMode = ref.watch(themeControllerProvider);
 
     return MaterialApp.router(
       title: 'Bachelor Points',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: themeController.themeMode,
+      themeMode: themeMode,
       routerConfig: goRouter,
       debugShowCheckedModeBanner: false,
     );

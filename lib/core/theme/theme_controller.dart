@@ -1,34 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'theme_repository.dart';
 
-class ThemeController extends GetxController {
-  final _box = GetStorage();
-  final _key = 'isDarkMode';
-
-  // Observable for current theme mode
-  RxBool isDarkMode = false.obs;
+/// Notifier class managing the application's [ThemeMode] state.
+class ThemeController extends Notifier<ThemeMode> {
+  late final ThemeRepository _repository;
 
   @override
-  void onInit() {
-    super.onInit();
-    // Load saved theme or use system theme if not saved
-    isDarkMode.value = _loadThemeFromBox() ?? Get.isPlatformDarkMode;
+  ThemeMode build() {
+    _repository = ref.watch(themeRepositoryProvider);
+    return _repository.getThemeMode();
   }
 
-  /// Get the ThemeMode based on current state
-  ThemeMode get themeMode => isDarkMode.value ? ThemeMode.dark : ThemeMode.light;
-
-  /// Load theme from local storage
-  bool? _loadThemeFromBox() => _box.read(_key);
-
-  /// Save theme to local storage
-  void _saveThemeToBox(bool isDark) => _box.write(_key, isDark);
-
-  /// Switch Theme and save to local storage
-  void switchTheme() {
-    isDarkMode.value = !isDarkMode.value;
-    Get.changeThemeMode(themeMode);
-    _saveThemeToBox(isDarkMode.value);
+  /// Updates the current theme mode and persists the selection.
+  Future<void> setThemeMode(ThemeMode mode) async {
+    state = mode;
+    await _repository.saveThemeMode(mode);
   }
 }
+
+/// Riverpod provider for the [ThemeController], exposing the active [ThemeMode].
+final themeControllerProvider = NotifierProvider<ThemeController, ThemeMode>(
+  ThemeController.new,
+);
