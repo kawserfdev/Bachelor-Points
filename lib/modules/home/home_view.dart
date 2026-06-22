@@ -1,10 +1,12 @@
 import 'package:bachelorpoints/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'home_controller.dart';
 import '../mess/mess_controller.dart';
+import '../notifications/providers/notification_providers.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../data/models/member_model.dart';
 
@@ -233,18 +235,28 @@ class HomeView extends GetView<HomeController> {
               ),
             ),
             // Notification bell
-            Container(
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHighest.withAlpha(128),
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: Icon(
-                  Icons.notifications_outlined,
-                  color: colorScheme.onSurface,
-                ),
-                onPressed: () => context.push(AppRoutes.notifications),
-              ),
+            Consumer(
+              builder: (context, ref, child) {
+                final unreadCount = ref.watch(unreadNotificationsCountProvider);
+                return Badge(
+                  label: Text('$unreadCount'),
+                  isLabelVisible: unreadCount > 0,
+                  alignment: const Alignment(0.65, -0.65),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerHighest.withAlpha(128),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.notifications_outlined,
+                        color: colorScheme.onSurface,
+                      ),
+                      onPressed: () => context.push(AppRoutes.notifications),
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),
