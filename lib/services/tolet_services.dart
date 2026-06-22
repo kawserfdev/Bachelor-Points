@@ -240,11 +240,6 @@ class VerificationService {
     return snapshot.docs.isNotEmpty;
   }
 
-  /// Check if user is KYC verified (has verified_user badge).
-  Future<bool> isKycVerified(String userId) async {
-    return hasBadge(userId, 'verified_user');
-  }
-
   /// Get all badges for a user.
   Stream<List<VerificationBadge>> getUserBadges(String userId) {
     return _firestore

@@ -26,9 +26,7 @@ class ProfileController extends GetxController {
   final RxDouble completionPercent = 0.0.obs;
   final RxBool isLoading = true.obs;
 
-  // ── KYC ──
-  final RxBool isKycVerified = false.obs;
-  final RxString kycStatus = 'unverified'.obs; // unverified | pending | verified | rejected
+  // ── Badges ──
   final RxList<VerificationBadge> badges = <VerificationBadge>[].obs;
 
   // ── Credits ──
@@ -75,19 +73,7 @@ class ProfileController extends GetxController {
       creditBalance.value = b;
     });
 
-    // KYC verification status
-    _verificationService.isKycVerified(uid).then((verified) {
-      isKycVerified.value = verified;
-    });
-    _verificationService.getUserVerifications(uid).listen((verifications) {
-      if (verifications.isEmpty) {
-        kycStatus.value = 'unverified';
-      } else {
-        // Use the latest verification's status
-        final latest = verifications.first;
-        kycStatus.value = latest.status;
-      }
-    });
+
 
     // Badges
     _verificationService.getUserBadges(uid).listen((b) {

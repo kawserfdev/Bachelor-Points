@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../main.dart';
 import '../../modules/tolet/views/credit_balance_view.dart';
-import '../../modules/tolet/views/kyc_verification_view.dart';
 import '../../modules/tolet/views/listing_management_view.dart';
 import '../../modules/tolet/views/need_based_post_view.dart';
 import '../../modules/tolet/views/property_detail_view.dart';
@@ -94,7 +93,6 @@ class GoRoutes {
   static const toletChat = '/tolet/chat';
   static const creditBalance = '/tolet/credits';
   static const referral = '/tolet/referral';
-  static const kycVerification = '/tolet/kyc';
 }
 
 /// Builds the GoRouter with Riverpod-powered auth redirect.
@@ -459,13 +457,6 @@ GoRouter buildGoRouter(Ref ref) {
         builder: (context, state) {
           CreditBinding().dependencies();
           return const ReferralView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.kycVerification,
-        builder: (context, state) {
-          CreditBinding().dependencies();
-          return const KycVerificationView();
         },
       ),
     ],
