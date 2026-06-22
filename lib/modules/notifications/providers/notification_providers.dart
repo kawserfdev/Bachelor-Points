@@ -113,3 +113,12 @@ final notificationPrefsProvider =
       NotificationPrefsController,
       NotificationPreferences
     >(NotificationPrefsController.new);
+
+/// Provider exposing the count of unread notifications in real-time.
+final unreadNotificationsCountProvider = Provider.autoDispose<int>((ref) {
+  final notifsAsync = ref.watch(notificationsStreamProvider);
+  return notifsAsync.maybeWhen(
+    data: (list) => list.where((n) => !n.isRead).length,
+    orElse: () => 0,
+  );
+});
