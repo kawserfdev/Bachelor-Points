@@ -2,9 +2,12 @@ import 'package:bachelorpoints/shared/helpers/firestore_helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/realtime_service.dart';
 import '../../../shared/helpers/navigation_helper.dart';
+import '../../core/notifications/notification_service.dart';
+import '../notifications/data/notification_repository.dart';
 import '../mess/mess_controller.dart';
 import '../../../data/models/meal_model.dart';
 import 'dart:async';
@@ -213,6 +216,53 @@ class MealController extends GetxController {
         'Meals updated successfully!',
         backgroundColor: Colors.green,
       );
+
+      // Trigger offline/online notifications asynchronously
+      unawaited(() async {
+        try {
+          debugPrint('[MealController] Checking connectivity for notification dispatch...');
+          final connectivity = await Connectivity().checkConnectivity();
+          final isOffline = connectivity.contains(ConnectivityResult.none);
+          debugPrint('[MealController] Connectivity result: $connectivity (isOffline: $isOffline)');
+          if (isOffline) {
+            debugPrint('[MealController] Offline detected. Showing local offline notification...');
+            await NotificationService.instance?.showOfflineNotification(
+              title: 'Saved Offline',
+              body: 'Your meal entry was saved locally and will sync when online.',
+            );
+          } else {
+            final otherMembers = _messController.members.where((m) => m.userId != userId).toList();
+            debugPrint('[MealController] Online detected. Dispatching notifications to ${otherMembers.length} other members...');
+            if (otherMembers.isNotEmpty) {
+              String userName = 'A member';
+              for (var m in _messController.members) {
+                if (m.userId == userId) {
+                  userName = m.fullName ?? m.email ?? 'A member';
+                  break;
+                }
+              }
+              final notificationRepo = NotificationRepositoryImpl();
+              for (var member in otherMembers) {
+                try {
+                  debugPrint('[MealController] Dispatching meal notification to user ${member.userId}...');
+                  await notificationRepo.sendNotification(
+                    targetUserId: member.userId,
+                    messId: messId,
+                    title: 'Meal Updated',
+                    body: '$userName updated their meals for $dateStr: B:${breakfast.value}, L:${lunch.value}, D:${dinner.value}, G:${guestMeals.value}',
+                    type: 'meal',
+                    route: '/meal-entry',
+                  );
+                } catch (ne) {
+                  debugPrint('Failed to send meal notification to ${member.userId}: $ne');
+                }
+              }
+            }
+          }
+        } catch (ne) {
+          debugPrint('Failed handling meal notification: $ne');
+        }
+      }());
     } catch (e) {
       debugPrint('[saveMeal] Error: $e');
 

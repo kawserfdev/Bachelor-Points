@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 import '../../services/auth_service.dart';
-import '../../services/fcm_service.dart';
 import '../../services/realtime_service.dart';
 import '../../services/storage_service.dart';
 
@@ -21,11 +20,6 @@ final storageServiceProvider = Provider<StorageService>((ref) {
 /// Kept as a bridge during GetX → Riverpod migration
 final authServiceProvider = Provider<AuthService>((ref) {
   return Get.find<AuthService>();
-});
-
-/// FCM Service — handles push notification token management
-final fcmServiceProvider = Provider<FcmService>((ref) {
-  return Get.find<FcmService>();
 });
 
 /// Realtime Service — handles Firestore real-time listeners

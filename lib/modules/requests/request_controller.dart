@@ -2,11 +2,13 @@ import 'package:bachelorpoints/shared/helpers/firestore_helpers.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../../data/models/request_model.dart';
 import '../../services/auth_service.dart';
 import '../../shared/helpers/navigation_helper.dart';
 import '../mess/mess_controller.dart';
 import '../mess/member_controller.dart';
+import '../notifications/data/notification_repository.dart';
 
 class RequestController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -285,6 +287,47 @@ class RequestController extends GetxController {
       );
 
       fetchRequests();
+
+      // Trigger notification for the creator of the request
+      unawaited(() async {
+        try {
+          debugPrint('[RequestController] Dispatching approval notifications for request: ${request.id}');
+          final notificationRepo = NotificationRepositoryImpl();
+          final typeLabel = _requestLabel(request.requestType);
+          String detail = '';
+          if (request.requestType == 'expense' || request.requestType == 'deposit') {
+            detail = ' of amount ${request.amount}';
+          } else if (request.requestType == 'ROLE_CHANGE') {
+            detail = ' to ${request.newRole}';
+          }
+
+          // Notify the creator
+          debugPrint('[RequestController] Dispatching approval notification to request creator: ${request.createdBy}');
+          await notificationRepo.sendNotification(
+            targetUserId: request.createdBy,
+            messId: messId,
+            title: 'Request Approved',
+            body: 'Your request for $typeLabel$detail has been approved.',
+            type: 'request_status',
+            route: '/requests',
+          );
+
+          // If it was a role change, notify the target member as well
+          if (request.requestType == 'ROLE_CHANGE' && request.memberId != null && request.memberId != request.createdBy) {
+            debugPrint('[RequestController] Dispatching role update notification to target member: ${request.memberId}');
+            await notificationRepo.sendNotification(
+              targetUserId: request.memberId!,
+              messId: messId,
+              title: 'Role Updated',
+              body: 'Your role in the mess has been updated to ${request.newRole}.',
+              type: 'manager',
+              route: '/settings',
+            );
+          }
+        } catch (ne) {
+          debugPrint('Failed to send approval notification: $ne');
+        }
+      }());
     } catch (e) {
       debugPrint('[approveRequest] Error: $e');
       AppNavigation.showSnackBar('Error', 'Failed to approve request');
@@ -430,6 +473,33 @@ class RequestController extends GetxController {
       );
 
       fetchRequests();
+
+      // Trigger notification for the creator of the request
+      unawaited(() async {
+        try {
+          debugPrint('[RequestController] Dispatching rejection notifications for request: ${request.id}');
+          final messId = _messController.activeMess.value?.id;
+          if (messId != null) {
+            final notificationRepo = NotificationRepositoryImpl();
+            final typeLabel = _requestLabel(request.requestType);
+            String detail = '';
+            if (request.requestType == 'expense' || request.requestType == 'deposit') {
+              detail = ' of amount ${request.amount}';
+            }
+            debugPrint('[RequestController] Dispatching rejection notification to request creator: ${request.createdBy}');
+            await notificationRepo.sendNotification(
+              targetUserId: request.createdBy,
+              messId: messId,
+              title: 'Request Rejected',
+              body: 'Your request for $typeLabel$detail has been rejected.',
+              type: 'request_status',
+              route: '/requests',
+            );
+          }
+        } catch (ne) {
+          debugPrint('Failed to send rejection notification: $ne');
+        }
+      }());
     } catch (e) {
       debugPrint('[rejectRequest] Error: $e');
       AppNavigation.showSnackBar('Error', 'Failed to reject request');

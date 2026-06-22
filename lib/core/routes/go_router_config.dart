@@ -41,7 +41,6 @@ import '../../modules/balance/balance_binding.dart';
 import '../../modules/requests/views/approval_view.dart';
 import '../../modules/requests/request_binding.dart';
 import '../../modules/notifications/views/notification_view.dart';
-import '../../modules/notifications/notification_binding.dart';
 import '../../modules/chat/views/chat_view.dart';
 import '../../modules/chat/chat_binding.dart';
 import '../../modules/mess/views/members_view.dart';
@@ -366,10 +365,7 @@ GoRouter buildGoRouter(Ref ref) {
       ),
       GoRoute(
         path: GoRoutes.notifications,
-        builder: (context, state) {
-          NotificationBinding().dependencies();
-          return const NotificationView();
-        },
+        builder: (context, state) => const NotificationView(),
       ),
       GoRoute(
         path: GoRoutes.chat,

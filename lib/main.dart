@@ -9,11 +9,10 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:get_storage/get_storage.dart';
 import 'services/auth_service.dart';
 import 'services/storage_service.dart';
-import 'services/fcm_service.dart';
 import 'services/realtime_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
-//
+import 'core/notifications/notification_service.dart';
 
 import 'core/routes/go_router_config.dart';
 
@@ -83,13 +82,7 @@ Future<void> initServices() async {
     debugPrint("AuthService init failed: $e");
   }
 
-  final fcmService = FcmService();
-  Get.put<FcmService>(fcmService, permanent: true);
-  try {
-    await fcmService.init();
-  } catch (e) {
-    debugPrint("FcmService init failed: $e");
-  }
+  // FcmService has been removed. Riverpod-managed NotificationService takes its place.
 
   final realtimeService = RealtimeService();
   Get.put<RealtimeService>(realtimeService, permanent: true);
@@ -104,11 +97,23 @@ Future<void> initServices() async {
   debugPrint('All services started...');
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize Notification Service on startup
+    ref.read(notificationServiceProvider).init();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     debugPrint('Building MyApp...');
     final goRouter = ref.watch(goRouterProvider);
     final themeMode = ref.watch(themeControllerProvider);

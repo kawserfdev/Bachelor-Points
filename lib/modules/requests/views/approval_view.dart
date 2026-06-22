@@ -83,26 +83,29 @@ class ApprovalView extends GetView<RequestController> {
   Widget _buildStatusBar(BuildContext context) {
     return Obx(() => Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            children: [
-              _StatusBadge(
-                label: 'Pending',
-                count: controller.pendingCount,
-                color: Colors.orange,
-              ),
-              const SizedBox(width: 12),
-              _StatusBadge(
-                label: 'Approved',
-                count: controller.approvedCount,
-                color: Colors.green,
-              ),
-              const SizedBox(width: 12),
-              _StatusBadge(
-                label: 'Rejected',
-                count: controller.rejectedCount,
-                color: Colors.red,
-              ),
-            ],
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _StatusBadge(
+                  label: 'Pending',
+                  count: controller.pendingCount,
+                  color: Colors.orange,
+                ),
+                const SizedBox(width: 12),
+                _StatusBadge(
+                  label: 'Approved',
+                  count: controller.approvedCount,
+                  color: Colors.green,
+                ),
+                const SizedBox(width: 12),
+                _StatusBadge(
+                  label: 'Rejected',
+                  count: controller.rejectedCount,
+                  color: Colors.red,
+                ),
+              ],
+            ),
           ),
         ));
   }
