@@ -12,30 +12,32 @@ class SettingsView extends GetView<SettingsController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Admin Settings')),
+      appBar: AppBar(title: const Text('Settings')),
       body: Obx(() {
         if (controller.isLoading.value && controller.members.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (!controller.isAdmin.value) {
-          return const Center(
-            child: Text(
-              'You do not have permission to view settings.',
-              style: TextStyle(color: Colors.red),
-            ),
-          );
-        }
+        // if (!controller.isAdmin.value) {
+        //   return const Center(
+        //     child: Text(
+        //       'You do not have permission to view settings.',
+        //       style: TextStyle(color: Colors.red),
+        //     ),
+        //   );
+        // }
 
         return ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
+            if (controller.isAdmin.value)
             _buildGeneralSettings(context),
             const SizedBox(height: 16),
             _buildAppearanceCard(context),
             const SizedBox(height: 16),
             _buildNotificationPreferencesCard(context),
             const SizedBox(height: 16),
+            if (controller.isAdmin.value)
             _buildBazarScheduleCard(context),
             // const SizedBox(height: 16),
             // _buildRoleManagementCard(),

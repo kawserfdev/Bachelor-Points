@@ -133,16 +133,16 @@ class _SignupViewState extends ConsumerState<SignupView> {
                 Text(
                   'Create Account',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Sign up to get started!',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 48),
@@ -196,10 +196,18 @@ class _SignupViewState extends ConsumerState<SignupView> {
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
                   onPressed: _isLoading ? null : _googleSignIn,
-                  icon: const Icon(Icons.g_mobiledata, size: 28),
-                  label: const Text(
+                  icon: Image.asset(
+                    'assets/google_logo.png',
+                    width: 22,
+                    height: 22,
+                  ),
+                  label: Text(
                     'Continue with Google',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).unselectedWidgetColor,
+                    ),
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.black87,
