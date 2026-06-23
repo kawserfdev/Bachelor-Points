@@ -8,6 +8,7 @@ import '../../services/auth_service.dart';
 import '../../shared/helpers/navigation_helper.dart';
 import '../mess/mess_controller.dart';
 import '../mess/member_controller.dart';
+import '../../services/action_notification_service.dart';
 import '../notifications/data/notification_repository.dart';
 
 class RequestController extends GetxController {
@@ -302,14 +303,11 @@ class RequestController extends GetxController {
           }
 
           // Notify the creator
-          debugPrint('[RequestController] Dispatching approval notification to request creator: ${request.createdBy}');
-          await notificationRepo.sendNotification(
+          await ActionNotificationService.notifyRequestAccepted(
             targetUserId: request.createdBy,
             messId: messId,
-            title: 'Request Approved',
-            body: 'Your request for $typeLabel$detail has been approved.',
-            type: 'request_status',
-            route: '/requests',
+            typeLabel: typeLabel,
+            detail: detail,
           );
 
           // If it was a role change, notify the target member as well
