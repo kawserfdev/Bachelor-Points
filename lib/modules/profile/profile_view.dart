@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/auth_service.dart';
@@ -119,12 +118,19 @@ class ProfileView extends GetView<ProfileController> {
               // ── Account Section ──
               _buildSectionHeader('Account', Icons.person_outline_rounded),
               _ProfileMenuItem(
-                icon: Icons.edit_rounded,
-                iconBgColor: const Color(0xFF42A5F5).withAlpha(26),
-                iconColor: const Color(0xFF42A5F5),
-                label: 'Edit Profile',
-                onTap: () => context.push(AppRoutes.createProfile),
+                icon: Icons.account_circle_outlined,
+                iconBgColor: const Color(0xFF6366F1).withAlpha(26),
+                iconColor: const Color(0xFF6366F1),
+                label: 'My Profile Details',
+                onTap: () => context.push(AppRoutes.profileDetail),
               ),
+              // _ProfileMenuItem(
+              //   icon: Icons.edit_rounded,
+              //   iconBgColor: const Color(0xFF42A5F5).withAlpha(26),
+              //   iconColor: const Color(0xFF42A5F5),
+              //   label: 'Edit Profile',
+              //   onTap: () => context.push(AppRoutes.editProfile),
+              // ),
               _ProfileMenuItem(
                 icon: Icons.monetization_on_rounded,
                 iconBgColor: const Color(0xFFFFC107).withAlpha(26),
@@ -175,7 +181,7 @@ class ProfileView extends GetView<ProfileController> {
                 iconBgColor: const Color(0xFF5C6BC0).withAlpha(26),
                 iconColor: const Color(0xFF5C6BC0),
                 label: 'Settings',
-                onTap: () => context.push('/settings'),
+                onTap: () => context.push(AppRoutes.settings),
               ),
               _ProfileMenuItem(
                 icon: Icons.info_outline_rounded,

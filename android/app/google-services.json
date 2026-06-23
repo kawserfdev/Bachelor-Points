@@ -14,6 +14,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "225274585167-39kqtn96onn15ehn2t9lcfa92mp9gq5p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.messmanager.bachelorpoints",
+            "certificate_hash": "50caadace0192d6afc9da80a67ff4dba02525c42"
+          }
+        },
+        {
+          "client_id": "225274585167-9qk6u3uqrto8c1pep5mp899n728dlj6o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.messmanager.bachelorpoints",
+            "certificate_hash": "b47405a8ac0a130ce7b3baa2909b9395b461ca0e"
+          }
+        },
+        {
           "client_id": "225274585167-bqgv2imosa39925v91sh8poj9dkq4ap5.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -35,7 +51,7 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "225274585167-vgsv0cerincn056up0rqiofgj69fiaut.apps.googleusercontent.com",
+              "client_id": "225274585167-sl0mjs221qkokktn42ejegtm2ajouerr.apps.googleusercontent.com",
               "client_type": 3
             },
             {

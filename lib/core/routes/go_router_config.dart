@@ -50,6 +50,10 @@ import '../../modules/settings/settings_binding.dart';
 import '../../modules/profile/profile_binding.dart';
 import '../../modules/profile/create_profile_view.dart';
 import '../../modules/profile/create_profile_binding.dart';
+import '../../modules/profile/user_profile_detail_binding.dart';
+import '../../modules/profile/user_profile_detail_view.dart';
+import '../../modules/profile/edit_profile_binding.dart';
+import '../../modules/profile/edit_profile_view.dart';
 import '../../modules/tolet/property_search/property_search_binding.dart';
 import '../../modules/tolet/bindings/property_post_binding.dart';
 import '../../modules/tolet/bindings/property_detail_binding.dart';
@@ -57,199 +61,203 @@ import '../../modules/tolet/bindings/need_based_post_binding.dart';
 import '../../modules/tolet/bindings/credit_binding.dart';
 import '../../modules/tolet/bindings/tolet_chat_binding.dart';
 import '../../modules/tolet/bindings/listing_management_binding.dart';
-/// Route path constants
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Route path constants — single source of truth for all route strings.
+// Always use these constants; never hardcode a path string in navigation calls.
+// ─────────────────────────────────────────────────────────────────────────────
 class GoRoutes {
   GoRoutes._();
 
-  static const splash = '/';
-  static const login = '/login';
-  static const signup = '/signup';
+  // ── Auth ──
+  static const splash        = '/';
+  static const login         = '/login';
+  static const signup        = '/signup';
   static const forgotPassword = '/forgot-password';
-  static const verifyEmail = '/verify-email';
+  static const verifyEmail   = '/verify-email';
   static const createProfile = '/create-profile';
-  static const home = '/home';
+
+  // ── Main Shell (bottom nav tabs) ──
+  static const home    = '/home';
   static const explore = '/explore';
   static const profile = '/profile';
+
+  // ── Profile sub-pages ──
+  static const profileDetail = '/profile/detail';
+  static const editProfile   = '/profile/edit';
+
+  // ── Mess features ──
   static const createMess = '/create-mess';
-  static const joinMess = '/join-mess';
-  static const mealEntry = '/meal-entry';
-  static const expenses = '/expenses';
-  static const addExpense = '/add-expense';
+  static const joinMess   = '/join-mess';
+  static const members    = '/members';
+
+  // ── Core features ──
+  static const mealEntry     = '/meal-entry';
+  static const expenses      = '/expenses';
+  static const addExpense    = '/add-expense';
   static const balanceSummary = '/balance-summary';
-  static const addDeposit = '/add-deposit';
-  static const approvals = '/approvals';
+  static const addDeposit    = '/add-deposit';
+  static const approvals     = '/approvals';
   static const notifications = '/notifications';
-  static const chat = '/chat';
-  static const report = '/report';
-  static const settings = '/settings';
-  static const members = '/members';
-  static const toletHome = '/tolet';
-  static const propertySearch = '/tolet/search';
+  static const chat          = '/chat';
+  static const report        = '/report';
+  static const settings      = '/settings';
+
+  // ── Tolet feature ──
+  static const toletHome        = '/tolet';          // entry point / redirect
+  static const propertySearch   = '/tolet/search';
   static const propertyMapSearch = '/tolet/map-search';
-  static const propertyDetail = '/tolet/property';
-  static const propertyPost = '/tolet/post';
-  static const myListings = '/tolet/my-listings';
-  static const needBasedPost = '/tolet/need-based';
-  static const toletChat = '/tolet/chat';
-  static const creditBalance = '/tolet/credits';
-  static const referral = '/tolet/referral';
+  static const propertyDetail   = '/tolet/property';
+  static const propertyPost     = '/tolet/post';
+  static const myListings       = '/tolet/my-listings';
+  static const needBasedPost    = '/tolet/need-based';
+  static const toletChat        = '/tolet/chat';
+  static const creditBalance    = '/tolet/credits';
+  static const referral         = '/tolet/referral';
 }
 
-/// Builds the GoRouter with Riverpod-powered auth redirect.
+// ─────────────────────────────────────────────────────────────────────────────
+// All routes that are part of the main authenticated app shell.
+// Used by the redirect guard to decide whether a route needs a profile.
+// ─────────────────────────────────────────────────────────────────────────────
+const _protectedAppRoutes = {
+  GoRoutes.home,
+  GoRoutes.explore,
+  GoRoutes.profile,
+  GoRoutes.profileDetail,
+  GoRoutes.editProfile,
+  GoRoutes.createMess,
+  GoRoutes.joinMess,
+  GoRoutes.members,
+  GoRoutes.mealEntry,
+  GoRoutes.expenses,
+  GoRoutes.addExpense,
+  GoRoutes.balanceSummary,
+  GoRoutes.addDeposit,
+  GoRoutes.approvals,
+  GoRoutes.notifications,
+  GoRoutes.chat,
+  GoRoutes.report,
+  GoRoutes.settings,
+  GoRoutes.toletHome,
+  GoRoutes.propertySearch,
+  GoRoutes.propertyMapSearch,
+  GoRoutes.propertyDetail,
+  GoRoutes.propertyPost,
+  GoRoutes.myListings,
+  GoRoutes.needBasedPost,
+  GoRoutes.toletChat,
+  GoRoutes.creditBalance,
+  GoRoutes.referral,
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Build the GoRouter instance, wired to Riverpod auth + profile providers.
+// ─────────────────────────────────────────────────────────────────────────────
 GoRouter buildGoRouter(Ref ref) {
-  final authState = ref.watch(authStateProvider);
+  final authState      = ref.watch(authStateProvider);
   final hasProfileAsync = ref.watch(hasProfileProvider);
 
   return GoRouter(
-  navigatorKey: navigatorKey,
-  initialLocation: GoRoutes.splash,
-  redirect: (context, state) {
-    final location = state.matchedLocation;
+    navigatorKey: navigatorKey,
+    initialLocation: GoRoutes.splash,
+    redirect: (context, state) {
+      final location = state.matchedLocation;
 
-    debugPrint("================================");
-    debugPrint("GoRouter Redirect Called");
-    debugPrint("Current Location: $location");
-    debugPrint("Auth State: $authState");
-    debugPrint("Profile Loading: ${hasProfileAsync.isLoading}");
-    debugPrint("Profile Data: ${hasProfileAsync.asData?.value}");
+      debugPrint('══════════════════════════════════');
+      debugPrint('[Router] location      : $location');
+      debugPrint('[Router] authState     : $authState');
+      debugPrint('[Router] profileLoading: ${hasProfileAsync.isLoading}');
+      debugPrint('[Router] hasProfile    : ${hasProfileAsync.asData?.value}');
 
-    // Auth routes accessible without full authentication
-    // login/signup/forgotPassword: anyone can visit
-    // verifyEmail: accessible by emailNotVerified users
-    final isPublicAuthRoute = location == GoRoutes.login ||
-        location == GoRoutes.signup ||
-        location == GoRoutes.forgotPassword;
+      final isSplash        = location == GoRoutes.splash;
+      final isPublicAuth    = location == GoRoutes.login ||
+                              location == GoRoutes.signup ||
+                              location == GoRoutes.forgotPassword;
+      final isVerifyEmail   = location == GoRoutes.verifyEmail;
+      final isCreateProfile = location == GoRoutes.createProfile;
+      final isProtectedApp  = _protectedAppRoutes.any(
+        (r) => location == r || location.startsWith('$r/'),
+      );
 
-    final isSplash = location == GoRoutes.splash;
-    final isVerifyEmail = location == GoRoutes.verifyEmail;
-    final isCreateProfile = location == GoRoutes.createProfile;
-
-    debugPrint("isPublicAuthRoute: $isPublicAuthRoute");
-    debugPrint("isSplash: $isSplash");
-    debugPrint("isVerifyEmail: $isVerifyEmail");
-    debugPrint("isCreateProfile: $isCreateProfile");
-
-    // Splash route — check auth and route to the correct page
-    if (isSplash) {
-      debugPrint("Splash route -> Check auth state: $authState");
-
+      // ── 1. Unauthenticated ───────────────────────────────────────────────
       if (authState == AuthState.unauthenticated) {
-        debugPrint("Unauthenticated -> Redirect to Login");
+        // Allow public auth pages; redirect everything else to login.
+        if (isPublicAuth || isSplash) return null;
+        debugPrint('[Router] Unauthenticated → /login');
         return GoRoutes.login;
       }
 
+      // ── 2. Email not verified ────────────────────────────────────────────
       if (authState == AuthState.emailNotVerified) {
-        debugPrint("Email not verified -> Redirect to VerifyEmail");
+        if (isVerifyEmail || isPublicAuth) return null;
+        debugPrint('[Router] Email unverified → /verify-email');
         return GoRoutes.verifyEmail;
       }
 
-      if (authState == AuthState.authenticated) {
-        if (hasProfileAsync.isLoading) {
-          debugPrint("Profile still loading -> Stay on splash");
-          return null;
-        }
+      // ── 3. Fully authenticated ───────────────────────────────────────────
+      // From here authState == AuthState.authenticated.
 
+      // 3a. On public auth routes or verify-email → send to app.
+      if (isPublicAuth || isVerifyEmail) {
+        if (hasProfileAsync.isLoading) return null; // wait for profile check
         final hasProfile = hasProfileAsync.asData?.value;
-        debugPrint("Profile check result: $hasProfile");
+        if (hasProfile == null) return null;          // provider error → stay
+        debugPrint('[Router] Authenticated on auth route → '
+            '${hasProfile ? GoRoutes.home : GoRoutes.createProfile}');
+        return hasProfile ? GoRoutes.home : GoRoutes.createProfile;
+      }
 
+      // 3b. On splash → route to correct first screen.
+      if (isSplash) {
+        if (hasProfileAsync.isLoading) return null;
+        final hasProfile = hasProfileAsync.asData?.value;
+        if (hasProfile == null) return null;
+        debugPrint('[Router] Splash → '
+            '${hasProfile ? GoRoutes.home : GoRoutes.createProfile}');
+        return hasProfile ? GoRoutes.home : GoRoutes.createProfile;
+      }
+
+      // 3c. On create-profile but already has a profile → home.
+      if (isCreateProfile) {
+        final hasProfile = hasProfileAsync.asData?.value;
         if (hasProfile == true) {
-          debugPrint("Has profile -> Home");
+          debugPrint('[Router] Has profile on /create-profile → /home');
           return GoRoutes.home;
         }
+        return null; // still needs to create profile
+      }
+
+      // 3d. On a protected app route without a profile → create-profile.
+      if (isProtectedApp) {
+        if (hasProfileAsync.isLoading) return null; // don't block; wait
+        final hasProfile = hasProfileAsync.asData?.value;
         if (hasProfile == false) {
-          debugPrint("No profile -> Create Profile");
+          debugPrint('[Router] No profile on protected route → /create-profile');
           return GoRoutes.createProfile;
         }
-
-        // Profile check returned error/null -> stay on splash
-        debugPrint("Profile check error/null -> Stay on splash");
-        return null;
+        return null; // has profile → allow
       }
 
-      // Unknown auth state -> stay
-      debugPrint("Unknown auth state -> Stay on splash");
+      // 3e. Tolet home redirect → property search (no dedicated tolet hub yet).
+      if (location == GoRoutes.toletHome) {
+        debugPrint('[Router] /tolet → /tolet/search');
+        return GoRoutes.propertySearch;
+      }
+
+      debugPrint('[Router] No redirect → stay');
+      debugPrint('══════════════════════════════════');
       return null;
-    }
+    },
 
-    final isAuthenticated = authState == AuthState.authenticated;
-    debugPrint("isAuthenticated: $isAuthenticated");
-
-    // emailNotVerified users: allow verify-email and public auth routes
-    if (authState == AuthState.emailNotVerified) {
-      if (isVerifyEmail || isPublicAuthRoute) {
-        debugPrint("EmailNotVerified user on allowed route -> Stay");
-        return null;
-      }
-      debugPrint("EmailNotVerified user on protected route -> Redirect to VerifyEmail");
-      return GoRoutes.verifyEmail;
-    }
-
-    // If unauthenticated and trying to access a protected route
-    if (!isAuthenticated && !isPublicAuthRoute) {
-      debugPrint(
-          "User NOT authenticated & Protected Route -> Redirect to Login");
-      return GoRoutes.login;
-    }
-
-    // If authenticated and on a public auth route or verify-email route
-    if (isAuthenticated && (isPublicAuthRoute || isVerifyEmail)) {
-      debugPrint("Authenticated user is on Auth/Verify Route");
-
-      if (hasProfileAsync.isLoading) {
-        debugPrint("Profile check loading -> Stay");
-        return null;
-      }
-
-      final hasProfile = hasProfileAsync.asData?.value;
-      debugPrint("hasProfile: $hasProfile");
-
-      if (hasProfile == null) {
-        debugPrint("Profile check error/null -> Stay");
-        return null;
-      }
-
-      debugPrint(
-          "Redirecting to: ${hasProfile ? GoRoutes.home : GoRoutes.createProfile}");
-
-      return hasProfile
-          ? GoRoutes.home
-          : GoRoutes.createProfile;
-    }
-
-    // If authenticated but no profile yet
-    if (isAuthenticated && !isCreateProfile) {
-      final hasProfile = hasProfileAsync.asData?.value;
-      debugPrint(
-          "Authenticated user, checking profile completion: $hasProfile");
-
-      if (hasProfile == false) {
-        debugPrint("No profile found -> Redirect to Create Profile");
-        return GoRoutes.createProfile;
-      }
-    }
-
-    // If authenticated and on create-profile route but already has a profile
-    if (isAuthenticated && isCreateProfile) {
-      final hasProfile = hasProfileAsync.asData?.value;
-      if (hasProfile == true) {
-        debugPrint("User already has a profile -> Redirect to Home");
-        return GoRoutes.home;
-      }
-    }
-
-    debugPrint("No Redirect -> Stay on current route");
-    debugPrint("================================");
-
-    return null;
-  },
     routes: [
-      // ── Splash / Auth Gate ──
+      // ── Splash / Auth Gate ────────────────────────────────────────────────
       GoRoute(
         path: GoRoutes.splash,
         builder: (context, state) => const AuthGate(),
       ),
 
-      // ── Auth Routes ──
+      // ── Auth Routes ───────────────────────────────────────────────────────
       GoRoute(
         path: GoRoutes.login,
         builder: (context, state) {
@@ -283,9 +291,8 @@ GoRouter buildGoRouter(Ref ref) {
         },
       ),
 
-      // ── Main App Shell (Bottom Navigation) ──
-      // ShellRoute wraps the 3 tabs so the bottom nav bar persists
-      // across Home, Explore, and Profile screens.
+      // ── Main App Shell (bottom nav tabs) ─────────────────────────────────
+      // ShellRoute keeps the BottomNavigationBar alive across tab switches.
       ShellRoute(
         builder: (context, state, child) => AppWrapper(child: child),
         routes: [
@@ -313,7 +320,23 @@ GoRouter buildGoRouter(Ref ref) {
         ],
       ),
 
-      // ── Feature Routes (pushed on top of shell) ──
+      // ── Profile Detail & Edit (pushed on top of shell) ───────────────────────────
+      GoRoute(
+        path: GoRoutes.profileDetail,
+        builder: (context, state) {
+          UserProfileDetailBinding().dependencies();
+          return const UserProfileDetailView();
+        },
+      ),
+      GoRoute(
+        path: GoRoutes.editProfile,
+        builder: (context, state) {
+          EditProfileBinding().dependencies();
+          return const EditProfileView();
+        },
+      ),
+
+      // ── Mess Management ───────────────────────────────────────────────────
       GoRoute(
         path: GoRoutes.createMess,
         builder: (context, state) {
@@ -328,6 +351,16 @@ GoRouter buildGoRouter(Ref ref) {
           return const JoinMessView();
         },
       ),
+      GoRoute(
+        path: GoRoutes.members,
+        builder: (context, state) {
+          MessBinding().dependencies();
+          RequestBinding().dependencies();
+          return const MembersView();
+        },
+      ),
+
+      // ── Core Features ─────────────────────────────────────────────────────
       GoRoute(
         path: GoRoutes.mealEntry,
         builder: (context, state) {
@@ -395,16 +428,13 @@ GoRouter buildGoRouter(Ref ref) {
           return const SettingsView();
         },
       ),
-      GoRoute(
-        path: GoRoutes.members,
-        builder: (context, state) {
-          MessBinding().dependencies();
-          RequestBinding().dependencies();
-          return const MembersView();
-        },
-      ),
 
-      // ── Tolet Feature Routes ──
+      // ── Tolet Feature ─────────────────────────────────────────────────────
+      // /tolet itself redirects to /tolet/search via the redirect guard above.
+      GoRoute(
+        path: GoRoutes.toletHome,
+        redirect: (context, state) => GoRoutes.propertySearch,
+      ),
       GoRoute(
         path: GoRoutes.propertySearch,
         builder: (context, state) {

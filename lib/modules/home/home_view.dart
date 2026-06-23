@@ -34,10 +34,7 @@ class HomeView extends GetView<HomeController> {
 
         return SafeArea(
           child: RefreshIndicator(
-            onRefresh: () async {
-              // Pull-to-refresh triggers controller re-subscriptions
-              await Future.delayed(const Duration(milliseconds: 300));
-            },
+            onRefresh: () => messController.refresh(),
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
@@ -179,6 +176,32 @@ class HomeView extends GetView<HomeController> {
                 ),
               ),
             ),
+            const SizedBox(height: 14),
+            Obx(() {
+              final isLoading = Get.find<MessController>().isLoading.value;
+              return SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: isLoading
+                      ? null
+                      : () => Get.find<MessController>().refresh(),
+                  icon: isLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.refresh),
+                  label: Text(isLoading ? 'Refreshing...' : 'Refresh'),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 54),
+                  ),
+                ),
+              );
+            }),
           ],
         ),
       ),
