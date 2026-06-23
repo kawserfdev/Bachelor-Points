@@ -7,7 +7,7 @@ import '../../../services/auth_service.dart';
 import '../../../services/realtime_service.dart';
 import '../../../shared/helpers/navigation_helper.dart';
 import '../../core/notifications/notification_service.dart';
-import '../notifications/data/notification_repository.dart';
+import '../../../services/action_notification_service.dart';
 import '../mess/mess_controller.dart';
 import '../../../data/models/expense_model.dart';
 import 'dart:async';
@@ -206,34 +206,23 @@ class ExpenseController extends GetxController {
               body: 'Your expense request of $amount was saved locally and will sync when online.',
             );
           } else {
-            final otherMembers = _messController.members.where((m) => m.userId != userId).toList();
-            debugPrint('[ExpenseController] Online detected. Dispatching notifications to ${otherMembers.length} other members...');
-            if (otherMembers.isNotEmpty) {
-              String userName = 'A member';
-              for (var m in _messController.members) {
-                if (m.userId == userId) {
-                  userName = m.fullName ?? m.email ?? 'A member';
-                  break;
-                }
-              }
-              final notificationRepo = NotificationRepositoryImpl();
-              final label = description?.trim().isNotEmpty == true ? description!.trim() : category;
-              for (var member in otherMembers) {
-                try {
-                  debugPrint('[ExpenseController] Dispatching expense notification to user ${member.userId}...');
-                  await notificationRepo.sendNotification(
-                    targetUserId: member.userId,
-                    messId: messId,
-                    title: 'New Expense Request',
-                    body: '$userName requested an expense of $amount for $label.',
-                    type: 'expense',
-                    route: '/requests',
-                  );
-                } catch (ne) {
-                  debugPrint('Failed to send expense notification to ${member.userId}: $ne');
-                }
+            String userName = 'A member';
+            for (var m in _messController.members) {
+              if (m.userId == userId) {
+                userName = m.fullName ?? m.email ?? 'A member';
+                break;
               }
             }
+            final label = description?.trim().isNotEmpty == true ? description!.trim() : category;
+            
+            await ActionNotificationService.notifyExpenseAdded(
+              messId: messId,
+              senderName: userName,
+              amount: amount,
+              label: label,
+              members: _messController.members,
+              currentUserId: userId,
+            );
           }
         } catch (ne) {
           debugPrint('Failed handling expense notification: $ne');

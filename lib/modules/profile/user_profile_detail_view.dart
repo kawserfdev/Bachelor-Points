@@ -179,7 +179,7 @@ class UserProfileDetailView extends GetView<UserProfileDetailController> {
         IconButton(
           tooltip: 'Edit Profile',
           icon: const Icon(Icons.edit_outlined, color: Colors.white),
-          onPressed: () {}, // => context.push(AppRoutes.createProfile),
+          onPressed: () => context.push(AppRoutes.editProfile),
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
