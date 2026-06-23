@@ -47,9 +47,7 @@ class ToletMessageModel {
       isTyping: json['is_typing'] as bool? ?? false,
       reportedBy: json['reported_by'] as String?,
       reportReason: json['report_reason'] as String?,
-      createdAt: json['created_at'] is Timestamp
-          ? (json['created_at'] as Timestamp).toDate()
-          : DateTime.parse(json['created_at'] as String),
+      createdAt: _parseDateTime(json['created_at']),
     );
   }
 
@@ -98,14 +96,8 @@ class ToletChatModel {
       tenantId: json['tenant_id'] as String,
       landlordId: json['landlord_id'] as String,
       lastMessage: json['last_message'] as String?,
-      lastMessageAt: json['last_message_at'] != null
-          ? (json['last_message_at'] is Timestamp
-              ? (json['last_message_at'] as Timestamp).toDate()
-              : DateTime.parse(json['last_message_at'] as String))
-          : null,
-      createdAt: json['created_at'] is Timestamp
-          ? (json['created_at'] as Timestamp).toDate()
-          : DateTime.parse(json['created_at'] as String),
+      lastMessageAt: json['last_message_at'] != null ? _parseDateTime(json['last_message_at']) : null,
+      createdAt: _parseDateTime(json['created_at']),
     );
   }
 
@@ -118,5 +110,20 @@ class ToletChatModel {
       'last_message_at': lastMessageAt != null ? Timestamp.fromDate(lastMessageAt!) : null,
       'created_at': FieldValue.serverTimestamp(),
     };
+  }
+}
+
+DateTime _parseDateTime(dynamic value) {
+  if (value == null) return DateTime.now();
+  if (value is DateTime) return value;
+  if (value is Timestamp) return value.toDate();
+  if (value is String) {
+    if (value.isEmpty) return DateTime.now();
+    return DateTime.parse(value);
+  }
+  try {
+    return (value as dynamic).toDate() as DateTime;
+  } catch (_) {
+    return DateTime.now();
   }
 }

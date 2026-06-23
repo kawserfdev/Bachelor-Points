@@ -35,11 +35,26 @@ class ExpenseModel {
       amount: (json['amount'] as num).toDouble(),
       category: json['category'] as String,
       description: json['note'] as String?,
-      date: DateTime.parse(json['date'] as String),
-      createdAt: json['created_at'] is Timestamp ? (json['created_at'] as Timestamp).toDate() : DateTime.parse(json['created_at'] as String),
+      date: _parseDateTime(json['date']),
+      createdAt: _parseDateTime(json['created_at']),
       status: json['status'] as String?,      
       addedByName: json['profiles']?['full_name'] as String?,
     );
+  }
+
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) return DateTime.now();
+    if (value is DateTime) return value;
+    if (value is Timestamp) return value.toDate();
+    if (value is String) {
+      if (value.isEmpty) return DateTime.now();
+      return DateTime.parse(value);
+    }
+    try {
+      return (value as dynamic).toDate() as DateTime;
+    } catch (_) {
+      return DateTime.now();
+    }
   }
 
   Map<String, dynamic> toJson() {

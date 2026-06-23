@@ -59,10 +59,23 @@ class CreditTransaction {
       amount: (json['amount'] as num?)?.toInt() ?? 0,
       reason: json['reason'] as String? ?? '',
       referenceId: json['reference_id'] as String?,
-      createdAt: json['created_at'] is Timestamp
-          ? (json['created_at'] as Timestamp).toDate()
-          : DateTime.parse(json['created_at'] as String),
+      createdAt: _parseDateTime(json['created_at']),
     );
+  }
+
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) return DateTime.now();
+    if (value is DateTime) return value;
+    if (value is Timestamp) return value.toDate();
+    if (value is String) {
+      if (value.isEmpty) return DateTime.now();
+      return DateTime.parse(value);
+    }
+    try {
+      return (value as dynamic).toDate() as DateTime;
+    } catch (_) {
+      return DateTime.now();
+    }
   }
 
   Map<String, dynamic> toJson() {

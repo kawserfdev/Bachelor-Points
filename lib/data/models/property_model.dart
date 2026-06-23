@@ -119,17 +119,9 @@ class PropertyModel {
       has360View: json['has_360_view'] as bool? ?? false,
       status: json['status'] as String? ?? 'draft',
       reviewNotes: json['review_notes'] as String?,
-      createdAt: json['created_at'] is Timestamp
-          ? (json['created_at'] as Timestamp).toDate()
-          : DateTime.parse(json['created_at'] as String),
-      updatedAt: json['updated_at'] is Timestamp
-          ? (json['updated_at'] as Timestamp).toDate()
-          : DateTime.parse(json['updated_at'] as String),
-      expiresAt: json['expires_at'] != null
-          ? (json['expires_at'] is Timestamp
-              ? (json['expires_at'] as Timestamp).toDate()
-              : DateTime.parse(json['expires_at'] as String))
-          : null,
+      createdAt: _parseDateTime(json['created_at']),
+      updatedAt: _parseDateTime(json['updated_at']),
+      expiresAt: json['expires_at'] != null ? _parseDateTime(json['expires_at']) : null,
       contactUnlockedBy: (json['contact_unlocked_by'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
@@ -139,12 +131,23 @@ class PropertyModel {
               .toList() ??
           [],
       isBoosted: json['is_boosted'] as bool? ?? false,
-      boostExpiresAt: json['boost_expires_at'] != null
-          ? (json['boost_expires_at'] is Timestamp
-              ? (json['boost_expires_at'] as Timestamp).toDate()
-              : DateTime.parse(json['boost_expires_at'] as String))
-          : null,
+      boostExpiresAt: json['boost_expires_at'] != null ? _parseDateTime(json['boost_expires_at']) : null,
     );
+  }
+
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) return DateTime.now();
+    if (value is DateTime) return value;
+    if (value is Timestamp) return value.toDate();
+    if (value is String) {
+      if (value.isEmpty) return DateTime.now();
+      return DateTime.parse(value);
+    }
+    try {
+      return (value as dynamic).toDate() as DateTime;
+    } catch (_) {
+      return DateTime.now();
+    }
   }
 
   Map<String, dynamic> toFirestore() {

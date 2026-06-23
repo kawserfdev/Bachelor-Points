@@ -491,7 +491,7 @@ class RequestController extends GetxController {
               title: 'Request Rejected',
               body: 'Your request for $typeLabel$detail has been rejected.',
               type: 'request_status',
-              route: '/requests',
+              route: '/approvals',
             );
           }
         } catch (ne) {

@@ -68,18 +68,25 @@ class NeedBasedPostModel {
       maxBudget: (json['max_budget'] as num?)?.toDouble() ?? 0,
       description: json['description'] as String? ?? '',
       status: json['status'] as String? ?? 'active',
-      createdAt: json['created_at'] is Timestamp
-          ? (json['created_at'] as Timestamp).toDate()
-          : DateTime.parse(json['created_at'] as String),
-      updatedAt: json['updated_at'] is Timestamp
-          ? (json['updated_at'] as Timestamp).toDate()
-          : DateTime.parse(json['updated_at'] as String),
-      expiresAt: json['expires_at'] != null
-          ? (json['expires_at'] is Timestamp
-              ? (json['expires_at'] as Timestamp).toDate()
-              : DateTime.parse(json['expires_at'] as String))
-          : null,
+      createdAt: _parseDateTime(json['created_at']),
+      updatedAt: _parseDateTime(json['updated_at']),
+      expiresAt: json['expires_at'] != null ? _parseDateTime(json['expires_at']) : null,
     );
+  }
+
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) return DateTime.now();
+    if (value is DateTime) return value;
+    if (value is Timestamp) return value.toDate();
+    if (value is String) {
+      if (value.isEmpty) return DateTime.now();
+      return DateTime.parse(value);
+    }
+    try {
+      return (value as dynamic).toDate() as DateTime;
+    } catch (_) {
+      return DateTime.now();
+    }
   }
 
   Map<String, dynamic> toFirestore() {

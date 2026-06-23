@@ -6,10 +6,10 @@ import 'dart:async';
 import '../../data/models/mess_settings_model.dart';
 import '../../data/models/bazar_schedule_model.dart';
 import '../../data/models/member_model.dart';
+import '../../services/action_notification_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/storage_service.dart';
 import '../../shared/helpers/navigation_helper.dart';
-import '../notifications/data/notification_repository.dart';
 
 class SettingsController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -198,11 +198,22 @@ class SettingsController extends GetxController {
       );
 
       debugPrint('[updateCutoff] success');
-
       AppNavigation.showSnackBar('Success', 'Cutoff time updated to $newTime');
+
+      // Notify all members about the cutoff time change
+      unawaited(() async {
+        try {
+          await ActionNotificationService.notifyCutoffTimeChanged(
+            messId: _messId!,
+            newTime: newTime,
+            members: members,
+          );
+        } catch (ne) {
+          debugPrint('[updateCutoff] Failed to dispatch notifications: $ne');
+        }
+      }());
     } catch (e) {
       debugPrint('[updateCutoff] Error: $e');
-
       AppNavigation.showSnackBar('Error', 'Failed to update time');
     } finally {
       isLoading.value = false;
@@ -242,18 +253,13 @@ class SettingsController extends GetxController {
 
         debugPrint('[changeRole] local updated');
 
-        // Trigger notification asynchronously
+        // Notify the target member about their new role
         unawaited(() async {
           try {
-            debugPrint('[SettingsController] Dispatching direct role change notification to target user: ${old.userId}');
-            final notificationRepo = NotificationRepositoryImpl();
-            await notificationRepo.sendNotification(
+            await ActionNotificationService.notifyRoleChanged(
               targetUserId: old.userId,
               messId: _messId ?? '',
-              title: 'Role Updated',
-              body: 'Your role in the mess has been updated to $newRole.',
-              type: 'manager',
-              route: '/settings',
+              newRole: newRole,
             );
           } catch (ne) {
             debugPrint('Failed to send role change notification: $ne');
@@ -295,9 +301,26 @@ class SettingsController extends GetxController {
       await fetchSchedules();
 
       AppNavigation.showSnackBar('Success', 'Bazar duty assigned');
+
+      // Notify the assigned member and schedule a local reminder
+      unawaited(() async {
+        try {
+          // Push notification to assigned member
+          await ActionNotificationService.notifyBazarAssigned(
+            targetUserId: userId,
+            messId: _messId!,
+            formattedDate: formattedDate,
+          );
+          // Schedule a local reminder at 8 AM on duty day
+          await ActionNotificationService.scheduleBazarReminder(
+            dutyDate: date,
+          );
+        } catch (ne) {
+          debugPrint('[assignBazar] Failed to dispatch bazar notifications: $ne');
+        }
+      }());
     } catch (e) {
       debugPrint('[assignBazar] Error: $e');
-
       AppNavigation.showSnackBar('Error', 'Failed to assign bazar duty');
     } finally {
       isLoading.value = false;

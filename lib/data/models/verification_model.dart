@@ -40,17 +40,26 @@ class VerificationModel {
       documentNumber: json['document_number'] as String?,
       notes: json['notes'] as String?,
       reviewedBy: json['reviewed_by'] as String?,
-      createdAt: json['created_at'] is Timestamp
-          ? (json['created_at'] as Timestamp).toDate()
-          : DateTime.parse(json['created_at'] as String),
-      reviewedAt: json['reviewed_at'] != null
-          ? (json['reviewed_at'] is Timestamp
-              ? (json['reviewed_at'] as Timestamp).toDate()
-              : DateTime.parse(json['reviewed_at'] as String))
-          : null,
+      createdAt: _parseDateTime(json['created_at']),
+      reviewedAt: json['reviewed_at'] != null ? _parseDateTime(json['reviewed_at']) : null,
       referencePropertyId: json['reference_property_id'] as String?,
       referenceAgencyId: json['reference_agency_id'] as String?,
     );
+  }
+
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) return DateTime.now();
+    if (value is DateTime) return value;
+    if (value is Timestamp) return value.toDate();
+    if (value is String) {
+      if (value.isEmpty) return DateTime.now();
+      return DateTime.parse(value);
+    }
+    try {
+      return (value as dynamic).toDate() as DateTime;
+    } catch (_) {
+      return DateTime.now();
+    }
   }
 
   Map<String, dynamic> toFirestore() {

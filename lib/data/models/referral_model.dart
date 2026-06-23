@@ -32,20 +32,25 @@ class ReferralModel {
       status: json['status'] as String? ?? 'pending',
       commissionAmount: (json['commission_amount'] as num?)?.toInt() ?? 0,
       isWithdrawn: json['is_withdrawn'] as bool? ?? false,
-      createdAt: json['created_at'] is Timestamp
-          ? (json['created_at'] as Timestamp).toDate()
-          : DateTime.parse(json['created_at'] as String),
-      completedAt: json['completed_at'] != null
-          ? (json['completed_at'] is Timestamp
-              ? (json['completed_at'] as Timestamp).toDate()
-              : DateTime.parse(json['completed_at'] as String))
-          : null,
-      withdrawnAt: json['withdrawn_at'] != null
-          ? (json['withdrawn_at'] is Timestamp
-              ? (json['withdrawn_at'] as Timestamp).toDate()
-              : DateTime.parse(json['withdrawn_at'] as String))
-          : null,
+      createdAt: _parseDateTime(json['created_at']),
+      completedAt: json['completed_at'] != null ? _parseDateTime(json['completed_at']) : null,
+      withdrawnAt: json['withdrawn_at'] != null ? _parseDateTime(json['withdrawn_at']) : null,
     );
+  }
+
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) return DateTime.now();
+    if (value is DateTime) return value;
+    if (value is Timestamp) return value.toDate();
+    if (value is String) {
+      if (value.isEmpty) return DateTime.now();
+      return DateTime.parse(value);
+    }
+    try {
+      return (value as dynamic).toDate() as DateTime;
+    } catch (_) {
+      return DateTime.now();
+    }
   }
 
   Map<String, dynamic> toFirestore() {

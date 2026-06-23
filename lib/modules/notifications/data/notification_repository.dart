@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import '../../../data/models/notification_model.dart';
 import '../domain/notification_preferences.dart';
 
@@ -194,17 +197,96 @@ class NotificationRepositoryImpl implements NotificationRepository {
     String? route,
   }) async {
     debugPrint('[sendNotification] TargetUserId: $targetUserId | Title: $title | Body: $body | Type: $type');
-    await _firestore.collection('notifications').add({
-      'user_id': targetUserId,
-      'mess_id': messId,
-      'title': title,
-      'body': body,
-      'type': type,
-      'is_read': false,
-      'route': route,
-      'created_at': FieldValue.serverTimestamp(),
-    });
-    debugPrint('[sendNotification] Notification document written successfully.');
+    
+    // 1. Write to local Firestore notifications collection
+    String? notificationId;
+    try {
+      final docRef = await _firestore.collection('notifications').add({
+        'user_id': targetUserId,
+        'mess_id': messId,
+        'title': title,
+        'body': body,
+        'type': type,
+        'is_read': false,
+        'route': route,
+        'created_at': FieldValue.serverTimestamp(),
+      });
+      notificationId = docRef.id;
+      debugPrint('[sendNotification] Notification document written successfully: $notificationId');
+    } catch (e) {
+      debugPrint('[sendNotification] Error writing notification to Firestore: $e');
+    }
+
+    // 2. Dispatch FCM notification via Vercel Backend if configured
+    final apiUrl = dotenv.env['VERCEL_API_URL'];
+    final apiSecret = dotenv.env['VERCEL_API_SECRET'];
+
+    if (apiUrl == null || apiUrl.isEmpty) {
+      debugPrint('[sendNotification] VERCEL_API_URL is not set. Skipping FCM push.');
+      if (notificationId != null) {
+        await logNotificationEvent(
+          userId: targetUserId,
+          notificationId: notificationId,
+          status: 'skipped_fcm_not_configured',
+        );
+      }
+      return;
+    }
+
+    try {
+      debugPrint('[sendNotification] Sending request to Vercel FCM backend: $apiUrl');
+      final Map<String, String> headers = {
+        'Content-Type': 'application/json',
+      };
+      if (apiSecret != null && apiSecret.isNotEmpty) {
+        headers['x-api-key'] = apiSecret;
+      }
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: headers,
+        body: jsonEncode({
+          'targetUserId': targetUserId,
+          'title': title,
+          'body': body,
+          'type': type,
+          'route': route ?? '/',
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        debugPrint('[sendNotification] Vercel backend dispatched FCM successfully: ${response.body}');
+        if (notificationId != null) {
+          await logNotificationEvent(
+            userId: targetUserId,
+            notificationId: notificationId,
+            status: 'sent',
+          );
+        }
+      } else {
+        final errorMsg = 'Failed with status code: ${response.statusCode}, body: ${response.body}';
+        debugPrint('[sendNotification] Vercel backend error: $errorMsg');
+        if (notificationId != null) {
+          await logNotificationEvent(
+            userId: targetUserId,
+            notificationId: notificationId,
+            status: 'failed',
+            errorMessage: errorMsg,
+          );
+        }
+      }
+    } catch (e) {
+      final errorMsg = e.toString();
+      debugPrint('[sendNotification] Exception sending to Vercel API: $errorMsg');
+      if (notificationId != null) {
+        await logNotificationEvent(
+          userId: targetUserId,
+          notificationId: notificationId,
+          status: 'failed',
+          errorMessage: errorMsg,
+        );
+      }
+    }
   }
 }
 
