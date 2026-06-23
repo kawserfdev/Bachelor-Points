@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../services/auth_service.dart';
 
 class VerifyEmailView extends StatefulWidget {
   const VerifyEmailView({super.key});
@@ -214,11 +216,12 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
               ),
               const SizedBox(height: 16),
 
-              // Back to login / sign out
+              // Back to login — sign out fully via AuthService to clean up
+              // GetStorage, Google session, and GetX controllers.
               TextButton(
-                onPressed: () {
-                  FirebaseAuth.instance.signOut();
-                  context.go(AppRoutes.login);
+                onPressed: () async {
+                  await Get.find<AuthService>().signOut();
+                  // signOut() already navigates to /login via AppNavigation.go
                 },
                 child: const Text('Back to Login'),
               ),

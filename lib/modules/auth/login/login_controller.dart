@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../services/auth_service.dart';
 import '../../../shared/helpers/navigation_helper.dart';
+import '../../../core/routes/app_routes.dart';
 
 class LoginController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
@@ -79,7 +80,7 @@ class LoginController extends GetxController {
       // Navigate to home; GoRouter redirect will verify the user is
       // authenticated/email-verified and route to /create-profile if
       // no profile exists yet.
-      AppNavigation.go('/home');
+      AppNavigation.go(AppRoutes.home);
 
     } catch (e) {
       debugPrint('[login] Error: $e');
@@ -103,7 +104,7 @@ class LoginController extends GetxController {
       debugPrint('[googleSignIn] Success');
 
       // Navigate to home; GoRouter redirect will handle profile check
-      AppNavigation.go('/home');
+      AppNavigation.go(AppRoutes.home);
     } catch (e) {
       debugPrint('[googleSignIn] Error: $e');
       AppNavigation.showSnackBar(
@@ -118,11 +119,11 @@ class LoginController extends GetxController {
 
   void goToSignup() {
     debugPrint('[Navigation] Go to Signup');
-    AppNavigation.to('/signup');
+    AppNavigation.to(AppRoutes.signup);
   }
 
   void goToForgotPassword() {
     debugPrint('[Navigation] Go to ForgotPassword');
-    AppNavigation.to('/forgot-password');
+    AppNavigation.to(AppRoutes.forgotPassword);
   }
 }

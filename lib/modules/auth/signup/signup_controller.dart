@@ -123,7 +123,7 @@ class SignupController extends GetxController {
       debugPrint('[googleSignIn] Success');
 
       // Navigate to home; GoRouter redirect will handle profile check
-      AppNavigation.go('/home');
+      AppNavigation.go(AppRoutes.home);
     } catch (e) {
       debugPrint('[googleSignIn] Error: $e');
       AppNavigation.showSnackBar(

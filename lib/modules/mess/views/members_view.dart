@@ -176,22 +176,22 @@ class MembersView extends GetView<MemberController> {
               ),
             ),
             // Role badge
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: _roleColor(member.role).withAlpha(26),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                member.role.toUpperCase(),
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: _roleColor(member.role),
-                ),
-              ),
-            ),
+            // Container(
+            //   padding:
+            //       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            //   decoration: BoxDecoration(
+            //     color: _roleColor(member.role).withAlpha(26),
+            //     borderRadius: BorderRadius.circular(8),
+            //   ),
+            //   child: Text(
+            //     member.role.toUpperCase(),
+            //     style: TextStyle(
+            //       fontSize: 11,
+            //       fontWeight: FontWeight.w700,
+            //       color: _roleColor(member.role),
+            //     ),
+            //   ),
+            // ),
             // Actions menu (only for non-admin members, by admin/manager)
             if (canManage) ...[
               const SizedBox(width: 4),

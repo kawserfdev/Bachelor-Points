@@ -30,6 +30,18 @@ class MessController extends GetxController {
     _fetchUserMess();
   }
 
+  /// Public method to re-fetch the user's mess from Firestore.
+  /// Called by the Refresh button on the home page.
+  @override
+  Future<void> refresh() async {
+    debugPrint('[MessController] refresh() called');
+    activeMess.value = null;
+    members.clear();
+    await _membersSub?.cancel();
+    _membersSub = null;
+    await _fetchUserMess();
+  }
+
   Future<void> _fetchUserMess() async {
     final userId = _authService.currentUser.value?.uid;
     debugPrint('[_fetchUserMess] userId: $userId');

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../core/routes/app_routes.dart';
 import '../shared/helpers/navigation_helper.dart';
 
 class AuthService extends GetxService {
@@ -175,7 +176,7 @@ class AuthService extends GetxService {
 
     // 6. Navigate to login and clear the entire navigation stack
     //    Use GoRouter.go() so the redirect guard sends the user to login
-    AppNavigation.go('/login');
+    AppNavigation.go(AppRoutes.login);
 
     debugPrint('AuthService signOut — all state wiped, redirected to login');
   }
