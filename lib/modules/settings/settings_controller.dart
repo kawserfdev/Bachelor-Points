@@ -19,6 +19,7 @@ class SettingsController extends GetxController {
   final RxBool isAdmin = false.obs;
 
   String? _messId;
+  String? get messId => _messId;
 
   final Rx<MessSettingsModel?> messSettings =
       Rx<MessSettingsModel?>(null);
@@ -70,12 +71,7 @@ class SettingsController extends GetxController {
       if (isAdmin.value) {
         await _loadAllSettingsData();
       } else {
-        debugPrint('[checkAdmin] Access denied');
-
-        AppNavigation.showSnackBar(
-          'Access Denied',
-          'You do not have admin permissions.',
-        );
+        debugPrint('[checkAdmin] Non-admin access, skipped loading admin settings');
       }
     } catch (e) {
       debugPrint('[checkAdmin] Error: $e');
@@ -363,6 +359,113 @@ class SettingsController extends GetxController {
     } catch (e) {
       debugPrint('[logout] Error: $e');
       AppNavigation.showSnackBar('Error', 'Failed to logout: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// Submit a request to leave/exit the current mess
+  Future<void> submitExitRequest(String reason) async {
+    final userId = _authService.currentUser.value?.uid;
+    if (userId == null || _messId == null) {
+      AppNavigation.showSnackBar('Error', 'Unable to retrieve user or mess details.');
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+
+      // 1. Check if user already has a pending exit request
+      final existingRequests = await _firestore
+          .collection('requests')
+          .where('mess_id', isEqualTo: _messId)
+          .where('request_type', isEqualTo: 'REMOVE_MEMBER')
+          .where('member_id', isEqualTo: userId)
+          .where('status', isEqualTo: 'Pending')
+          .limit(1)
+          .get();
+
+      if (existingRequests.docs.isNotEmpty) {
+        AppNavigation.showSnackBar(
+          'Already Submitted',
+          'You have a pending exit request for this mess.',
+          backgroundColor: Colors.orangeAccent,
+        );
+        return;
+      }
+
+      // 2. Fetch user role and name
+      final memberResponse = await _firestore
+          .collection('mess_members')
+          .where('mess_id', isEqualTo: _messId)
+          .where('user_id', isEqualTo: userId)
+          .limit(1)
+          .get();
+
+      if (memberResponse.docs.isEmpty) {
+        AppNavigation.showSnackBar('Error', 'No membership record found.');
+        return;
+      }
+
+      final docData = memberResponse.docs.first.data();
+      final currentRole = docData['role'] as String? ?? 'member';
+
+      final profileDoc = await _firestore.collection('profiles').doc(userId).get();
+      final profileData = profileDoc.data();
+      final fullName = profileData?['full_name'] as String? ?? profileData?['email'] as String? ?? 'Unknown';
+
+      // 3. Submit request to requests collection
+      await _firestore.collection('requests').add({
+        'mess_id': _messId,
+        'request_type': 'REMOVE_MEMBER',
+        'member_id': userId,
+        'member_name': fullName,
+        'current_role': currentRole,
+        'reason': reason.trim(),
+        'status': 'Pending',
+        'created_by': userId,
+        'created_at': FirestoreTime.serverTimestamp,
+      });
+
+      AppNavigation.showSnackBar(
+        'Submitted',
+        'Your exit request has been submitted to the manager/admin.',
+        backgroundColor: Colors.green,
+      );
+
+      // 4. Notify all managers/owners about the exit request
+      unawaited(() async {
+        try {
+          final managersRes = await _firestore
+              .collection('mess_members')
+              .where('mess_id', isEqualTo: _messId)
+              .where('role', whereIn: ['manager', 'admin', 'owner'])
+              .get();
+
+          final managers = managersRes.docs
+              .where((doc) => doc.data()['user_id'] != userId)
+              .map((doc) => {'userId': doc.data()['user_id'] as String})
+              .toList();
+
+          if (managers.isNotEmpty) {
+            await ActionNotificationService.notifyExitRequested(
+              messId: _messId!,
+              memberName: fullName,
+              reason: reason.trim(),
+              managers: managers,
+            );
+          }
+        } catch (ne) {
+          debugPrint('[submitExitRequest] Failed to dispatch notifications: $ne');
+        }
+      }());
+    } catch (e) {
+      debugPrint('[submitExitRequest] Error: $e');
+      AppNavigation.showSnackBar(
+        'Error',
+        'Failed to submit exit request: $e',
+        backgroundColor: Colors.redAccent,
+      );
     } finally {
       isLoading.value = false;
     }

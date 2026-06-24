@@ -14,33 +14,30 @@ class SettingsView extends GetView<SettingsController> {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: Obx(() {
-        if (controller.isLoading.value && controller.members.isEmpty) {
+        if (controller.isLoading.value &&
+            controller.isAdmin.value &&
+            controller.members.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
-
-        // if (!controller.isAdmin.value) {
-        //   return const Center(
-        //     child: Text(
-        //       'You do not have permission to view settings.',
-        //       style: TextStyle(color: Colors.red),
-        //     ),
-        //   );
-        // }
 
         return ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
-            if (controller.isAdmin.value)
-            _buildGeneralSettings(context),
-            const SizedBox(height: 16),
+            if (controller.isAdmin.value) ...[
+              _buildGeneralSettings(context),
+              const SizedBox(height: 16),
+            ],
             _buildAppearanceCard(context),
             const SizedBox(height: 16),
             _buildNotificationPreferencesCard(context),
-            const SizedBox(height: 16),
-            if (controller.isAdmin.value)
-            _buildBazarScheduleCard(context),
-            // const SizedBox(height: 16),
-            // _buildRoleManagementCard(),
+            if (controller.isAdmin.value) ...[
+              const SizedBox(height: 16),
+              _buildBazarScheduleCard(context),
+            ],
+            if (controller.messId != null) ...[
+              const SizedBox(height: 16),
+              _buildMembershipCard(context),
+            ],
           ],
         );
       }),
@@ -377,39 +374,121 @@ class SettingsView extends GetView<SettingsController> {
     );
   }
 
-  // Widget _buildRoleManagementCard() {
-  //   return Card(
-  //     elevation: 2,
-  //     child: ExpansionTile(
-  //       title: const Text('Role Management', style: TextStyle(fontWeight: FontWeight.bold)),
-  //       children: [
-  //         Obx(() => ListView.builder(
-  //           shrinkWrap: true,
-  //           physics: const NeverScrollableScrollPhysics(),
-  //           itemCount: controller.members.length,
-  //           itemBuilder: (context, index) {
-  //             final member = controller.members[index];
-  //             return ListTile(
-  //               title: Text(member.fullName ?? 'Unknown'),
-  //               subtitle: Text(member.email ?? ''),
-  //               trailing: DropdownButton<String>(
-  //                 value: member.role,
-  //                 items: const [
-  //                   DropdownMenuItem(value: 'member', child: Text('Member')),
-  //                   DropdownMenuItem(value: 'manager', child: Text('Manager')),
-  //                   DropdownMenuItem(value: 'admin', child: Text('Admin')),
-  //                 ],
-  //                 onChanged: (newRole) {
-  //                   if (newRole != null && newRole != member.role) {
-  //                     controller.changeMemberRole(member.id, newRole);
-  //                   }
-  //                 },
-  //               ),
-  //             );
-  //           },
-  //         )),
-  //       ],
-  //     ),
-  //   );
-  // }
+  Widget _buildMembershipCard(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Mess Membership',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'If you want to leave this mess, you can submit an exit request. '
+              'The manager or admin will need to approve your request before you are removed.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  side: const BorderSide(color: Colors.red),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                icon: const Icon(Icons.exit_to_app_rounded),
+                label: const Text('Request to Exit Mess'),
+                onPressed: () => _showExitRequestDialog(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showExitRequestDialog(BuildContext context) {
+    final reasonController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Exit Mess Request'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Please provide a reason for exiting the mess. This will be visible to the manager/admin.',
+                style: TextStyle(fontSize: 13, color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: reasonController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'Reason for Exiting *',
+                  hintText: 'e.g. Moving to a new place / Leaving the city',
+                  border: OutlineInputBorder(),
+                ),
+                textCapitalization: TextCapitalization.sentences,
+              ),
+            ],
+          ),
+          actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton(
+                  
+                  style: ElevatedButton.styleFrom(
+                    padding:  EdgeInsets.symmetric(horizontal: 12),
+                    backgroundColor: const Color(0xFF365FF4),
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                     padding:  EdgeInsets.symmetric(horizontal: 12),
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () {
+                    final reason = reasonController.text.trim();
+                    if (reason.isEmpty) {
+                      Get.snackbar(
+                        'Validation',
+                        'Reason is required.',
+                        backgroundColor: Colors.orangeAccent,
+                        colorText: Colors.white,
+                      );
+                      return;
+                    }
+                    Navigator.pop(context);
+                    controller.submitExitRequest(reason);
+                  },
+                  child: const Text('Request Submit'),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

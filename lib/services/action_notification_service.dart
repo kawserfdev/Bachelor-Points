@@ -553,4 +553,52 @@ class ActionNotificationService {
       );
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // EXIT REQUEST
+  // ---------------------------------------------------------------------------
+
+  /// Notify all managers/owners when a member submits an exit (leave mess) request.
+  static Future<void> notifyExitRequested({
+    required String messId,
+    required String memberName,
+    required String reason,
+    required List<dynamic> managers,
+  }) async {
+    debugPrint(
+      '[ActionNotificationService] notifyExitRequested: $memberName submitted exit request.',
+    );
+
+    try {
+      debugPrint(
+        '[ActionNotificationService] Dispatching exit request notification to ${managers.length} managers/owners...',
+      );
+
+      final reasonLabel = reason.trim().isNotEmpty ? ' Reason: "${reason.trim()}"' : '';
+
+      for (var manager in managers) {
+        try {
+          await _notificationRepo.sendNotification(
+            targetUserId: manager['userId'] as String,
+            messId: messId,
+            title: 'Exit Request Submitted 🚪',
+            body: '$memberName has requested to leave the mess.$reasonLabel',
+            type: 'exit_request',
+            route: '/approvals',
+          );
+          debugPrint(
+            '[ActionNotificationService] Exit request notification sent to ${manager["userId"]}',
+          );
+        } catch (e) {
+          debugPrint(
+            '[ActionNotificationService] Failed to notify ${manager["userId"]}: $e',
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint(
+        '[ActionNotificationService] Error in notifyExitRequested: $e',
+      );
+    }
+  }
 }

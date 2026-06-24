@@ -199,7 +199,7 @@ class ShoppingListView extends GetView<ShoppingController> {
                 ),
                 textAlign: TextAlign.center,
               ),
-              if (controller.isManager) ...[
+              if (controller.isManager) ...[  
                 const SizedBox(height: 32),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
