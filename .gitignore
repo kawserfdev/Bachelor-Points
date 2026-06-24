@@ -46,3 +46,7 @@ app.*.map.json
 
 # Google Services Web Config
 web/google-services.json
+
+.env
+.env.local
+.env.production
