@@ -9,6 +9,7 @@ import '../../data/models/deposit_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/pdf_service.dart';
 import '../../shared/helpers/navigation_helper.dart';
+import '../../domain/enums/mess_role.dart';
 
 class ReportController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -23,6 +24,17 @@ class ReportController extends GetxController {
   late final RxInt selectedYear;
 
   final RxBool isLoading = false.obs;
+
+  // Tab & member report variables
+  final RxInt activeTab = 0.obs; // 0: Overview, 1: Member Report
+  final RxString selectedMemberId = ''.obs;
+  final RxString currentUserId = ''.obs;
+  final Rx<MessRole> currentUserRole = MessRole.member.obs;
+
+  // Monthly detailed lists
+  final RxList<MealModel> monthMeals = <MealModel>[].obs;
+  final RxList<ExpenseModel> monthExpenses = <ExpenseModel>[].obs;
+  final RxList<DepositModel> monthDeposits = <DepositModel>[].obs;
 
   /// Scroll controller whose offset is persisted across page navigations.
   late final ScrollController scrollController;
@@ -92,13 +104,21 @@ class ReportController extends GetxController {
           .get();
 
       if (memberResponse.docs.isNotEmpty) {
-        _messId = memberResponse.docs.first.data()['mess_id'] as String;
+        final data = memberResponse.docs.first.data();
+        _messId = data['mess_id'] as String;
+        final roleStr = data['role'] as String? ?? 'member';
+        currentUserRole.value = MessRole.fromString(roleStr);
+        currentUserId.value = userId;
+        if (selectedMemberId.value.isEmpty) {
+          selectedMemberId.value = userId;
+        }
 
         final messDoc = await _firestore.collection('messes').doc(_messId).get();
         _messName = messDoc.data()?['name'] as String? ?? "My Mess";
 
         debugPrint('[fetchMessInfo] messId: $_messId');
         debugPrint('[fetchMessInfo] messName: $_messName');
+        debugPrint('[fetchMessInfo] role: ${currentUserRole.value}');
 
         await generateReport();
       }
@@ -196,6 +216,10 @@ class ReportController extends GetxController {
               d.status == 'Approved' &&
               _dateInRange(d.date))
           .toList();
+
+      monthMeals.assignAll(meals);
+      monthExpenses.assignAll(expenses);
+      monthDeposits.assignAll(deposits);
 
       debugPrint(
           '[generateReport] Countable — meals: ${meals.length} | '
@@ -302,6 +326,12 @@ class ReportController extends GetxController {
 
       memberSummaries.assignAll(userSummaries.values.toList());
 
+      // Validate selectedMemberId so it doesn't point to an invalid user
+      if (selectedMemberId.value.isEmpty ||
+          !memberSummaries.any((m) => m.userId == selectedMemberId.value)) {
+        selectedMemberId.value = currentUserId.value;
+      }
+
       debugPrint('[generateReport] completed successfully');
     } catch (e) {
       debugPrint('[generateReport] Error: $e');
@@ -350,4 +380,69 @@ class ReportController extends GetxController {
 
     debugPrint('[exportToPdf] PDF generated');
   }
+
+  /// Compiles day-by-day records for the selected member in the selected month/year.
+  List<DailyRecord> getSelectedMemberDailyRecords() {
+    final userId = selectedMemberId.value;
+    if (userId.isEmpty) return [];
+
+    final daysInMonth = DateTime(selectedYear.value, selectedMonth.value + 1, 0).day;
+    final List<DailyRecord> records = [];
+
+    for (int day = 1; day <= daysInMonth; day++) {
+      final date = DateTime(selectedYear.value, selectedMonth.value, day);
+
+      // Find meal for this day
+      final meal = monthMeals.firstWhereOrNull(
+        (m) =>
+            m.userId == userId &&
+            m.date.day == day &&
+            m.date.month == selectedMonth.value &&
+            m.date.year == selectedYear.value,
+      );
+
+      // Find expenses added by this user on this day
+      final dayExpenses = monthExpenses
+          .where((e) =>
+              e.addedBy == userId &&
+              e.date.day == day &&
+              e.date.month == selectedMonth.value &&
+              e.date.year == selectedYear.value)
+          .toList();
+
+      // Find deposits made by this user on this day
+      final dayDeposits = monthDeposits
+          .where((d) =>
+              d.userId == userId &&
+              d.date.day == day &&
+              d.date.month == selectedMonth.value &&
+              d.date.year == selectedYear.value)
+          .toList();
+
+      records.add(DailyRecord(
+        date: date,
+        meal: meal,
+        expenses: dayExpenses,
+        deposits: dayDeposits,
+      ));
+    }
+
+    // Sort records ascending (1st, 2nd, 3rd...)
+    records.sort((a, b) => a.date.compareTo(b.date));
+    return records;
+  }
+}
+
+class DailyRecord {
+  final DateTime date;
+  final MealModel? meal;
+  final List<ExpenseModel> expenses;
+  final List<DepositModel> deposits;
+
+  DailyRecord({
+    required this.date,
+    this.meal,
+    required this.expenses,
+    required this.deposits,
+  });
 }

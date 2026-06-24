@@ -157,6 +157,7 @@ const _protectedAppRoutes = {
 GoRouter buildGoRouter(Ref ref) {
   final authState      = ref.watch(authStateProvider);
   final hasProfileAsync = ref.watch(hasProfileProvider);
+  final authUserAsync   = ref.watch(authUserStreamProvider);
 
   return GoRouter(
     navigatorKey: navigatorKey,
@@ -169,6 +170,12 @@ GoRouter buildGoRouter(Ref ref) {
       debugPrint('[Router] authState     : $authState');
       debugPrint('[Router] profileLoading: ${hasProfileAsync.isLoading}');
       debugPrint('[Router] hasProfile    : ${hasProfileAsync.asData?.value}');
+
+      // If the auth stream is still loading, stay on the splash screen / current page
+      if (authUserAsync.isLoading) {
+        debugPrint('[Router] Auth user stream is loading, staying on splash/current page');
+        return null;
+      }
 
       final isSplash        = location == GoRoutes.splash;
       final isPublicAuth    = location == GoRoutes.login ||
@@ -183,7 +190,7 @@ GoRouter buildGoRouter(Ref ref) {
       // ── 1. Unauthenticated ───────────────────────────────────────────────
       if (authState == AuthState.unauthenticated) {
         // Allow public auth pages; redirect everything else to login.
-        if (isPublicAuth || isSplash) return null;
+        if (isPublicAuth) return null;
         debugPrint('[Router] Unauthenticated → /login');
         return GoRoutes.login;
       }
