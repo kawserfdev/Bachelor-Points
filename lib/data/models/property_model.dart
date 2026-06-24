@@ -45,6 +45,9 @@ class PropertyModel {
   final DateTime updatedAt;
   final DateTime? expiresAt;
 
+  // Amenities
+  final List<String> amenities; // wifi, parking, gas, water, generator, elevator, security, cctv, rooftop, ac
+
   // Contact unlock tracking
   final List<String> contactUnlockedBy;
   final List<String> addressUnlockedBy;
@@ -79,6 +82,7 @@ class PropertyModel {
     this.images = const [],
     this.videos = const [],
     this.has360View = false,
+    this.amenities = const [],
     this.status = 'draft',
     this.reviewNotes,
     required this.createdAt,
@@ -117,6 +121,7 @@ class PropertyModel {
       images: (json['images'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
       videos: (json['videos'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
       has360View: json['has_360_view'] as bool? ?? false,
+      amenities: (json['amenities'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
       status: json['status'] as String? ?? 'draft',
       reviewNotes: json['review_notes'] as String?,
       createdAt: _parseDateTime(json['created_at']),
@@ -176,6 +181,7 @@ class PropertyModel {
       'images': images,
       'videos': videos,
       'has_360_view': has360View,
+      'amenities': amenities,
       'status': status,
       'review_notes': reviewNotes,
       'created_at': FieldValue.serverTimestamp(),
@@ -214,6 +220,7 @@ class PropertyModel {
     List<String>? images,
     List<String>? videos,
     bool? has360View,
+    List<String>? amenities,
     String? status,
     String? reviewNotes,
     DateTime? createdAt,
@@ -250,6 +257,7 @@ class PropertyModel {
       images: images ?? this.images,
       videos: videos ?? this.videos,
       has360View: has360View ?? this.has360View,
+      amenities: amenities ?? this.amenities,
       status: status ?? this.status,
       reviewNotes: reviewNotes ?? this.reviewNotes,
       createdAt: createdAt ?? this.createdAt,

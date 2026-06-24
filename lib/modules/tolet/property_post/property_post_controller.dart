@@ -1,10 +1,16 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/models/property_model.dart';
+import '../../../services/auth_service.dart';
 import '../../../services/property_service.dart';
+import '../../../shared/helpers/navigation_helper.dart';
 
 /// Controller for property posting (create/edit) workflow.
 class PropertyPostController extends GetxController {
   final PropertyService _propertyService = PropertyService();
+  final AuthService _authService = Get.find<AuthService>();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Form fields
   final RxString title = ''.obs;
@@ -28,6 +34,9 @@ class PropertyPostController extends GetxController {
   final RxInt floor = 1.obs;
   final RxDouble areaSqft = 0.0.obs;
 
+  // Amenities
+  final RxList<String> amenities = <String>[].obs;
+
   // Media
   final RxList<String> images = <String>[].obs;
   final RxList<String> videos = <String>[].obs;
@@ -43,6 +52,42 @@ class PropertyPostController extends GetxController {
   final RxBool isLoadingProperties = false.obs;
 
   bool get isEditing => editingPropertyId.value.isNotEmpty;
+
+  static const List<String> propertyTypes = [
+    'bachelor',
+    'family',
+    'hostel',
+    'mess',
+    'office',
+    'shop',
+    'land',
+  ];
+
+  static const List<String> availableAmenities = [
+    'WiFi',
+    'Parking',
+    'Generator',
+    'Gas',
+    'Water 24h',
+    'Elevator',
+    'Security',
+    'CCTV',
+    'Rooftop',
+    'AC',
+  ];
+
+  static const List<String> divisions = [
+    'Dhaka', 'Chattogram', 'Rajshahi', 'Khulna',
+    'Sylhet', 'Barishal', 'Rangpur', 'Mymensingh',
+  ];
+
+  void toggleAmenity(String amenity) {
+    if (amenities.contains(amenity)) {
+      amenities.remove(amenity);
+    } else {
+      amenities.add(amenity);
+    }
+  }
 
   /// Load existing property for editing.
   void loadProperty(PropertyModel property) {
@@ -66,19 +111,54 @@ class PropertyPostController extends GetxController {
     images.value = List.from(property.images);
     videos.value = List.from(property.videos);
     has360View.value = property.has360View;
+    amenities.value = List<String>.from(property.amenities);
+  }
+
+  /// Get current authenticated user info from Firestore profile.
+  Future<Map<String, String>> _getCurrentUserInfo() async {
+    final userId = _authService.currentUser.value?.uid ?? '';
+    if (userId.isEmpty) return {'id': '', 'name': '', 'phone': ''};
+
+    try {
+      final profileDoc = await _firestore.collection('profiles').doc(userId).get();
+      final data = profileDoc.data() ?? {};
+      final name = data['full_name'] as String? ?? data['name'] as String? ?? '';
+      final phone = data['phone'] as String? ?? data['phone_number'] as String? ?? '';
+      return {'id': userId, 'name': name, 'phone': phone};
+    } catch (e) {
+      debugPrint('[PropertyPostController] Error fetching user info: $e');
+      return {'id': userId, 'name': '', 'phone': ''};
+    }
+  }
+
+  /// Validate form before saving.
+  String? validate() {
+    if (title.value.trim().isEmpty) return 'Please enter a title';
+    if (area.value.trim().isEmpty) return 'Please enter the area';
+    if (district.value.trim().isEmpty) return 'Please enter the district';
+    if (price.value <= 0) return 'Please enter a valid price';
+    return null;
   }
 
   /// Save as draft.
-  Future<bool> saveDraft(String userId, String userName, String userPhone) async {
+  Future<bool> saveDraft() async {
+    final validationError = validate();
+    if (validationError != null) {
+      AppNavigation.showSnackBar('Validation Error', validationError);
+      return false;
+    }
+
     error.value = '';
     isSubmitting.value = true;
 
     try {
+      final userInfo = await _getCurrentUserInfo();
+
       final property = PropertyModel(
         id: editingPropertyId.value,
-        ownerId: userId,
-        ownerName: userName,
-        ownerPhone: userPhone,
+        ownerId: userInfo['id']!,
+        ownerName: userInfo['name']!,
+        ownerPhone: userInfo['phone']!,
         title: title.value.trim(),
         description: description.value.trim(),
         propertyType: propertyType.value,
@@ -98,6 +178,7 @@ class PropertyPostController extends GetxController {
         images: List.from(images),
         videos: List.from(videos),
         has360View: has360View.value,
+        amenities: List.from(amenities),
         status: 'draft',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
@@ -107,14 +188,17 @@ class PropertyPostController extends GetxController {
         await _propertyService.updateProperty(
             editingPropertyId.value, property.toFirestore());
       } else {
-        await _propertyService.createProperty(property);
+        final id = await _propertyService.createProperty(property);
+        editingPropertyId.value = id;
       }
 
       isSubmitting.value = false;
+      AppNavigation.showSnackBar('Saved', 'Property saved as draft', backgroundColor: const Color(0xFF22C55E));
       return true;
     } catch (e) {
       error.value = e.toString();
       isSubmitting.value = false;
+      AppNavigation.showSnackBar('Error', 'Failed to save: $e');
       return false;
     }
   }
@@ -122,7 +206,7 @@ class PropertyPostController extends GetxController {
   /// Submit for admin review.
   Future<bool> submitForReview() async {
     if (!isEditing) {
-      error.value = 'Please save as draft first';
+      AppNavigation.showSnackBar('Error', 'Please save as draft first');
       return false;
     }
 
@@ -132,16 +216,21 @@ class PropertyPostController extends GetxController {
     try {
       await _propertyService.submitForReview(editingPropertyId.value);
       isSubmitting.value = false;
+      AppNavigation.showSnackBar('Submitted', 'Your property is under review', backgroundColor: const Color(0xFF6366F1));
       return true;
     } catch (e) {
       error.value = e.toString();
       isSubmitting.value = false;
+      AppNavigation.showSnackBar('Error', 'Failed to submit: $e');
       return false;
     }
   }
 
   /// Load user's properties.
-  void loadUserProperties(String userId) {
+  void loadUserProperties() {
+    final userId = _authService.currentUser.value?.uid;
+    if (userId == null) return;
+
     isLoadingProperties.value = true;
     _propertyService.getUserProperties(userId).listen((props) {
       userProperties.value = props;
@@ -176,6 +265,7 @@ class PropertyPostController extends GetxController {
     images.value = [];
     videos.value = [];
     has360View.value = false;
+    amenities.value = [];
     error.value = '';
   }
 

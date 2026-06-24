@@ -1,10 +1,12 @@
 import 'package:get/get.dart';
 import '../../../data/models/property_model.dart';
+import '../../../services/auth_service.dart';
 import '../../../services/property_service.dart';
 
 /// Controller for managing user's property listings (list, status management).
 class ListingManagementController extends GetxController {
   final PropertyService _propertyService = PropertyService();
+  final AuthService _authService = Get.find<AuthService>();
 
   final RxList<PropertyModel> activeListings = <PropertyModel>[].obs;
   final RxList<PropertyModel> pendingListings = <PropertyModel>[].obs;
@@ -12,6 +14,15 @@ class ListingManagementController extends GetxController {
   final RxList<PropertyModel> expiredListings = <PropertyModel>[].obs;
   final RxList<PropertyModel> archivedListings = <PropertyModel>[].obs;
   final RxBool isLoading = false.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    final userId = _authService.currentUser.value?.uid;
+    if (userId != null && userId.isNotEmpty) {
+      loadListings(userId);
+    }
+  }
 
   /// Load all user listings and categorize by status.
   void loadListings(String userId) {
@@ -37,6 +48,11 @@ class ListingManagementController extends GetxController {
   /// Delete a draft listing.
   Future<void> deleteListing(String propertyId) async {
     await _propertyService.deleteProperty(propertyId);
+  }
+
+  /// Boost a listing (requires CreditController to check/deduct credits).
+  Future<void> boostListing(String propertyId) async {
+    await _propertyService.boostListing(propertyId);
   }
 
   @override
