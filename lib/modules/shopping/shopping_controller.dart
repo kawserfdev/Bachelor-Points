@@ -18,11 +18,13 @@ class ShoppingController extends GetxController {
   // ── Observable state ──────────────────────────────────────────────────────
   final Rx<ShoppingListModel?> activeList = Rx<ShoppingListModel?>(null);
   final RxList<ShoppingItemModel> allItems = <ShoppingItemModel>[].obs;
+  final RxList<ShoppingListModel> historyLists = <ShoppingListModel>[].obs;
   final RxBool isLoading = false.obs;
   final RxString currentUserRole = 'member'.obs;
 
   StreamSubscription? _listSub;
   StreamSubscription? _itemsSub;
+  StreamSubscription? _historySub;
 
   // ── Derived getters ───────────────────────────────────────────────────────
 
@@ -90,15 +92,18 @@ class ShoppingController extends GetxController {
       debugPrint('[ShoppingController] activeMess changed, re-subscribing');
       _fetchUserRole();
       _listenToActiveList();
+      _listenToHistoryLists();
     });
 
     _listenToActiveList();
+    _listenToHistoryLists();
   }
 
   @override
   void onClose() {
     _listSub?.cancel();
     _itemsSub?.cancel();
+    _historySub?.cancel();
     super.onClose();
   }
 
@@ -167,6 +172,39 @@ class ShoppingController extends GetxController {
       onError: (e) {
         debugPrint('[ShoppingController] _listenToActiveList error: $e');
         isLoading.value = false;
+      },
+    );
+  }
+
+  void _listenToHistoryLists() {
+    final messId = _messController.activeMess.value?.id;
+    if (messId == null) {
+      historyLists.clear();
+      _historySub?.cancel();
+      return;
+    }
+
+    _historySub?.cancel();
+
+    _historySub = _firestore
+        .collection('shopping_lists')
+        .where('mess_id', isEqualTo: messId)
+        .snapshots()
+        .listen(
+      (snap) {
+        final twoMonthsAgo = DateTime.now().subtract(const Duration(days: 60));
+        final lists = snap.docs
+            .map((doc) => ShoppingListModel.fromJson({'id': doc.id, ...doc.data()}))
+            .where((list) => list.createdAt.isAfter(twoMonthsAgo))
+            .toList();
+
+        // Sort by createdAt descending
+        lists.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        historyLists.assignAll(lists);
+        debugPrint('[ShoppingController] History lists loaded: ${lists.length}');
+      },
+      onError: (e) {
+        debugPrint('[ShoppingController] _listenToHistoryLists error: $e');
       },
     );
   }
@@ -375,8 +413,13 @@ class ShoppingController extends GetxController {
   }
 
   /// Create a new shopping list (manager/admin only).
-  /// Marks any existing active list as completed first.
-  Future<void> createList(String title) async {
+  /// Marks any existing active list as inactive first if status is 'active'.
+  Future<void> createList({
+    required String title,
+    required DateTime startDate,
+    required DateTime endDate,
+    required String status,
+  }) async {
     if (!isManager) {
       AppNavigation.showSnackBar(
         'Permission Denied',
@@ -402,13 +445,13 @@ class ShoppingController extends GetxController {
     try {
       isLoading.value = true;
 
-      // Complete any existing active list
-      if (activeList.value != null) {
+      // Inactivate any existing active list if the new list is active
+      if (status == 'active' && activeList.value != null) {
         await _firestore
             .collection('shopping_lists')
             .doc(activeList.value!.id)
             .update({
-          'status': 'completed',
+          'status': 'inactive',
           'completed_at': FirestoreTime.serverTimestamp,
         });
       }
@@ -417,7 +460,9 @@ class ShoppingController extends GetxController {
       await _firestore.collection('shopping_lists').add({
         'mess_id': messId,
         'title': title.trim(),
-        'status': 'active',
+        'status': status,
+        'start_date': Timestamp.fromDate(startDate),
+        'end_date': Timestamp.fromDate(endDate),
         'created_by': uid,
         'created_at': FirestoreTime.serverTimestamp,
         'completed_at': null,
@@ -425,7 +470,7 @@ class ShoppingController extends GetxController {
 
       AppNavigation.showSnackBar(
         'Created!',
-        'Shopping list "${title.trim()}" is now active.',
+        'Shopping list "${title.trim()}" has been created.',
         backgroundColor: Colors.green,
       );
     } catch (e) {
@@ -437,7 +482,7 @@ class ShoppingController extends GetxController {
     }
   }
 
-  /// Mark the active shopping list as completed.
+  /// Mark the active shopping list as inactive.
   Future<void> completeList() async {
     if (!isManager) {
       AppNavigation.showSnackBar(
@@ -453,19 +498,144 @@ class ShoppingController extends GetxController {
 
     try {
       await _firestore.collection('shopping_lists').doc(listId).update({
-        'status': 'completed',
+        'status': 'inactive',
         'completed_at': FirestoreTime.serverTimestamp,
       });
 
       AppNavigation.showSnackBar(
         'Completed',
-        'Shopping list has been marked as completed.',
+        'Shopping list has been marked as inactive.',
         backgroundColor: Colors.indigo,
       );
     } catch (e) {
       debugPrint('[ShoppingController] completeList error: $e');
       AppNavigation.showSnackBar('Error', 'Failed to complete list.',
           backgroundColor: Colors.redAccent);
+    }
+  }
+
+  /// Update the status of any list (Active / Inactive).
+  /// If set to 'active', automatically deactivates other active lists in this mess.
+  Future<void> updateListStatus(String listId, String newStatus) async {
+    if (!isManager) {
+      AppNavigation.showSnackBar(
+        'Permission Denied',
+        'Only managers/admins can update list status.',
+        backgroundColor: Colors.redAccent,
+      );
+      return;
+    }
+
+    final messId = _messController.activeMess.value?.id;
+    if (messId == null) return;
+
+    try {
+      isLoading.value = true;
+
+      if (newStatus == 'active') {
+        // If activating a list, deactivate other lists
+        final activeDoc = await _firestore
+            .collection('shopping_lists')
+            .where('mess_id', isEqualTo: messId)
+            .where('status', isEqualTo: 'active')
+            .get();
+
+        for (final doc in activeDoc.docs) {
+          if (doc.id != listId) {
+            await doc.reference.update({
+              'status': 'inactive',
+              'completed_at': FirestoreTime.serverTimestamp,
+            });
+          }
+        }
+      }
+
+      await _firestore.collection('shopping_lists').doc(listId).update({
+        'status': newStatus,
+        'completed_at': newStatus == 'inactive' ? FirestoreTime.serverTimestamp : null,
+      });
+
+      AppNavigation.showSnackBar(
+        'Updated',
+        'Shopping list is now $newStatus.',
+        backgroundColor: Colors.green,
+      );
+    } catch (e) {
+      debugPrint('[ShoppingController] updateListStatus error: $e');
+      AppNavigation.showSnackBar('Error', 'Failed to update status: $e',
+          backgroundColor: Colors.redAccent);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// Delete a shopping list and its associated items.
+  Future<void> deleteList(String listId) async {
+    if (!isManager) {
+      AppNavigation.showSnackBar(
+        'Permission Denied',
+        'Only managers/admins can delete shopping lists.',
+        backgroundColor: Colors.redAccent,
+      );
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+
+      // Delete the list document
+      await _firestore.collection('shopping_lists').doc(listId).delete();
+
+      // Delete associated items
+      final itemsSnap = await _firestore
+          .collection('shopping_items')
+          .where('list_id', isEqualTo: listId)
+          .get();
+
+      final batch = _firestore.batch();
+      for (final doc in itemsSnap.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+
+      AppNavigation.showSnackBar(
+        'Deleted',
+        'Shopping list and its items have been deleted.',
+        backgroundColor: Colors.red,
+      );
+    } catch (e) {
+      debugPrint('[ShoppingController] deleteList error: $e');
+      AppNavigation.showSnackBar('Error', 'Failed to delete list: $e',
+          backgroundColor: Colors.redAccent);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// Fetch all shopping items for a specific list.
+  Future<List<ShoppingItemModel>> fetchItemsForList(String listId) async {
+    try {
+      final snap = await _firestore
+          .collection('shopping_items')
+          .where('list_id', isEqualTo: listId)
+          .get();
+
+      final items = snap.docs.map((doc) {
+        return ShoppingItemModel.fromJson({'id': doc.id, ...doc.data()});
+      }).toList();
+
+      // Sort approved items first, then priority, then date
+      items.sort((a, b) {
+        if (a.isApproved && !b.isApproved) return -1;
+        if (!a.isApproved && b.isApproved) return 1;
+        if (a.isUrgent && !b.isUrgent) return -1;
+        if (!a.isUrgent && b.isUrgent) return 1;
+        return b.createdAt.compareTo(a.createdAt);
+      });
+      return items;
+    } catch (e) {
+      debugPrint('[ShoppingController] fetchItemsForList error: $e');
+      return [];
     }
   }
 }

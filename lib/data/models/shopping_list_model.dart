@@ -2,10 +2,12 @@ class ShoppingListModel {
   final String id;
   final String messId;
   final String title;
-  final String status; // 'active' | 'completed'
+  final String status; // 'active' | 'completed' | 'inactive'
   final String createdBy;
   final DateTime createdAt;
   final DateTime? completedAt;
+  final DateTime? startDate;
+  final DateTime? endDate;
 
   ShoppingListModel({
     required this.id,
@@ -15,6 +17,8 @@ class ShoppingListModel {
     required this.createdBy,
     required this.createdAt,
     this.completedAt,
+    this.startDate,
+    this.endDate,
   });
 
   bool get isActive => status == 'active';
@@ -29,6 +33,12 @@ class ShoppingListModel {
       createdAt: _parseDateTime(json['created_at']),
       completedAt: json['completed_at'] != null
           ? _parseDateTime(json['completed_at'])
+          : null,
+      startDate: json['start_date'] != null
+          ? _parseDateTime(json['start_date'])
+          : null,
+      endDate: json['end_date'] != null
+          ? _parseDateTime(json['end_date'])
           : null,
     );
   }
