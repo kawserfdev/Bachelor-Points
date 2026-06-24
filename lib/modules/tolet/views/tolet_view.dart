@@ -1,15 +1,15 @@
-import 'package:bachelorpoints/modules/explore/detailspage_view.dart';
+import 'package:bachelorpoints/modules/tolet/views/detailspage_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/theme/app_theme.dart';
-import '../../core/routes/app_routes.dart';
-import '../../data/models/toletItem_model.dart';
-import 'explore_controller.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/routes/app_routes.dart';
+import '../../../data/models/toletItem_model.dart';
+import '../property_search/tolet_controller.dart';
 
-/// Explore tab — shows a grid of features and tolet listings.
-class ExploreView extends GetView<ExploreController> {
-  const ExploreView({super.key});
+/// tolet tab — shows a grid of features and tolet listings.
+class ToletView extends GetView<ToletController> {
+  const ToletView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +80,7 @@ class ExploreView extends GetView<ExploreController> {
                   // ── Header ──
                   // _buildSectionHeader(
                   //   context,
-                  //   title: 'Explore',
+                  //   title: 'tolet',
                   //   subtitle: 'Discover all features',
                   // ),
                   // const SizedBox(height: 24),

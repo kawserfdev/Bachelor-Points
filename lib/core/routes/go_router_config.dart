@@ -1,4 +1,6 @@
+import 'package:bachelorpoints/modules/tolet/bindings/tolet_binding.dart';
 import 'package:bachelorpoints/modules/tolet/views/property_search_view.dart';
+import 'package:bachelorpoints/modules/tolet/views/tolet_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -23,8 +25,6 @@ import '../../modules/auth/forgot_password/forgot_password_binding.dart';
 import '../../modules/auth/verify_email/verify_email_view.dart';
 import '../../modules/home/home_view.dart';
 import '../../modules/home/home_binding.dart';
-import '../../modules/explore/explore_view.dart';
-import '../../modules/explore/explore_binding.dart';
 import '../../modules/profile/profile_view.dart';
 import '../../modules/mess/create_mess_view.dart';
 import '../../modules/mess/join_mess_view.dart';
@@ -82,7 +82,7 @@ class GoRoutes {
 
   // ── Main Shell (bottom nav tabs) ──
   static const home    = '/home';
-  static const explore = '/explore';
+  static const tolet = '/tolet';
   static const profile = '/profile';
 
   // ── Profile sub-pages ──
@@ -127,7 +127,7 @@ class GoRoutes {
 // ─────────────────────────────────────────────────────────────────────────────
 const _protectedAppRoutes = {
   GoRoutes.home,
-  GoRoutes.explore,
+  GoRoutes.tolet,
   GoRoutes.profile,
   GoRoutes.profileDetail,
   GoRoutes.editProfile,
@@ -146,7 +146,7 @@ const _protectedAppRoutes = {
   GoRoutes.shoppingList,
   GoRoutes.addShoppingItem,
   GoRoutes.settings,
-  GoRoutes.toletHome,
+  //GoRoutes.toletHome,
   GoRoutes.propertySearch,
   GoRoutes.propertyMapSearch,
   GoRoutes.propertyDetail,
@@ -318,10 +318,10 @@ GoRouter buildGoRouter(Ref ref) {
             },
           ),
           GoRoute(
-            path: GoRoutes.explore,
+            path: GoRoutes.tolet,
             builder: (context, state) {
-              ExploreBinding().dependencies();
-              return const ExploreView();
+              ToletBinding().dependencies();
+              return const ToletView();
             },
           ),
           GoRoute(

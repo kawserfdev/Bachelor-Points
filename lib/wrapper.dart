@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 /// Wrapper shell that provides a BottomNavigationBar with 3 tabs:
-/// Home, Explore, Profile.
+/// Home, tolet, Profile.
 ///
 /// Used as a [ShellRoute] builder in GoRouter — the [child] parameter
 /// is the currently active tab's page.
@@ -14,9 +14,28 @@ class AppWrapper extends StatelessWidget {
 
   /// Index-to-route mapping for the bottom nav
   static const _tabs = <_TabInfo>[
-    _TabInfo(index: 0, icon: Icons.home_rounded, activeIcon: Icons.home_rounded, label: 'Home', route: '/home'),
-    _TabInfo(index: 1, icon: Icons.explore_outlined, activeIcon: Icons.explore_rounded, label: 'Explore', route: '/explore'),
-    _TabInfo(index: 2, icon: Icons.person_outline_rounded, activeIcon: Icons.person_rounded, label: 'Profile', route: '/profile'),
+    _TabInfo(
+      index: 0,
+      icon: Icons.dining_outlined,
+      activeIcon: Icons.dining,
+      label: 'Home',
+      route: '/home',
+    ),
+    _TabInfo(
+      index: 1,
+      icon: Icons.home_work_outlined,
+      activeIcon: Icons.home_work,
+      label: 'Tolet',
+      route: '/tolet',
+    ),
+    
+    _TabInfo(
+      index: 2,
+      icon: Icons.person_outline_rounded,
+      activeIcon: Icons.person_rounded,
+      label: 'Profile',
+      route: '/profile',
+    ),
   ];
 
   @override

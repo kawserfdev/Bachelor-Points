@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
-import '../../data/models/toletItem_model.dart';
+import '../../../data/models/toletItem_model.dart';
 
-class ExploreController extends GetxController {
+class ToletController extends GetxController {
   // Toggles visibility for expanded feature sets
   final RxBool isExpandedFeatures = false.obs;
 

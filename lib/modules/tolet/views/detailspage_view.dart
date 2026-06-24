@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../data/models/toletItem_model.dart';
+import '../../../data/models/toletItem_model.dart';
 
 class DetailsPage extends StatelessWidget {
   final ToletItem item;

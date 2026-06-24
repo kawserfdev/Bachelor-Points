@@ -12,7 +12,7 @@ abstract class AppRoutes {
 
   // ── Main Shell (bottom nav tabs) ──
   static const home    = '/home';
-  static const explore = '/explore';
+  static const tolet = '/tolet';
   static const profile = '/profile';
 
   // ── Profile sub-pages ──

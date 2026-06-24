@@ -560,7 +560,7 @@ class HomeView extends GetView<HomeController> {
       //   icon: Icons.home_work_rounded,
       //   label: 'Properties',
       //   color: const Color(0xFFE91E63), // Rose/Pink
-      //   onTap: () => context.push(AppRoutes.explore),
+      //   onTap: () => context.push(AppRoutes.tolet),
       // ),
       _QuickAction(
         icon: Icons.shopping_cart_checkout_rounded,
