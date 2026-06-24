@@ -47,6 +47,9 @@ import '../../modules/report/views/report_view.dart';
 import '../../modules/report/report_binding.dart';
 import '../../modules/settings/views/settings_view.dart';
 import '../../modules/settings/settings_binding.dart';
+import '../../modules/shopping/views/shopping_list_view.dart';
+import '../../modules/shopping/views/add_shopping_item_view.dart';
+import '../../modules/shopping/shopping_binding.dart';
 import '../../modules/profile/profile_binding.dart';
 import '../../modules/profile/create_profile_view.dart';
 import '../../modules/profile/create_profile_binding.dart';
@@ -101,6 +104,8 @@ class GoRoutes {
   static const notifications = '/notifications';
   static const chat          = '/chat';
   static const report        = '/report';
+  static const shoppingList  = '/shopping-list';
+  static const addShoppingItem = '/shopping-list/add';
   static const settings      = '/settings';
 
   // ── Tolet feature ──
@@ -138,6 +143,8 @@ const _protectedAppRoutes = {
   GoRoutes.notifications,
   GoRoutes.chat,
   GoRoutes.report,
+  GoRoutes.shoppingList,
+  GoRoutes.addShoppingItem,
   GoRoutes.settings,
   GoRoutes.toletHome,
   GoRoutes.propertySearch,
@@ -426,6 +433,20 @@ GoRouter buildGoRouter(Ref ref) {
         builder: (context, state) {
           ReportBinding().dependencies();
           return const ReportView();
+        },
+      ),
+      GoRoute(
+        path: GoRoutes.shoppingList,
+        builder: (context, state) {
+          ShoppingBinding().dependencies();
+          return const ShoppingListView();
+        },
+      ),
+      GoRoute(
+        path: GoRoutes.addShoppingItem,
+        builder: (context, state) {
+          ShoppingBinding().dependencies();
+          return const AddShoppingItemView();
         },
       ),
       GoRoute(

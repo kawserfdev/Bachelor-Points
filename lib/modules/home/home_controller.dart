@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import '../../../services/auth_service.dart';
 import '../../../services/storage_service.dart';

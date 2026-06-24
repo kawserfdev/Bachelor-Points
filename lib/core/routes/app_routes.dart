@@ -34,6 +34,8 @@ abstract class AppRoutes {
   static const notifications  = '/notifications';
   static const chat           = '/chat';
   static const report         = '/report';
+  static const shoppingList   = '/shopping-list';
+  static const addShoppingItem = '/shopping-list/add';
   static const settings       = '/settings';
 
   // ── Tolet Feature ──

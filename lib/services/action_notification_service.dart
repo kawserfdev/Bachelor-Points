@@ -425,4 +425,132 @@ class ActionNotificationService {
       );
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // SHOPPING ITEM REQUEST
+  // ---------------------------------------------------------------------------
+
+  /// Notify all managers/owners when a member submits a new shopping item request.
+  static Future<void> notifyShoppingItemRequested({
+    required String messId,
+    required String requesterName,
+    required String itemName,
+    required String quantity,
+    required String priority,
+    required List<dynamic> members,
+    required String currentUserId,
+  }) async {
+    debugPrint(
+      '[ActionNotificationService] notifyShoppingItemRequested: $requesterName → "$itemName" ($priority)',
+    );
+
+    try {
+      final managersAndOwners = members
+          .where(
+            (m) =>
+                m.userId != currentUserId &&
+                (m.role == 'manager' || m.role == 'owner'),
+          )
+          .toList();
+
+      debugPrint(
+        '[ActionNotificationService] Dispatching shopping request notification to ${managersAndOwners.length} managers/owners...',
+      );
+
+      final qtyLabel = quantity.trim().isNotEmpty ? ' ($quantity)' : '';
+      final priorityLabel = priority == 'urgent' ? ' 🔴 URGENT' : '';
+
+      for (var member in managersAndOwners) {
+        try {
+          await _notificationRepo.sendNotification(
+            targetUserId: member.userId,
+            messId: messId,
+            title: 'New Shopping Request 🛒',
+            body: '$requesterName requested "$itemName"$qtyLabel.$priorityLabel',
+            type: 'shopping_request',
+            route: '/shopping-list',
+          );
+          debugPrint(
+            '[ActionNotificationService] Shopping request notification sent to ${member.userId}',
+          );
+        } catch (e) {
+          debugPrint(
+            '[ActionNotificationService] Failed to notify ${member.userId}: $e',
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint(
+        '[ActionNotificationService] Error in notifyShoppingItemRequested: $e',
+      );
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // SHOPPING ITEM APPROVED
+  // ---------------------------------------------------------------------------
+
+  /// Notify the requester when their shopping item request is approved.
+  static Future<void> notifyShoppingItemApproved({
+    required String targetUserId,
+    required String messId,
+    required String itemName,
+    required String quantity,
+  }) async {
+    debugPrint(
+      '[ActionNotificationService] notifyShoppingItemApproved → targetUserId: $targetUserId, item: $itemName',
+    );
+
+    try {
+      final qtyLabel = quantity.trim().isNotEmpty ? ' ($quantity)' : '';
+      await _notificationRepo.sendNotification(
+        targetUserId: targetUserId,
+        messId: messId,
+        title: 'Shopping Request Approved ✅',
+        body: 'Your request for "$itemName"$qtyLabel has been approved and added to the shopping list.',
+        type: 'shopping_approved',
+        route: '/shopping-list',
+      );
+      debugPrint(
+        '[ActionNotificationService] Shopping approved notification sent to $targetUserId',
+      );
+    } catch (e) {
+      debugPrint(
+        '[ActionNotificationService] Error in notifyShoppingItemApproved: $e',
+      );
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // SHOPPING ITEM REJECTED
+  // ---------------------------------------------------------------------------
+
+  /// Notify the requester when their shopping item request is rejected.
+  static Future<void> notifyShoppingItemRejected({
+    required String targetUserId,
+    required String messId,
+    required String itemName,
+  }) async {
+    debugPrint(
+      '[ActionNotificationService] notifyShoppingItemRejected → targetUserId: $targetUserId, item: $itemName',
+    );
+
+    try {
+      await _notificationRepo.sendNotification(
+        targetUserId: targetUserId,
+        messId: messId,
+        title: 'Shopping Request Rejected ❌',
+        body: 'Your request for "$itemName" was not approved. You may re-submit with adjustments.',
+        type: 'shopping_rejected',
+        route: '/shopping-list',
+      );
+      debugPrint(
+        '[ActionNotificationService] Shopping rejected notification sent to $targetUserId',
+      );
+    } catch (e) {
+      debugPrint(
+        '[ActionNotificationService] Error in notifyShoppingItemRejected: $e',
+      );
+    }
+  }
 }

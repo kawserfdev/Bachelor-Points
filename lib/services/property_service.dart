@@ -192,7 +192,7 @@ class PropertyService {
   Future<PropertyModel?> getProperty(String propertyId) async {
     final doc = await _firestore.collection(_collection).doc(propertyId).get();
     if (!doc.exists) return null;
-    final rawData = doc.data() as Map<String, dynamic>? ?? {};
+    final rawData = doc.data() ?? {};
     return PropertyModel.fromJson({'id': doc.id, ...rawData});
   }
 

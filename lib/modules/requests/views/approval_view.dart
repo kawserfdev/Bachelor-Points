@@ -246,9 +246,12 @@ class ApprovalView extends GetView<RequestController> {
                 Icon(Icons.person_outline_rounded,
                     size: 14, color: Colors.grey[400]),
                 const SizedBox(width: 4),
-                Text(
-                  'Requested by ${request.createdByName ?? 'Unknown'}',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                
+                Flexible(
+                  child: Text(
+                    'Requested by ${request.createdByName ?? 'Unknown'}', maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                  ),
                 ),
               ],
             ),
@@ -439,9 +442,12 @@ class ApprovalView extends GetView<RequestController> {
                 Icon(Icons.person_outline_rounded,
                     size: 14, color: Colors.grey[400]),
                 const SizedBox(width: 4),
-                Text(
-                  'by ${request.createdByName ?? 'Unknown'}',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                Flexible(
+                  child: Text(
+                    'by ${request.createdByName ?? 'Unknown'}',
+                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                  ),
                 ),
               ],
             ),
