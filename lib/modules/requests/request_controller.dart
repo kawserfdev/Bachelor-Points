@@ -279,6 +279,9 @@ class RequestController extends GetxController {
         case 'ROLE_CHANGE':
           await _approveRoleChange(request, messId, userId);
           break;
+        case 'MEAL_PLAN_CHANGE':
+          await _approveMealPlanChange(request, messId, userId);
+          break;
       }
 
       AppNavigation.showSnackBar(
@@ -300,6 +303,10 @@ class RequestController extends GetxController {
             detail = ' of amount ${request.amount}';
           } else if (request.requestType == 'ROLE_CHANGE') {
             detail = ' to ${request.newRole}';
+          } else if (request.requestType == 'MEAL_PLAN_CHANGE') {
+            final startStr = request.startDate != null ? '${request.startDate!.day}/${request.startDate!.month}/${request.startDate!.year}' : '';
+            final endStr = request.endDate != null ? '${request.endDate!.day}/${request.endDate!.month}/${request.endDate!.year}' : '';
+            detail = ' (B:${request.breakfast}, L:${request.lunch}, D:${request.dinner}) from $startStr to $endStr';
           }
 
           // Notify the creator
@@ -434,6 +441,57 @@ class RequestController extends GetxController {
       await doc.reference.update({'role': newRole});
     }
 
+    await _firestore.collection('requests').doc(r.id).update({
+      'status': 'Approved',
+      'approved_by': userId,
+      'approved_at': FirestoreTime.serverTimestamp,
+    });
+  }
+
+  Future<void> _approveMealPlanChange(
+      RequestModel r, String messId, String userId) async {
+    // 1. Update default meal plan portions
+    final docId = '${messId}_${r.createdBy}';
+    await _firestore.collection('default_meal_plans').doc(docId).set({
+      'mess_id': messId,
+      'user_id': r.createdBy,
+      'breakfast': r.breakfast ?? 1.0,
+      'lunch': r.lunch ?? 1.0,
+      'dinner': r.dinner ?? 1.0,
+      'updated_at': FirestoreTime.serverTimestamp,
+    }, SetOptions(merge: true));
+
+    // 2. If start/end date range exists, apply to meals in range
+    if (r.startDate != null && r.endDate != null) {
+      final start = DateTime(r.startDate!.year, r.startDate!.month, r.startDate!.day);
+      final end = DateTime(r.endDate!.year, r.endDate!.month, r.endDate!.day);
+      final durationDays = end.difference(start).inDays + 1;
+
+      if (durationDays > 0) {
+        final batch = _firestore.batch();
+        for (int i = 0; i < durationDays; i++) {
+          final currentDate = start.add(Duration(days: i));
+          final dateStr =
+              "${currentDate.year}-${currentDate.month.toString().padLeft(2, '0')}-${currentDate.day.toString().padLeft(2, '0')}";
+          final mealDocId = '${messId}_${r.createdBy}_$dateStr';
+          final mealRef = _firestore.collection('meals').doc(mealDocId);
+
+          batch.set(mealRef, {
+            'mess_id': messId,
+            'user_id': r.createdBy,
+            'date': dateStr,
+            'breakfast': r.breakfast ?? 1.0,
+            'lunch': r.lunch ?? 1.0,
+            'dinner': r.dinner ?? 1.0,
+            'status': 'Approved',
+            'updated_at': FirestoreTime.serverTimestamp,
+          }, SetOptions(merge: true));
+        }
+        await batch.commit();
+      }
+    }
+
+    // 3. Mark request as Approved
     await _firestore.collection('requests').doc(r.id).update({
       'status': 'Approved',
       'approved_by': userId,
@@ -590,6 +648,8 @@ class RequestController extends GetxController {
         return 'Removal request';
       case 'ROLE_CHANGE':
         return 'Role change';
+      case 'MEAL_PLAN_CHANGE':
+        return 'Meal Plan Change';
       default:
         return type;
     }

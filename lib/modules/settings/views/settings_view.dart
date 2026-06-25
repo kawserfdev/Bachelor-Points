@@ -36,6 +36,8 @@ class SettingsView extends GetView<SettingsController> {
             ],
             if (controller.messId != null) ...[
               const SizedBox(height: 16),
+              _buildMealPlanRequestCard(context),
+              const SizedBox(height: 16),
               _buildMembershipCard(context),
             ],
           ],
@@ -489,6 +491,327 @@ class SettingsView extends GetView<SettingsController> {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildMealPlanRequestCard(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Default Meal Plan',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Your current regular daily portions:',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Obx(() => Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildPortionIndicator(context, 'Breakfast', controller.currentDefaultBreakfast.value),
+                    _buildPortionIndicator(context, 'Lunch', controller.currentDefaultLunch.value),
+                    _buildPortionIndicator(context, 'Dinner', controller.currentDefaultDinner.value),
+                  ],
+                )),
+            const SizedBox(height: 16),
+            Obx(() {
+              final pending = controller.hasPendingMealPlanRequest.value;
+              return SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: pending ? Colors.grey : theme.colorScheme.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  icon: Icon(pending ? Icons.hourglass_empty : Icons.edit_calendar),
+                  label: Text(pending ? 'Change Request Pending Manager Approval' : 'Request Meal Plan Change'),
+                  onPressed: pending ? null : () => _showMealPlanRequestDialog(context),
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPortionIndicator(BuildContext context, String label, double val) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: Colors.grey[500], fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)),
+          ),
+          child: Text(
+            val.toStringAsFixed(1),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showMealPlanRequestDialog(BuildContext context) {
+    final now = DateTime.now();
+    DateTime tempStart = DateTime(now.year, now.month, now.day);
+    DateTime tempEnd = DateTime(now.year, now.month, now.day);
+    
+    double reqBreakfast = controller.currentDefaultBreakfast.value;
+    double reqLunch = controller.currentDefaultLunch.value;
+    double reqDinner = controller.currentDefaultDinner.value;
+    final reasonController = TextEditingController();
+    final options = [0.0, 0.5, 1.0, 1.5, 2.0];
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Request Meal Plan Change'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      'Request updates to your regular daily portions for a specific date range. This requires approval from the manager.',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: () async {
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: tempStart,
+                                firstDate: DateTime.now().subtract(const Duration(days: 30)),
+                                lastDate: DateTime.now().add(const Duration(days: 365)),
+                              );
+                              if (picked != null) {
+                                setDialogState(() {
+                                  tempStart = picked;
+                                  if (tempEnd.isBefore(tempStart)) {
+                                    tempEnd = tempStart;
+                                  }
+                                });
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Start Date', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    "${tempStart.day}/${tempStart.month}/${tempStart.year}",
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.arrow_forward, size: 12, color: Colors.grey),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () async {
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: tempEnd.isBefore(tempStart) ? tempStart : tempEnd,
+                                firstDate: tempStart,
+                                lastDate: DateTime.now().add(const Duration(days: 365)),
+                              );
+                              if (picked != null) {
+                                setDialogState(() => tempEnd = picked);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('End Date', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    "${tempEnd.day}/${tempEnd.month}/${tempEnd.year}",
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    const SizedBox(height: 12),
+                    
+                    _buildDialogPortionSelector(
+                      context,
+                      'Breakfast',
+                      Icons.breakfast_dining,
+                      reqBreakfast,
+                      options,
+                      (val) => setDialogState(() => reqBreakfast = val),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildDialogPortionSelector(
+                      context,
+                      'Lunch',
+                      Icons.lunch_dining,
+                      reqLunch,
+                      options,
+                      (val) => setDialogState(() => reqLunch = val),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildDialogPortionSelector(
+                      context,
+                      'Dinner',
+                      Icons.dinner_dining,
+                      reqDinner,
+                      options,
+                      (val) => setDialogState(() => reqDinner = val),
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: reasonController,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                        labelText: 'Reason for Change *',
+                        hintText: 'e.g. Diet change, leaving city for few days, etc.',
+                        border: OutlineInputBorder(),
+                      ),
+                      textCapitalization: TextCapitalization.sentences,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    final reason = reasonController.text.trim();
+                    if (reason.isEmpty) {
+                      Get.snackbar(
+                        'Validation',
+                        'Reason is required.',
+                        backgroundColor: Colors.orangeAccent,
+                        colorText: Colors.white,
+                      );
+                      return;
+                    }
+                    Navigator.pop(context);
+                    controller.submitMealPlanRequest(
+                      breakfastVal: reqBreakfast,
+                      lunchVal: reqLunch,
+                      dinnerVal: reqDinner,
+                      reason: reason,
+                      startDate: tempStart,
+                      endDate: tempEnd,
+                    );
+                  },
+                  child: const Text('Submit Request'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildDialogPortionSelector(
+    BuildContext context,
+    String title,
+    IconData icon,
+    double currentValue,
+    List<double> options,
+    ValueChanged<double> onChanged,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 16, color: Colors.grey[700]),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: options.map((option) {
+            final isSelected = currentValue == option;
+            return ChoiceChip(
+              label: Text(option.toString()),
+              selected: isSelected,
+              onSelected: (selected) {
+                if (selected) {
+                  onChanged(option);
+                }
+              },
+              selectedColor: Theme.of(context).colorScheme.primary,
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : Colors.black87,
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }

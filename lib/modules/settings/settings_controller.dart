@@ -10,6 +10,7 @@ import '../../services/action_notification_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/storage_service.dart';
 import '../../shared/helpers/navigation_helper.dart';
+import '../notifications/data/notification_repository.dart';
 
 class SettingsController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -17,6 +18,11 @@ class SettingsController extends GetxController {
 
   final RxBool isLoading = false.obs;
   final RxBool isAdmin = false.obs;
+
+  final RxDouble currentDefaultBreakfast = 0.0.obs;
+  final RxDouble currentDefaultLunch = 0.0.obs;
+  final RxDouble currentDefaultDinner = 0.0.obs;
+  final RxBool hasPendingMealPlanRequest = false.obs;
 
   String? _messId;
   String? get messId => _messId;
@@ -67,6 +73,8 @@ class SettingsController extends GetxController {
       isAdmin.value = (role == 'admin' || role == 'manager');
 
       debugPrint('[checkAdmin] isAdmin: ${isAdmin.value}');
+
+      await fetchUserMealPlanAndRequestStatus();
 
       if (isAdmin.value) {
         await _loadAllSettingsData();
@@ -464,6 +472,142 @@ class SettingsController extends GetxController {
       AppNavigation.showSnackBar(
         'Error',
         'Failed to submit exit request: $e',
+        backgroundColor: Colors.redAccent,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> fetchUserMealPlanAndRequestStatus() async {
+    final userId = _authService.currentUser.value?.uid;
+    if (userId == null || _messId == null) return;
+
+    try {
+      final defaultPlanDoc = '${_messId}_$userId';
+      final defaultSnap = await _firestore.collection('default_meal_plans').doc(defaultPlanDoc).get();
+      final defaultData = defaultSnap.data();
+
+      currentDefaultBreakfast.value = (defaultData?['breakfast'] as num?)?.toDouble() ?? 1.0;
+      currentDefaultLunch.value = (defaultData?['lunch'] as num?)?.toDouble() ?? 1.0;
+      currentDefaultDinner.value = (defaultData?['dinner'] as num?)?.toDouble() ?? 1.0;
+
+      final pendingSnap = await _firestore
+          .collection('requests')
+          .where('mess_id', isEqualTo: _messId)
+          .where('created_by', isEqualTo: userId)
+          .where('request_type', isEqualTo: 'MEAL_PLAN_CHANGE')
+          .where('status', isEqualTo: 'Pending')
+          .limit(1)
+          .get();
+
+      hasPendingMealPlanRequest.value = pendingSnap.docs.isNotEmpty;
+    } catch (e) {
+      debugPrint('[fetchUserMealPlanAndRequestStatus] Error: $e');
+    }
+  }
+
+  Future<void> submitMealPlanRequest({
+    required double breakfastVal,
+    required double lunchVal,
+    required double dinnerVal,
+    required String reason,
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    final userId = _authService.currentUser.value?.uid;
+    if (userId == null || _messId == null) {
+      AppNavigation.showSnackBar('Error', 'Unable to retrieve user or mess details.');
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+
+      final existingRequests = await _firestore
+          .collection('requests')
+          .where('mess_id', isEqualTo: _messId)
+          .where('request_type', isEqualTo: 'MEAL_PLAN_CHANGE')
+          .where('created_by', isEqualTo: userId)
+          .where('status', isEqualTo: 'Pending')
+          .limit(1)
+          .get();
+
+      if (existingRequests.docs.isNotEmpty) {
+        AppNavigation.showSnackBar(
+          'Already Submitted',
+          'You already have a pending meal plan update request.',
+          backgroundColor: Colors.orangeAccent,
+        );
+        return;
+      }
+
+      final profileDoc = await _firestore.collection('profiles').doc(userId).get();
+      final profileData = profileDoc.data();
+      final fullName = profileData?['full_name'] as String? ?? profileData?['email'] as String? ?? 'Unknown';
+
+      await _firestore.collection('requests').add({
+        'mess_id': _messId,
+        'request_type': 'MEAL_PLAN_CHANGE',
+        'breakfast': breakfastVal,
+        'lunch': lunchVal,
+        'dinner': dinnerVal,
+        'reason': reason.trim(),
+        'status': 'Pending',
+        'created_by': userId,
+        'member_id': userId,
+        'member_name': fullName,
+        'created_at': FirestoreTime.serverTimestamp,
+        'start_date': "${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}",
+        'end_date': "${endDate.year}-${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}",
+        'request_date': "${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}",
+      });
+
+      hasPendingMealPlanRequest.value = true;
+
+      AppNavigation.showSnackBar(
+        'Submitted',
+        'Your meal plan request has been submitted to the manager.',
+        backgroundColor: Colors.green,
+      );
+
+      unawaited(() async {
+        try {
+          final managersRes = await _firestore
+              .collection('mess_members')
+              .where('mess_id', isEqualTo: _messId)
+              .where('role', whereIn: ['manager', 'admin', 'owner'])
+              .get();
+
+          final managers = managersRes.docs
+              .where((doc) => doc.data()['user_id'] != userId)
+              .map((doc) => {'userId': doc.data()['user_id'] as String})
+              .toList();
+
+          if (managers.isNotEmpty) {
+            final notificationRepo = NotificationRepositoryImpl();
+            final startStr = "${startDate.day}/${startDate.month}/${startDate.year}";
+            final endStr = "${endDate.day}/${endDate.month}/${endDate.year}";
+            for (var m in managers) {
+              await notificationRepo.sendNotification(
+                targetUserId: m['userId']!,
+                messId: _messId!,
+                title: 'New Meal Plan Request 🍳',
+                body: '$fullName requested a default meal plan update (B:$breakfastVal, L:$lunchVal, D:$dinnerVal) from $startStr to $endStr.',
+                type: 'meal',
+                route: '/approvals',
+              );
+            }
+          }
+        } catch (ne) {
+          debugPrint('[submitMealPlanRequest] Failed to dispatch notifications: $ne');
+        }
+      }());
+    } catch (e) {
+      debugPrint('[submitMealPlanRequest] Error: $e');
+      AppNavigation.showSnackBar(
+        'Error',
+        'Failed to submit request: $e',
         backgroundColor: Colors.redAccent,
       );
     } finally {

@@ -184,6 +184,103 @@ class ActionNotificationService {
     }
   }
 
+  /// Notify all other mess members when someone updates their meal plan for a duration.
+  static Future<void> notifyMealPlanUpdated({
+    required String messId,
+    required String senderName,
+    required String startDateStr,
+    required String endDateStr,
+    required double breakfast,
+    required double lunch,
+    required double dinner,
+    required List<dynamic> members,
+    required String currentUserId,
+  }) async {
+    debugPrint(
+      '[ActionNotificationService] notifyMealPlanUpdated called by $senderName for $startDateStr to $endDateStr',
+    );
+
+    try {
+      final otherMembers = members
+          .where((m) => m.userId != currentUserId)
+          .toList();
+      debugPrint(
+        '[ActionNotificationService] Dispatching meal plan update to ${otherMembers.length} members...',
+      );
+
+      for (var member in otherMembers) {
+        try {
+          await _notificationRepo.sendNotification(
+            targetUserId: member.userId,
+            messId: messId,
+            title: 'Meal Plan Set 📅',
+            body:
+                '$senderName set a meal plan from $startDateStr to $endDateStr.\n'
+                '🍳 Breakfast: $breakfast | 🍛 Lunch: $lunch | 🍽️ Dinner: $dinner',
+            type: 'meal',
+            route: '/meal-entry',
+          );
+          debugPrint(
+            '[ActionNotificationService] Meal plan notification sent to ${member.userId}',
+          );
+        } catch (e) {
+          debugPrint(
+            '[ActionNotificationService] Failed to notify ${member.userId}: $e',
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('[ActionNotificationService] Error in notifyMealPlanUpdated: $e');
+    }
+  }
+
+  /// Notify all other mess members when someone closes specific meals for a range of dates.
+  static Future<void> notifyMealsClosed({
+    required String messId,
+    required String senderName,
+    required String startDateStr,
+    required String endDateStr,
+    required String closedMealsLabel,
+    required List<dynamic> members,
+    required String currentUserId,
+  }) async {
+    debugPrint(
+      '[ActionNotificationService] notifyMealsClosed called by $senderName for $startDateStr to $endDateStr',
+    );
+
+    try {
+      final otherMembers = members
+          .where((m) => m.userId != currentUserId)
+          .toList();
+      debugPrint(
+        '[ActionNotificationService] Dispatching meal closed notification to ${otherMembers.length} members...',
+      );
+
+      for (var member in otherMembers) {
+        try {
+          await _notificationRepo.sendNotification(
+            targetUserId: member.userId,
+            messId: messId,
+            title: 'Meals Closed 🚫',
+            body: '$senderName closed $closedMealsLabel from $startDateStr to $endDateStr.',
+            type: 'meal',
+            route: '/meal-entry',
+          );
+          debugPrint(
+            '[ActionNotificationService] Meal closed notification sent to ${member.userId}',
+          );
+        } catch (e) {
+          debugPrint(
+            '[ActionNotificationService] Failed to notify ${member.userId}: $e',
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('[ActionNotificationService] Error in notifyMealsClosed: $e');
+    }
+  }
+
+
   // ---------------------------------------------------------------------------
   // DEPOSIT
   // ---------------------------------------------------------------------------

@@ -27,6 +27,13 @@ class RequestModel {
   final String? reason;
   final String? targetUserId;
 
+  // ── Meal Plan Request fields ──
+  final double? breakfast;
+  final double? lunch;
+  final double? dinner;
+  final DateTime? startDate;
+  final DateTime? endDate;
+
   // ── Date ──
   final DateTime requestDate;
 
@@ -65,6 +72,11 @@ class RequestModel {
     this.currentRole,
     this.reason,
     this.targetUserId,
+    this.breakfast,
+    this.lunch,
+    this.dinner,
+    this.startDate,
+    this.endDate,
     required this.requestDate,
     required this.status,
     required this.createdBy,
@@ -106,6 +118,11 @@ class RequestModel {
       currentRole: json['current_role'] as String?,
       reason: json['reason'] as String?,
       targetUserId: json['target_user_id'] as String?,
+      breakfast: (json['breakfast'] as num?)?.toDouble(),
+      lunch: (json['lunch'] as num?)?.toDouble(),
+      dinner: (json['dinner'] as num?)?.toDouble(),
+      startDate: json['start_date'] != null ? _parseDateTime(json['start_date']) : null,
+      endDate: json['end_date'] != null ? _parseDateTime(json['end_date']) : null,
       requestDate: _parseDateTime(json['request_date']),
       status: json['status'] as String? ?? 'Pending',
       createdBy: json['created_by'] as String? ?? '',
@@ -150,6 +167,11 @@ class RequestModel {
       'current_role': currentRole,
       'reason': reason,
       'target_user_id': targetUserId,
+      'breakfast': breakfast,
+      'lunch': lunch,
+      'dinner': dinner,
+      'start_date': startDate != null ? _dateToString(startDate!) : null,
+      'end_date': endDate != null ? _dateToString(endDate!) : null,
       'request_date': _dateToString(requestDate),
       'status': status,
       'created_by': createdBy,

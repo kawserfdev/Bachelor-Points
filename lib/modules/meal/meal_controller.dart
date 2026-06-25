@@ -266,6 +266,312 @@ class MealController extends GetxController {
     }
   }
 
+  bool checkCanEditDate(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    final targetDate = DateTime(date.year, date.month, date.day);
+    final targetStr = "${targetDate.year}-${targetDate.month}-${targetDate.day}";
+    final todayStr = "${now.year}-${now.month}-${now.day}";
+
+    if (targetDate.isBefore(today) && targetStr != todayStr) {
+      return false;
+    }
+
+    if (targetStr == todayStr) {
+      if (now.hour >= 10) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  Future<void> saveMealPlan({
+    required double breakfastPortion,
+    required double lunchPortion,
+    required double dinnerPortion,
+    required int durationDays,
+    required DateTime startDate,
+  }) async {
+    final userId = _authService.currentUser.value?.uid;
+    final messId = _messController.activeMess.value?.id;
+
+    if (userId == null || messId == null) {
+      AppNavigation.showSnackBar('Error', 'Missing user or mess data.');
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+
+      // 1. Save default meal plan
+      final defaultPlanDoc = '${messId}_$userId';
+      await _firestore.collection('default_meal_plans').doc(defaultPlanDoc).set({
+        'mess_id': messId,
+        'user_id': userId,
+        'breakfast': breakfastPortion,
+        'lunch': lunchPortion,
+        'dinner': dinnerPortion,
+        'updated_at': FirestoreTime.serverTimestamp,
+      }, SetOptions(merge: true));
+
+      // 2. Loop through duration to write/update documents
+      final batch = _firestore.batch();
+      int writeCount = 0;
+      final start = DateTime(startDate.year, startDate.month, startDate.day);
+      final end = start.add(Duration(days: durationDays - 1));
+
+      for (int i = 0; i < durationDays; i++) {
+        final currentDate = start.add(Duration(days: i));
+        if (!checkCanEditDate(currentDate)) {
+          continue;
+        }
+
+        final dateStr =
+            "${currentDate.year}-${currentDate.month.toString().padLeft(2, '0')}-${currentDate.day.toString().padLeft(2, '0')}";
+        final docId = '${messId}_${userId}_$dateStr';
+        final docRef = _firestore.collection('meals').doc(docId);
+
+        batch.set(docRef, {
+          'mess_id': messId,
+          'user_id': userId,
+          'date': dateStr,
+          'breakfast': breakfastPortion,
+          'lunch': lunchPortion,
+          'dinner': dinnerPortion,
+          'status': 'Approved',
+          'updated_at': FirestoreTime.serverTimestamp,
+        }, SetOptions(merge: true));
+        writeCount++;
+      }
+
+      if (writeCount > 0) {
+        await batch.commit();
+      }
+
+      AppNavigation.showSnackBar(
+        'Success',
+        'Meal plan set successfully for $durationDays days!',
+        backgroundColor: Colors.green,
+      );
+
+      // Trigger offline/online notifications
+      unawaited(() async {
+        try {
+          final connectivity = await Connectivity().checkConnectivity();
+          final isOffline = connectivity.contains(ConnectivityResult.none);
+          if (isOffline) {
+            await NotificationService.instance?.showOfflineNotification(
+              title: 'Saved Offline',
+              body: 'Meal plan saved locally and will sync when online.',
+            );
+          } else {
+            String userName = 'A member';
+            for (var m in _messController.members) {
+              if (m.userId == userId) {
+                userName = m.fullName ?? m.email ?? 'A member';
+                break;
+              }
+            }
+            final startStr = "${start.day}/${start.month}/${start.year}";
+            final endStr = "${end.day}/${end.month}/${end.year}";
+            await ActionNotificationService.notifyMealPlanUpdated(
+              messId: messId,
+              senderName: userName,
+              startDateStr: startStr,
+              endDateStr: endStr,
+              breakfast: breakfastPortion,
+              lunch: lunchPortion,
+              dinner: dinnerPortion,
+              members: _messController.members,
+              currentUserId: userId,
+            );
+          }
+        } catch (e) {
+          debugPrint('Failed to send meal plan notification: $e');
+        }
+      }());
+    } catch (e) {
+      debugPrint('[saveMealPlan] Error: $e');
+      AppNavigation.showSnackBar(
+        'Error',
+        'Failed to save meal plan: $e',
+        backgroundColor: Colors.redAccent,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> closeMeals({
+    required DateTime startDate,
+    required DateTime endDate,
+    required bool closeBreakfast,
+    required bool closeLunch,
+    required bool closeDinner,
+  }) async {
+    final userId = _authService.currentUser.value?.uid;
+    final messId = _messController.activeMess.value?.id;
+
+    if (userId == null || messId == null) {
+      AppNavigation.showSnackBar('Error', 'Missing user or mess data.');
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+
+      // 1. Fetch user's default meal plan from default_meal_plans
+      final defaultPlanDoc = '${messId}_$userId';
+      final defaultSnap = await _firestore.collection('default_meal_plans').doc(defaultPlanDoc).get();
+      final defaultData = defaultSnap.data();
+
+      final defaultBreakfast = (defaultData?['breakfast'] as num?)?.toDouble() ?? 1.0;
+      final defaultLunch = (defaultData?['lunch'] as num?)?.toDouble() ?? 1.0;
+      final defaultDinner = (defaultData?['dinner'] as num?)?.toDouble() ?? 1.0;
+
+      // 2. Determine how many days we are modifying
+      final start = DateTime(startDate.year, startDate.month, startDate.day);
+      final end = DateTime(endDate.year, endDate.month, endDate.day);
+      final durationDays = end.difference(start).inDays + 1;
+
+      if (durationDays <= 0) {
+        AppNavigation.showSnackBar('Error', 'Invalid date range.');
+        return;
+      }
+
+      // Fetch existing meals in the date range for this user
+      final startStr =
+          "${start.year}-${start.month.toString().padLeft(2, '0')}-${start.day.toString().padLeft(2, '0')}";
+      final endStr =
+          "${end.year}-${end.month.toString().padLeft(2, '0')}-${end.day.toString().padLeft(2, '0')}";
+
+      final mealsQuery = await _firestore
+          .collection('meals')
+          .where('mess_id', isEqualTo: messId)
+          .where('user_id', isEqualTo: userId)
+          .where('date', isGreaterThanOrEqualTo: startStr)
+          .where('date', isLessThanOrEqualTo: endStr)
+          .get();
+
+      final existingMeals = {
+        for (var doc in mealsQuery.docs) doc.data()['date'] as String: doc.data()
+      };
+
+      final batch = _firestore.batch();
+      int writeCount = 0;
+
+      for (int i = 0; i < durationDays; i++) {
+        final currentDate = start.add(Duration(days: i));
+        if (!checkCanEditDate(currentDate)) {
+          continue;
+        }
+
+        final dateStr =
+            "${currentDate.year}-${currentDate.month.toString().padLeft(2, '0')}-${currentDate.day.toString().padLeft(2, '0')}";
+        final docId = '${messId}_${userId}_$dateStr';
+        final docRef = _firestore.collection('meals').doc(docId);
+
+        final existing = existingMeals[dateStr];
+        double bVal = 0.0;
+        double lVal = 0.0;
+        double dVal = 0.0;
+        double gVal = 0.0;
+
+        if (existing != null) {
+          bVal = closeBreakfast ? 0.0 : (existing['breakfast'] as num).toDouble();
+          lVal = closeLunch ? 0.0 : (existing['lunch'] as num).toDouble();
+          dVal = closeDinner ? 0.0 : (existing['dinner'] as num).toDouble();
+          gVal = (existing['guest_meals'] as num?)?.toDouble() ?? 0.0;
+        } else {
+          bVal = closeBreakfast ? 0.0 : defaultBreakfast;
+          lVal = closeLunch ? 0.0 : defaultLunch;
+          dVal = closeDinner ? 0.0 : defaultDinner;
+          gVal = 0.0;
+        }
+
+        batch.set(docRef, {
+          'mess_id': messId,
+          'user_id': userId,
+          'date': dateStr,
+          'breakfast': bVal,
+          'lunch': lVal,
+          'dinner': dVal,
+          'guest_meals': gVal,
+          'status': 'Approved',
+          'updated_at': FirestoreTime.serverTimestamp,
+        }, SetOptions(merge: true));
+        writeCount++;
+      }
+
+      if (writeCount > 0) {
+        await batch.commit();
+      }
+
+      AppNavigation.showSnackBar(
+        'Success',
+        'Meals closed successfully for selected dates!',
+        backgroundColor: Colors.green,
+      );
+
+      // Trigger notification
+      unawaited(() async {
+        try {
+          final connectivity = await Connectivity().checkConnectivity();
+          final isOffline = connectivity.contains(ConnectivityResult.none);
+          if (isOffline) {
+            await NotificationService.instance?.showOfflineNotification(
+              title: 'Saved Offline',
+              body: 'Meal changes saved locally and will sync when online.',
+            );
+          } else {
+            String userName = 'A member';
+            for (var m in _messController.members) {
+              if (m.userId == userId) {
+                userName = m.fullName ?? m.email ?? 'A member';
+                break;
+              }
+            }
+            final closedList = <String>[];
+            if (closeBreakfast) closedList.add('Breakfast');
+            if (closeLunch) closedList.add('Lunch');
+            if (closeDinner) closedList.add('Dinner');
+
+            final closedMealsLabel = closedList.isEmpty
+                ? 'no meals'
+                : closedList.join(', ');
+
+            final displayStartStr = "${start.day}/${start.month}/${start.year}";
+            final displayEndStr = "${end.day}/${end.month}/${end.year}";
+
+            await ActionNotificationService.notifyMealsClosed(
+              messId: messId,
+              senderName: userName,
+              startDateStr: displayStartStr,
+              endDateStr: displayEndStr,
+              closedMealsLabel: closedMealsLabel,
+              members: _messController.members,
+              currentUserId: userId,
+            );
+          }
+        } catch (e) {
+          debugPrint('Failed to send meal closed notification: $e');
+        }
+      }());
+    } catch (e) {
+      debugPrint('[closeMeals] Error: $e');
+      AppNavigation.showSnackBar(
+        'Error',
+        'Failed to close meals: $e',
+        backgroundColor: Colors.redAccent,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+
   @override
   void onClose() {
     debugPrint('[MealController] onClose called');
