@@ -5,15 +5,20 @@ let initError = null;
 // Parse the service account from environment variable
 if (!admin.apps.length) {
   try {
-    if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+    const rawInput = process.env.FIREBASE_SERVICE_ACCOUNT;
+    if (!rawInput) {
       throw new Error('FIREBASE_SERVICE_ACCOUNT environment variable is missing.');
     }
     
-    let serviceAccountJson;
-    try {
-      serviceAccountJson = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT, 'base64').toString('utf-8');
-    } catch (e) {
-      throw new Error('Failed to decode Base64 FIREBASE_SERVICE_ACCOUNT: ' + e.message);
+    let serviceAccountJson = rawInput.trim();
+    
+    // Check if the input is a raw JSON string or Base64 encoded
+    if (!serviceAccountJson.startsWith('{')) {
+      try {
+        serviceAccountJson = Buffer.from(serviceAccountJson, 'base64').toString('utf-8');
+      } catch (e) {
+        throw new Error('Failed to decode Base64 FIREBASE_SERVICE_ACCOUNT: ' + e.message);
+      }
     }
 
     let serviceAccount;
@@ -21,6 +26,20 @@ if (!admin.apps.length) {
       serviceAccount = JSON.parse(serviceAccountJson);
     } catch (e) {
       throw new Error('Failed to parse service account JSON: ' + e.message);
+    }
+
+    // Validate the service account keys
+    const requiredKeys = ['project_id', 'private_key', 'client_email'];
+    const missingKeys = requiredKeys.filter(key => !serviceAccount[key]);
+    if (missingKeys.length > 0) {
+      const details = [];
+      if (serviceAccount.projectId || serviceAccount.project_info || serviceAccount.apiKey) {
+        details.push('It looks like a Firebase Client Config (google-services.json / firebase_options) was provided instead of a Service Account Private Key.');
+      }
+      throw new Error(
+        `Invalid Service Account JSON. Missing required properties: ${missingKeys.join(', ')}. ` +
+        (details.length ? details.join(' ') : 'Please generate a new private key from Firebase Console -> Project Settings -> Service Accounts.')
+      );
     }
 
     admin.initializeApp({
@@ -31,6 +50,7 @@ if (!admin.apps.length) {
     initError = error;
   }
 }
+
 
 export default async function handler(req, res) {
   // Check initialization status
