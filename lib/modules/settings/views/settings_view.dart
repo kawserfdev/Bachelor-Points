@@ -1,3 +1,4 @@
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,14 +6,16 @@ import '../settings_controller.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../../shared/helpers/navigation_helper.dart';
 import '../../notifications/providers/notification_providers.dart';
+import '../../../core/localization/locale_controller.dart';
 
 class SettingsView extends GetView<SettingsController> {
   const SettingsView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(local.settings)),
       body: Obx(() {
         if (controller.isLoading.value &&
             controller.isAdmin.value &&
@@ -28,6 +31,8 @@ class SettingsView extends GetView<SettingsController> {
               const SizedBox(height: 16),
             ],
             _buildAppearanceCard(context),
+            const SizedBox(height: 16),
+            _buildLanguageCard(context),
             const SizedBox(height: 16),
             _buildNotificationPreferencesCard(context),
             if (controller.isAdmin.value) ...[
@@ -47,19 +52,20 @@ class SettingsView extends GetView<SettingsController> {
   }
 
   Widget _buildGeneralSettings(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
     return Card(
       elevation: 2,
       child: ExpansionTile(
-        title: const Text(
-          'General Settings',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          local.generalSettings,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         initiallyExpanded: true,
         children: [
           ListTile(
-            title: const Text('Meal Cutoff Time'),
+            title: Text(local.mealCutoffTime),
             subtitle: Text(
-              'Current: ${controller.messSettings.value?.mealCutoffTime ?? "Not set"}',
+              '${local.current}: ${controller.messSettings.value?.mealCutoffTime ?? local.notSet}',
             ),
             trailing: const Icon(Icons.access_time),
             onTap: () async {
@@ -80,12 +86,13 @@ class SettingsView extends GetView<SettingsController> {
   }
 
   Widget _buildAppearanceCard(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
     return Card(
       elevation: 2,
       child: ExpansionTile(
-        title: const Text(
-          'Appearance',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          local.appearance,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         initiallyExpanded: true,
         children: [
@@ -103,16 +110,16 @@ class SettingsView extends GetView<SettingsController> {
                       vertical: 8.0,
                     ),
                     child: Text(
-                      'Theme Options',
+                      local.themeOptions,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
                   RadioListTile<ThemeMode>(
-                    title: const Text('Light'),
-                    subtitle: const Text(
-                      'Clean interface with high readability',
+                    title: Text(local.light),
+                    subtitle: Text(
+                      local.lightDesc,
                     ),
                     value: ThemeMode.light,
                     groupValue: themeMode,
@@ -125,9 +132,9 @@ class SettingsView extends GetView<SettingsController> {
                     },
                   ),
                   RadioListTile<ThemeMode>(
-                    title: const Text('Dark'),
-                    subtitle: const Text(
-                      'Comfortable for low-light environments',
+                    title: Text(local.dark),
+                    subtitle: Text(
+                      local.darkDesc,
                     ),
                     value: ThemeMode.dark,
                     groupValue: themeMode,
@@ -140,8 +147,8 @@ class SettingsView extends GetView<SettingsController> {
                     },
                   ),
                   RadioListTile<ThemeMode>(
-                    title: const Text('System'),
-                    subtitle: const Text('Match system settings automatically'),
+                    title: Text(local.system),
+                    subtitle: Text(local.systemDesc),
                     value: ThemeMode.system,
                     groupValue: themeMode,
                     activeColor: Theme.of(context).colorScheme.primary,
@@ -162,13 +169,82 @@ class SettingsView extends GetView<SettingsController> {
     );
   }
 
-  Widget _buildNotificationPreferencesCard(BuildContext context) {
+  Widget _buildLanguageCard(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
     return Card(
       elevation: 2,
       child: ExpansionTile(
-        title: const Text(
-          'Notification Preferences',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          local.languagePreferences,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        initiallyExpanded: true,
+        children: [
+          Consumer(
+            builder: (context, ref, child) {
+              final currentLocale = ref.watch(localeControllerProvider);
+              final localeCtrl = ref.read(localeControllerProvider.notifier);
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  RadioListTile<Locale>(
+                    title: Text(local.english),
+                    subtitle: const Text('English language interface'),
+                    value: const Locale('en'),
+                    groupValue: currentLocale,
+                    activeColor: Theme.of(context).colorScheme.primary,
+                    secondary: const Icon(Icons.language_outlined),
+                    onChanged: (value) {
+                      if (value != null) {
+                        localeCtrl.setLocale(value);
+                      }
+                    },
+                  ),
+                  RadioListTile<Locale>(
+                    title: Text(local.bangla),
+                    subtitle: const Text('বাংলা ভাষা ইন্টারফেস'),
+                    value: const Locale('bn'),
+                    groupValue: currentLocale,
+                    activeColor: Theme.of(context).colorScheme.primary,
+                    secondary: const Icon(Icons.language_outlined),
+                    onChanged: (value) {
+                      if (value != null) {
+                        localeCtrl.setLocale(value);
+                      }
+                    },
+                  ),
+                  RadioListTile<Locale>(
+                    title: Text(local.hindi),
+                    subtitle: const Text('हिन्दी भाषा इंटरफ़ेस'),
+                    value: const Locale('hi'),
+                    groupValue: currentLocale,
+                    activeColor: Theme.of(context).colorScheme.primary,
+                    secondary: const Icon(Icons.language_outlined),
+                    onChanged: (value) {
+                      if (value != null) {
+                        localeCtrl.setLocale(value);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationPreferencesCard(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
+    return Card(
+      elevation: 2,
+      child: ExpansionTile(
+        title: Text(
+          local.notificationPreferences,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         initiallyExpanded: false,
         children: [
@@ -200,9 +276,9 @@ class SettingsView extends GetView<SettingsController> {
                   return Column(
                     children: [
                       SwitchListTile(
-                        title: const Text('Meal Notifications'),
-                        subtitle: const Text(
-                          'Get notified when meals are added or changed',
+                        title: Text(local.mealNotifications),
+                        subtitle: Text(
+                          local.mealNotificationsDesc,
                         ),
                         value: prefs.mealNotifications,
                         onChanged: (val) =>
@@ -210,9 +286,9 @@ class SettingsView extends GetView<SettingsController> {
                       ),
                       const Divider(),
                       SwitchListTile(
-                        title: const Text('Expense Notifications'),
-                        subtitle: const Text(
-                          'Get notified when a new expense is logged',
+                        title: Text(local.expenseNotifications),
+                        subtitle: Text(
+                          local.expenseNotificationsDesc,
                         ),
                         value: prefs.expenseNotifications,
                         onChanged: (val) =>
@@ -220,9 +296,9 @@ class SettingsView extends GetView<SettingsController> {
                       ),
                       const Divider(),
                       SwitchListTile(
-                        title: const Text('Deposit Notifications'),
-                        subtitle: const Text(
-                          'Get notified when deposits are recorded or approved',
+                        title: Text(local.depositNotifications),
+                        subtitle: Text(
+                          local.depositNotificationsDesc,
                         ),
                         value: prefs.depositNotifications,
                         onChanged: (val) =>
@@ -230,17 +306,17 @@ class SettingsView extends GetView<SettingsController> {
                       ),
                       const Divider(),
                       SwitchListTile(
-                        title: const Text('Shopping Notifications'),
-                        subtitle: const Text('Receive shopping duty reminders'),
+                        title: Text(local.shoppingNotifications),
+                        subtitle: Text(local.shoppingNotificationsDesc),
                         value: prefs.shoppingNotifications,
                         onChanged: (val) =>
                             controller.toggleShoppingNotifications(val),
                       ),
                       const Divider(),
                       SwitchListTile(
-                        title: const Text('Push Notifications'),
-                        subtitle: const Text(
-                          'Enable push notifications to this device',
+                        title: Text(local.pushNotifications),
+                        subtitle: Text(
+                          local.pushNotificationsDesc,
                         ),
                         value: prefs.pushNotifications,
                         onChanged: (val) =>
@@ -248,13 +324,13 @@ class SettingsView extends GetView<SettingsController> {
                       ),
                       const Divider(),
                       SwitchListTile(
-                        title: const Text('Notification Sound'),
+                        title: Text(local.notificationSound),
                         value: prefs.sound,
                         onChanged: (val) => controller.toggleSound(val),
                       ),
                       const Divider(),
                       SwitchListTile(
-                        title: const Text('Vibration'),
+                        title: Text(local.vibration),
                         value: prefs.vibration,
                         onChanged: (val) => controller.toggleVibration(val),
                       ),
@@ -270,19 +346,20 @@ class SettingsView extends GetView<SettingsController> {
   }
 
   Widget _buildBazarScheduleCard(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
     return Card(
       elevation: 2,
       child: ExpansionTile(
-        title: const Text(
-          'Bazar Schedule',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          local.bazarSchedule,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: ElevatedButton.icon(
               icon: const Icon(Icons.add),
-              label: const Text('Assign New Duty'),
+              label: Text(local.assignNewDuty),
               onPressed: () => _showAssignDutyDialog(context),
             ),
           ),
@@ -378,6 +455,7 @@ class SettingsView extends GetView<SettingsController> {
 
   Widget _buildMembershipCard(BuildContext context) {
     final theme = Theme.of(context);
+    final local = AppLocalizations.of(context)!;
 
     return Card(
       elevation: 2,
@@ -387,15 +465,14 @@ class SettingsView extends GetView<SettingsController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Mess Membership',
+              local.messMembership,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'If you want to leave this mess, you can submit an exit request. '
-              'The manager or admin will need to approve your request before you are removed.',
+              local.exitMessInfo,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: Colors.grey[600],
               ),
@@ -410,7 +487,7 @@ class SettingsView extends GetView<SettingsController> {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
                 icon: const Icon(Icons.exit_to_app_rounded),
-                label: const Text('Request to Exit Mess'),
+                label: Text(local.requestToExitMess),
                 onPressed: () => _showExitRequestDialog(context),
               ),
             ),
@@ -496,6 +573,7 @@ class SettingsView extends GetView<SettingsController> {
 
   Widget _buildMealPlanRequestCard(BuildContext context) {
     final theme = Theme.of(context);
+    final local = AppLocalizations.of(context)!;
 
     return Card(
       elevation: 2,
@@ -505,14 +583,14 @@ class SettingsView extends GetView<SettingsController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Default Meal Plan',
+              local.defaultMealPlan,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Your current regular daily portions:',
+              local.regularDailyPortions,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: Colors.grey[600],
               ),
@@ -539,7 +617,7 @@ class SettingsView extends GetView<SettingsController> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   icon: Icon(pending ? Icons.hourglass_empty : Icons.edit_calendar),
-                  label: Text(pending ? 'Change Request Pending Manager Approval' : 'Request Meal Plan Change'),
+                  label: Text(pending ? local.changeRequestPending : local.requestMealPlanChange),
                   onPressed: pending ? null : () => _showMealPlanRequestDialog(context),
                 ),
               );

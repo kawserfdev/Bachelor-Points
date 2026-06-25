@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/providers/auth_providers.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 
 /// ForgotPassword view migrated from GetX to Riverpod + GoRouter
 class ForgotPasswordView extends ConsumerStatefulWidget {
@@ -27,9 +28,9 @@ class _ForgotPasswordViewState extends ConsumerState<ForgotPasswordView> {
   }
 
   String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) return 'Email is required';
+    if (value == null || value.isEmpty) return AppLocalizations.of(context)!.emailRequired;
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(value)) return 'Please enter a valid email';
+    if (!emailRegex.hasMatch(value)) return AppLocalizations.of(context)!.validEmailRequired;
     return null;
   }
 
@@ -66,6 +67,12 @@ class _ForgotPasswordViewState extends ConsumerState<ForgotPasswordView> {
 
   @override
   Widget build(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
+    // Strip trailing question mark from button title for page header if it exists
+    final headerTitle = local.forgotPasswordTitle.endsWith('?') 
+        ? local.forgotPasswordTitle.substring(0, local.forgotPasswordTitle.length - 1)
+        : local.forgotPasswordTitle;
+        
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -91,7 +98,7 @@ class _ForgotPasswordViewState extends ConsumerState<ForgotPasswordView> {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Forgot Password',
+                  headerTitle,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -99,7 +106,7 @@ class _ForgotPasswordViewState extends ConsumerState<ForgotPasswordView> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Enter your email address and we will send you a link to reset your password.',
+                  local.forgotPasswordDesc,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: Colors.grey[600],
                       ),
@@ -107,8 +114,8 @@ class _ForgotPasswordViewState extends ConsumerState<ForgotPasswordView> {
                 ),
                 const SizedBox(height: 48),
                 CustomTextField(
-                  label: 'Email',
-                  hint: 'Enter your email',
+                  label: local.email,
+                  hint: local.enterEmail,
                   prefixIcon: Icons.email_outlined,
                   controller: _emailController,
                   validator: _validateEmail,
@@ -123,14 +130,14 @@ class _ForgotPasswordViewState extends ConsumerState<ForgotPasswordView> {
                       border: Border.all(
                           color: Colors.green.withValues(alpha: 0.5)),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(Icons.check_circle, color: Colors.green),
-                        SizedBox(width: 12),
+                        const Icon(Icons.check_circle, color: Colors.green),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Reset link sent! Please check your email.',
-                            style: TextStyle(
+                            local.resetLinkSent,
+                            style: const TextStyle(
                                 color: Colors.green,
                                 fontWeight: FontWeight.bold),
                           ),
@@ -140,7 +147,7 @@ class _ForgotPasswordViewState extends ConsumerState<ForgotPasswordView> {
                   )
                 else
                   PrimaryButton(
-                    text: 'SEND RESET LINK',
+                    text: local.sendResetLink,
                     isLoading: _isLoading,
                     onPressed: _resetPassword,
                   ),

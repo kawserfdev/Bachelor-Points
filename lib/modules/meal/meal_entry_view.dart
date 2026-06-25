@@ -3,15 +3,18 @@ import 'package:get/get.dart';
 import 'meal_controller.dart';
 import 'widgets/meal_preview_widget.dart';
 import '../../shared/widgets/primary_button.dart';
+import 'package:intl/intl.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 
 class MealEntryView extends GetView<MealController> {
   const MealEntryView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Meal Entry'),
+        title: Text(local.mealEntryTitle),
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
@@ -37,14 +40,14 @@ class MealEntryView extends GetView<MealController> {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.orangeAccent.withValues(alpha: 0.5)),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(Icons.info_outline, color: Colors.orangeAccent),
-                        SizedBox(width: 12),
+                        const Icon(Icons.info_outline, color: Colors.orangeAccent),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Editing locked. The cutoff time has passed for this date.',
-                            style: TextStyle(color: Colors.orangeAccent, fontSize: 13),
+                            local.editingLockedCutoff,
+                            style: const TextStyle(color: Colors.orangeAccent, fontSize: 13),
                           ),
                         ),
                       ],
@@ -54,17 +57,17 @@ class MealEntryView extends GetView<MealController> {
                 return const SizedBox.shrink();
               }),
 
-              _buildMealSelector(context, 'Breakfast', Icons.breakfast_dining, controller.breakfast, 'breakfast'),
+              _buildMealSelector(context, local.breakfast, Icons.breakfast_dining, controller.breakfast, 'breakfast'),
               const SizedBox(height: 24),
-              _buildMealSelector(context, 'Lunch', Icons.lunch_dining, controller.lunch, 'lunch'),
+              _buildMealSelector(context, local.lunch, Icons.lunch_dining, controller.lunch, 'lunch'),
               const SizedBox(height: 24),
-              _buildMealSelector(context, 'Dinner', Icons.dinner_dining, controller.dinner, 'dinner'),
+              _buildMealSelector(context, local.dinner, Icons.dinner_dining, controller.dinner, 'dinner'),
               const SizedBox(height: 24),
               _buildGuestMealSelector(context),
               const SizedBox(height: 48),
               
               Obx(() => PrimaryButton(
-                    text: 'SAVE MEALS',
+                    text: local.saveMealsBtn,
                     isLoading: controller.isLoading.value,
                     onPressed: controller.canEdit ? controller.saveMeal : () {},
                   )),
@@ -104,7 +107,7 @@ class MealEntryView extends GetView<MealController> {
                 Icon(Icons.calendar_today, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 12),
                 Obx(() => Text(
-                      "${controller.selectedDate.value.day}/${controller.selectedDate.value.month}/${controller.selectedDate.value.year}",
+                      DateFormat.yMd(Localizations.localeOf(context).languageCode).format(controller.selectedDate.value),
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     )),
               ],
@@ -117,6 +120,7 @@ class MealEntryView extends GetView<MealController> {
   }
 
   Widget _buildGuestMealSelector(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -124,15 +128,15 @@ class MealEntryView extends GetView<MealController> {
           children: [
             Icon(Icons.people, size: 20, color: Colors.grey[700]),
             const SizedBox(width: 8),
-            const Text(
-              'Guest Meals',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            Text(
+              local.guestMeals,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
           ],
         ),
         const SizedBox(height: 4),
         Text(
-          'Extra meals for guests (adds to your total)',
+          local.guestMealsDesc,
           style: TextStyle(fontSize: 12, color: Colors.grey[500]),
         ),
         const SizedBox(height: 12),
@@ -213,6 +217,7 @@ class MealEntryView extends GetView<MealController> {
   }
 
   Widget _buildBulkActionsSection(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -229,7 +234,7 @@ class MealEntryView extends GetView<MealController> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Meal Plan & Bulk Actions',
+                  local.mealPlanBulkTitle,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -241,7 +246,7 @@ class MealEntryView extends GetView<MealController> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Set your regular meal portions for a long duration, or close specific meals for one or more days.',
+            local.mealPlanBulkDesc,
             style: TextStyle(
               fontSize: 13,
               color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
@@ -254,7 +259,7 @@ class MealEntryView extends GetView<MealController> {
                 child: OutlinedButton.icon(
                   onPressed: () => _showSetMealPlanBottomSheet(context),
                   icon: const Icon(Icons.playlist_add_check, size: 20),
-                  label: const Text('Set Plan'),
+                  label: Text(local.setPlanBtn),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -266,7 +271,7 @@ class MealEntryView extends GetView<MealController> {
                 child: OutlinedButton.icon(
                   onPressed: () => _showCloseMealsBottomSheet(context),
                   icon: const Icon(Icons.block, size: 20),
-                  label: const Text('Close Meals'),
+                  label: Text(local.closeMealsBtn),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -288,14 +293,15 @@ class MealEntryView extends GetView<MealController> {
     double tempLunch = 1.0;
     double tempDinner = 1.0;
     
+    final local = AppLocalizations.of(context)!;
     final durations = [
-      {'label': '1 Day', 'days': 1},
-      {'label': '3 Days', 'days': 3},
-      {'label': '7 Days', 'days': 7},
-      {'label': '30 Days', 'days': 30},
-      {'label': '3 Months', 'days': 90},
-      {'label': '6 Months', 'days': 180},
-      {'label': '1 Year', 'days': 365},
+      {'label': local.dayCountOne, 'days': 1},
+      {'label': local.dayCountThree, 'days': 3},
+      {'label': local.dayCountSeven, 'days': 7},
+      {'label': local.dayCountThirty, 'days': 30},
+      {'label': local.monthCountThree, 'days': 90},
+      {'label': local.monthCountSix, 'days': 180},
+      {'label': local.yearCountOne, 'days': 365},
     ];
     int selectedDurationIndex = 3; // Default: 30 Days
     DateTime selectedStart = DateTime(now.year, now.month, now.day);
@@ -337,7 +343,7 @@ class MealEntryView extends GetView<MealController> {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      'Set Regular Meal Plan',
+                      local.setRegularMealPlanTitle,
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -346,7 +352,7 @@ class MealEntryView extends GetView<MealController> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Define your default daily portions and apply them for a set duration.',
+                      local.setRegularMealPlanDesc,
                       style: TextStyle(
                         fontSize: 13,
                         color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
@@ -356,7 +362,7 @@ class MealEntryView extends GetView<MealController> {
                     
                     _buildSheetMealSelector(
                       context,
-                      'Breakfast',
+                      local.breakfast,
                       Icons.breakfast_dining,
                       tempBreakfast,
                       mealOptions,
@@ -365,7 +371,7 @@ class MealEntryView extends GetView<MealController> {
                     const SizedBox(height: 16),
                     _buildSheetMealSelector(
                       context,
-                      'Lunch',
+                      local.lunch,
                       Icons.lunch_dining,
                       tempLunch,
                       mealOptions,
@@ -374,7 +380,7 @@ class MealEntryView extends GetView<MealController> {
                     const SizedBox(height: 16),
                     _buildSheetMealSelector(
                       context,
-                      'Dinner',
+                      local.dinner,
                       Icons.dinner_dining,
                       tempDinner,
                       mealOptions,
@@ -388,9 +394,9 @@ class MealEntryView extends GetView<MealController> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Start Date',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        Text(
+                          local.startDateLabel,
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                         ),
                         InkWell(
                           onTap: () async {
@@ -415,7 +421,7 @@ class MealEntryView extends GetView<MealController> {
                                 Icon(Icons.calendar_today, size: 16, color: Theme.of(context).colorScheme.primary),
                                 const SizedBox(width: 8),
                                 Text(
-                                  "${selectedStart.day}/${selectedStart.month}/${selectedStart.year}",
+                                  DateFormat.yMd(Localizations.localeOf(context).languageCode).format(selectedStart),
                                   style: const TextStyle(fontWeight: FontWeight.bold),
                                 ),
                               ],
@@ -430,9 +436,9 @@ class MealEntryView extends GetView<MealController> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Duration',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        Text(
+                          local.durationLabel,
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -480,9 +486,9 @@ class MealEntryView extends GetView<MealController> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         elevation: 2,
                       ),
-                      child: const Text(
-                        'APPLY MEAL PLAN',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      child: Text(
+                        local.applyMealPlanBtn,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
@@ -551,6 +557,8 @@ class MealEntryView extends GetView<MealController> {
     bool closeBreakfast = false;
     bool closeLunch = false;
     bool closeDinner = false;
+    
+    final local = AppLocalizations.of(context)!;
 
     showModalBottomSheet(
       context: context,
@@ -589,7 +597,7 @@ class MealEntryView extends GetView<MealController> {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      'Close Meals',
+                      local.closeMealsTitle,
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -598,7 +606,7 @@ class MealEntryView extends GetView<MealController> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Turn off specific meals for a single day or a range of dates.',
+                      local.closeMealsDesc,
                       style: TextStyle(
                         fontSize: 13,
                         color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
@@ -636,7 +644,7 @@ class MealEntryView extends GetView<MealController> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Start Date',
+                                    local.startDateLabel,
                                     style: TextStyle(
                                       fontSize: 11,
                                       color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -648,7 +656,7 @@ class MealEntryView extends GetView<MealController> {
                                       Icon(Icons.calendar_today, size: 14, color: Theme.of(context).colorScheme.primary),
                                       const SizedBox(width: 8),
                                       Text(
-                                        "${tempStart.day}/${tempStart.month}/${tempStart.year}",
+                                        DateFormat.yMd(Localizations.localeOf(context).languageCode).format(tempStart),
                                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                                       ),
                                     ],
@@ -684,7 +692,7 @@ class MealEntryView extends GetView<MealController> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'End Date',
+                                    local.endDateLabel,
                                     style: TextStyle(
                                       fontSize: 11,
                                       color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -696,7 +704,7 @@ class MealEntryView extends GetView<MealController> {
                                       Icon(Icons.calendar_today, size: 14, color: Theme.of(context).colorScheme.primary),
                                       const SizedBox(width: 8),
                                       Text(
-                                        "${tempEnd.day}/${tempEnd.month}/${tempEnd.year}",
+                                        DateFormat.yMd(Localizations.localeOf(context).languageCode).format(tempEnd),
                                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                                       ),
                                     ],
@@ -713,15 +721,15 @@ class MealEntryView extends GetView<MealController> {
                     const Divider(),
                     const SizedBox(height: 16),
                     
-                    const Text(
-                      'Select Meals to Close',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    Text(
+                      local.selectMealsToClose,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
                     
                     SwitchListTile(
-                      title: const Text('All Meals', style: TextStyle(fontWeight: FontWeight.w600)),
-                      subtitle: const Text('Close Breakfast, Lunch, and Dinner'),
+                      title: Text(local.allMeals, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: Text(local.closeMealsSubtitle),
                       value: isAllClosed,
                       onChanged: (val) {
                         setSheetState(() {
@@ -736,7 +744,7 @@ class MealEntryView extends GetView<MealController> {
                     const Divider(),
                     
                     CheckboxListTile(
-                      title: const Text('Breakfast'),
+                      title: Text(local.breakfast),
                       value: closeBreakfast,
                       onChanged: (val) {
                         if (val != null) {
@@ -746,7 +754,7 @@ class MealEntryView extends GetView<MealController> {
                       activeColor: Colors.redAccent,
                     ),
                     CheckboxListTile(
-                      title: const Text('Lunch'),
+                      title: Text(local.lunch),
                       value: closeLunch,
                       onChanged: (val) {
                         if (val != null) {
@@ -756,7 +764,7 @@ class MealEntryView extends GetView<MealController> {
                       activeColor: Colors.redAccent,
                     ),
                     CheckboxListTile(
-                      title: const Text('Dinner'),
+                      title: Text(local.dinner),
                       value: closeDinner,
                       onChanged: (val) {
                         if (val != null) {
@@ -789,9 +797,9 @@ class MealEntryView extends GetView<MealController> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         elevation: 2,
                       ),
-                      child: const Text(
-                        'CLOSE SELECTED MEALS',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      child: Text(
+                        local.closeSelectedMealsBtn,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],

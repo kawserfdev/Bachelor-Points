@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 import '../../services/auth_service.dart';
 import '../../core/routes/app_routes.dart';
 import 'profile_controller.dart';
@@ -12,6 +13,7 @@ class ProfileView extends GetView<ProfileController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final authService = Get.find<AuthService>();
@@ -74,7 +76,7 @@ class ProfileView extends GetView<ProfileController> {
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    _badgeLabel(b.badgeType),
+                                    _badgeLabel(l10n, b.badgeType),
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 11,
@@ -108,34 +110,27 @@ class ProfileView extends GetView<ProfileController> {
               const SizedBox(height: 20),
 
               // ── Profile Completion ──
-              _buildCompletionCard(theme),
+              _buildCompletionCard(context, l10n, theme),
               const SizedBox(height: 16),
 
               // ── Credit Summary ──
-              _buildCreditCard(theme, colorScheme),
+              _buildCreditCard(l10n, theme, colorScheme),
               const SizedBox(height: 16),
 
               // ── Account Section ──
-              _buildSectionHeader('Account', Icons.person_outline_rounded),
+              _buildSectionHeader(l10n.profileSectionAccount, Icons.person_outline_rounded),
               _ProfileMenuItem(
                 icon: Icons.account_circle_outlined,
                 iconBgColor: const Color(0xFF6366F1).withAlpha(26),
                 iconColor: const Color(0xFF6366F1),
-                label: 'My Profile Details',
+                label: l10n.myProfileDetails,
                 onTap: () => context.push(AppRoutes.profileDetail),
               ),
-              // _ProfileMenuItem(
-              //   icon: Icons.edit_rounded,
-              //   iconBgColor: const Color(0xFF42A5F5).withAlpha(26),
-              //   iconColor: const Color(0xFF42A5F5),
-              //   label: 'Edit Profile',
-              //   onTap: () => context.push(AppRoutes.editProfile),
-              // ),
               _ProfileMenuItem(
                 icon: Icons.monetization_on_rounded,
                 iconBgColor: const Color(0xFFFFC107).withAlpha(26),
                 iconColor: const Color(0xFFFF8F00),
-                label: 'Credits',
+                label: l10n.credits,
                 trailing: Text(
                   '${controller.creditBalance.value}',
                   style: TextStyle(
@@ -149,7 +144,7 @@ class ProfileView extends GetView<ProfileController> {
                 icon: Icons.share_rounded,
                 iconBgColor: const Color(0xFF2196F3).withAlpha(26),
                 iconColor: const Color(0xFF2196F3),
-                label: 'Referral',
+                label: l10n.referral,
                 trailing: controller.pendingCommission > 0
                     ? Container(
                         padding: const EdgeInsets.symmetric(
@@ -175,26 +170,26 @@ class ProfileView extends GetView<ProfileController> {
               const SizedBox(height: 12),
 
               // ── App Section ──
-              _buildSectionHeader('App', Icons.settings_rounded),
+              _buildSectionHeader(l10n.profileSectionApp, Icons.settings_rounded),
               _ProfileMenuItem(
                 icon: Icons.settings_rounded,
                 iconBgColor: const Color(0xFF5C6BC0).withAlpha(26),
                 iconColor: const Color(0xFF5C6BC0),
-                label: 'Settings',
+                label: l10n.settings,
                 onTap: () => context.push(AppRoutes.settings),
               ),
               _ProfileMenuItem(
                 icon: Icons.info_outline_rounded,
                 iconBgColor: const Color(0xFF66BB6A).withAlpha(26),
                 iconColor: const Color(0xFF66BB6A),
-                label: 'About',
+                label: l10n.about,
                 onTap: () {},
               ),
               _ProfileMenuItem(
                 icon: Icons.help_outline_rounded,
                 iconBgColor: const Color(0xFFFFA726).withAlpha(26),
                 iconColor: const Color(0xFFFFA726),
-                label: 'Help & Support',
+                label: l10n.helpSupport,
                 onTap: () {},
               ),
 
@@ -204,11 +199,11 @@ class ProfileView extends GetView<ProfileController> {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () => _showLogoutDialog(context),
+                  onPressed: () => _showLogoutDialog(context, l10n),
                   icon: const Icon(Icons.logout_rounded, color: Colors.red),
-                  label: const Text(
-                    'Logout',
-                    style: TextStyle(color: Colors.red),
+                  label: Text(
+                    l10n.logoutBtn,
+                    style: const TextStyle(color: Colors.red),
                   ),
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 52),
@@ -250,7 +245,7 @@ class ProfileView extends GetView<ProfileController> {
   }
 
   // ── Profile Completion Card ──
-  Widget _buildCompletionCard(ThemeData theme) {
+  Widget _buildCompletionCard(BuildContext context, AppLocalizations l10n, ThemeData theme) {
     final pct = controller.completionPercent.value;
     return Container(
       width: double.infinity,
@@ -298,14 +293,14 @@ class ProfileView extends GetView<ProfileController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Profile Completion',
+                  l10n.profileCompletionLabel,
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _completionMessage(pct),
+                  _completionMessage(l10n, pct),
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey[600],
@@ -321,7 +316,7 @@ class ProfileView extends GetView<ProfileController> {
   }
 
   // ── Credit Card ──
-  Widget _buildCreditCard(ThemeData theme, ColorScheme colorScheme) {
+  Widget _buildCreditCard(AppLocalizations l10n, ThemeData theme, ColorScheme colorScheme) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -341,9 +336,9 @@ class ProfileView extends GetView<ProfileController> {
               const Icon(Icons.monetization_on_rounded,
                   color: Colors.white, size: 18),
               const SizedBox(width: 6),
-              const Text(
-                'Credits',
-                style: TextStyle(
+              Text(
+                l10n.credits,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                   fontSize: 13,
@@ -387,30 +382,28 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
-
-
-  String _completionMessage(double pct) {
-    if (pct >= 1.0) return 'Your profile is fully complete!';
-    if (pct >= 0.8) return 'Almost there — add your NID to finish!';
-    if (pct >= 0.6) return 'Add your address and NID for full completion.';
-    if (pct >= 0.4) return 'Add your phone number and address.';
-    return 'Complete your profile to unlock all features.';
+  String _completionMessage(AppLocalizations l10n, double pct) {
+    if (pct >= 1.0) return l10n.profileComplete;
+    if (pct >= 0.8) return l10n.profileAlmostDone;
+    if (pct >= 0.6) return l10n.profileAddAddressNid;
+    if (pct >= 0.4) return l10n.profileAddPhone;
+    return l10n.profileIncomplete;
   }
 
-  String _badgeLabel(String badgeType) {
+  String _badgeLabel(AppLocalizations l10n, String badgeType) {
     switch (badgeType) {
       case 'verified_user':
-        return 'Verified User';
+        return l10n.badgeVerifiedUser;
       case 'verified_property':
-        return 'Verified Property';
+        return l10n.badgeVerifiedProperty;
       case 'verified_agency':
-        return 'Verified Agency';
+        return l10n.badgeVerifiedAgency;
       default:
         return badgeType;
     }
   }
 
-  void _showLogoutDialog(BuildContext context) {
+  void _showLogoutDialog(BuildContext context, AppLocalizations l10n) {
     final authService = Get.find<AuthService>();
 
     showDialog(
@@ -418,22 +411,19 @@ class ProfileView extends GetView<ProfileController> {
       builder: (ctx) => AlertDialog(
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Logout'),
-        content: const Text(
-          'Are you sure you want to logout? All local data will be removed from this device.',
-        ),
+        title: Text(l10n.logoutTitle),
+        content: Text(l10n.logoutConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () async {
               Navigator.of(ctx).pop();
               await authService.signOut();
             },
-            child:
-                const Text('Logout', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.logoutBtn, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),

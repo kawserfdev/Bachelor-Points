@@ -1,0 +1,598 @@
+{
+  "@@locale": "en",
+  "settings": "Settings",
+  "generalSettings": "General Settings",
+  "mealCutoffTime": "Meal Cutoff Time",
+  "current": "Current",
+  "notSet": "Not set",
+  "appearance": "Appearance",
+  "themeOptions": "Theme Options",
+  "light": "Light",
+  "lightDesc": "Clean interface with high readability",
+  "dark": "Dark",
+  "darkDesc": "Comfortable for low-light environments",
+  "system": "System",
+  "systemDesc": "Match system settings automatically",
+  "languagePreferences": "Language Preferences",
+  "chooseLanguage": "Choose your language",
+  "english": "English",
+  "bangla": "বাংলা",
+  "hindi": "हिन्दी",
+  "notificationPreferences": "Notification Preferences",
+  "mealNotifications": "Meal Notifications",
+  "mealNotificationsDesc": "Get notified when meals are added or changed",
+  "expenseNotifications": "Expense Notifications",
+  "expenseNotificationsDesc": "Get notified when a new expense is logged",
+  "depositNotifications": "Deposit Notifications",
+  "depositNotificationsDesc": "Get notified when deposits are recorded or approved",
+  "shoppingNotifications": "Shopping Notifications",
+  "shoppingNotificationsDesc": "Receive shopping duty reminders",
+  "pushNotifications": "Push Notifications",
+  "pushNotificationsDesc": "Enable push notifications to this device",
+  "notificationSound": "Notification Sound",
+  "vibration": "Vibration",
+  "bazarSchedule": "Bazar Schedule",
+  "assignNewDuty": "Assign New Duty",
+  "messMembership": "Mess Membership",
+  "exitMessInfo": "If you want to leave this mess, you can submit an exit request. The manager or admin will need to approve your request before you are removed.",
+  "requestToExitMess": "Request to Exit Mess",
+  "defaultMealPlan": "Default Meal Plan",
+  "regularDailyPortions": "Your current regular daily portions:",
+  "requestMealPlanChange": "Request Meal Plan Change",
+  "changeRequestPending": "Change Request Pending Manager Approval",
+  "heyGreeting": "Hey {greeting}! 👋",
+  "@heyGreeting": {
+    "placeholders": {
+      "greeting": {
+        "type": "String"
+      }
+    }
+  },
+  "goodMorning": "Good Morning",
+  "goodAfternoon": "Good Afternoon",
+  "goodEvening": "Good Evening",
+  "manageMessEfficiently": "Manage your bachelor mess efficiently",
+  "overview": "Overview",
+  "members": "Members",
+  "bazar": "Bazar",
+  "totalMeals": "Total Meals",
+  "mealRate": "Meal Rate",
+  "quickActions": "Quick Actions",
+  "addMeal": "Add Meal",
+  "addExpense": "Add Expense",
+  "addDeposit": "Add Deposit",
+  "balances": "Balances",
+  "report": "Report",
+  "chat": "Chat",
+  "approvals": "Approvals",
+  "notifications": "Notifications",
+  "shopping": "Shopping",
+  "postProperty": "Post Property",
+  "myListings": "My Listings",
+  "needBased": "Need Based",
+  "credits": "Credits",
+  "referral": "Referral",
+  "showLess": "Show Less",
+  "showMoreFeatures": "Show More Features",
+  "notInMess": "You are not in a Mess",
+  "notInMessDesc": "Create a new mess or join an existing one\nusing an invite code.",
+  "createMess": "Create Mess",
+  "joinMess": "Join Mess",
+  "refresh": "Refresh",
+  "refreshing": "Refreshing...",
+  "emailRequired": "Email is required",
+  "validEmailRequired": "Please enter a valid email",
+  "passwordRequired": "Password is required",
+  "passwordLengthError": "Password must be at least 6 characters",
+  "nameRequired": "Name is required",
+  "welcomeBack": "Welcome Back!",
+  "signInToContinue": "Sign in to continue",
+  "email": "Email",
+  "enterEmail": "Enter your email",
+  "password": "Password",
+  "enterPassword": "Enter your password",
+  "forgotPasswordTitle": "Forgot Password?",
+  "loginBtn": "LOGIN",
+  "or": "OR",
+  "continueWithGoogle": "Continue with Google",
+  "dontHaveAccount": "Don't have an account?",
+  "signUp": "Sign Up",
+  "createAccount": "Create Account",
+  "signUpToGetStarted": "Sign up to get started!",
+  "fullName": "Full Name",
+  "enterFullName": "Enter your full name",
+  "createPassword": "Create a password",
+  "alreadyHaveAccount": "Already have an account?",
+  "loginLink": "Login",
+  "emailNotVerified": "Email not verified yet. Please check your inbox.",
+  "verificationEmailSent": "Verification email sent! Check your inbox.",
+  "emailAlreadyVerified": "Your email is already verified.",
+  "verifyEmailTitle": "Verify Email",
+  "checkYourEmail": "Check Your Email",
+  "verificationLinkSentDesc": "We have sent a verification link to your email address. Please check your inbox and click the link to verify your account.",
+  "afterVerifyingDesc": "After verifying, click the button below to check your status.",
+  "iveVerifiedEmail": "I've verified my email",
+  "resendVerificationEmail": "Resend Verification Email",
+  "backToLogin": "Back to Login",
+  "resetLinkSent": "Reset link sent! Please check your email.",
+  "forgotPasswordDesc": "Enter your email address and we will send you a link to reset your password.",
+  "sendResetLink": "SEND RESET LINK",
+  "addDepositTitle": "Add Deposit",
+  "depositAmountLabel": "Deposit Amount (৳)",
+  "depositAmountHint": "e.g. 5000",
+  "enterAmountError": "Please enter an amount",
+  "enterValidNumberError": "Please enter a valid number",
+  "paymentMethodLabel": "Payment Method",
+  "paymentMethodCash": "Cash",
+  "paymentMethodBkash": "bKash",
+  "paymentMethodNagad": "Nagad",
+  "paymentMethodBank": "Bank Transfer",
+  "submitForApprovalBtn": "SUBMIT FOR APPROVAL",
+  "messBalancesTitle": "Mess Balances",
+  "noMembersOrError": "No members found or error calculating balances.",
+  "totalMessMeals": "Total Mess Meals",
+  "totalBazar": "Total Bazar",
+  "totalFixedCosts": "Total Fixed Costs",
+  "meals": "Meals",
+  "deposits": "Deposits",
+  "mealCost": "Meal Cost",
+  "fixedCost": "Fixed Cost",
+  "getsLabel": "Gets: ৳{amount}",
+  "@getsLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "owesLabel": "Owes: ৳{amount}",
+  "@owesLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "addExpenseTitle": "Add Expense",
+  "expenseTitleLabel": "Expense Title",
+  "expenseTitleHint": "e.g. Weekly Bazar",
+  "enterTitleError": "Please enter a title",
+  "categoryLabel": "Category",
+  "categoryBazar": "Bazar",
+  "categoryRent": "Rent",
+  "categoryWifi": "WiFi",
+  "categoryOther": "Other",
+  "amountLabel": "Amount (৳)",
+  "amountHint": "e.g. 500",
+  "noteOptionalLabel": "Note (Optional)",
+  "noteOptionalHint": "e.g. Chicken and Rice",
+  "expensesTitle": "Expenses",
+  "noExpensesFound": "No expenses found for this month.",
+  "addedByLabel": "Added by {name}",
+  "@addedByLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "unknownMember": "Unknown",
+  "totalMonthlyExpense": "Total Monthly Expense",
+  "yourEstimatedShare": "Your Estimated Share",
+  "mealEntryTitle": "Meal Entry",
+  "editingLockedCutoff": "Editing locked. The cutoff time has passed for this date.",
+  "breakfast": "Breakfast",
+  "lunch": "Lunch",
+  "dinner": "Dinner",
+  "guestMeals": "Guest Meals",
+  "guestMealsDesc": "Extra meals for guests (adds to your total)",
+  "saveMealsBtn": "SAVE MEALS",
+  "mealPlanBulkTitle": "Meal Plan & Bulk Actions",
+  "mealPlanBulkDesc": "Set your regular meal portions for a long duration, or close specific meals for one or more days.",
+  "setPlanBtn": "Set Plan",
+  "closeMealsBtn": "Close Meals",
+  "setRegularMealPlanTitle": "Set Regular Meal Plan",
+  "setRegularMealPlanDesc": "Define your default daily portions and apply them for a set duration.",
+  "startDateLabel": "Start Date",
+  "endDateLabel": "End Date",
+  "durationLabel": "Duration",
+  "applyMealPlanBtn": "APPLY MEAL PLAN",
+  "closeMealsTitle": "Close Meals",
+  "closeMealsDesc": "Turn off specific meals for a single day or a range of dates.",
+  "selectMealsToClose": "Select Meals to Close",
+  "allMeals": "All Meals",
+  "closeMealsSubtitle": "Close Breakfast, Lunch, and Dinner",
+  "closeSelectedMealsBtn": "CLOSE SELECTED MEALS",
+  "totalMealsSelected": "Total Meals Selected",
+  "dayCountOne": "1 Day",
+  "dayCountThree": "3 Days",
+  "dayCountSeven": "7 Days",
+  "dayCountThirty": "30 Days",
+  "monthCountThree": "3 Months",
+  "monthCountSix": "6 Months",
+  "yearCountOne": "1 Year",
+  "createMessTitle": "Create Mess",
+  "startNewMess": "Start a new Mess",
+  "createMessAdminDesc": "You will become the Admin and can invite others.",
+  "messNameLabel": "Mess Name",
+  "messNameHint": "E.g., Bachelor Point",
+  "createMessBtn": "CREATE MESS",
+  "enterMessNameError": "Please enter a mess name",
+  "joinMessTitle": "Join Mess",
+  "enterInviteCode": "Enter Invite Code",
+  "askAdminCodeDesc": "Ask your Mess Admin for the 6-character code.",
+  "inviteCodeLabel": "Invite Code",
+  "inviteCodeHint": "E.g., A1B2C3",
+  "joinMessBtn": "JOIN MESS",
+  "enterValidCodeError": "Please enter a valid 6-character code",
+  "membersTitle": "Members",
+  "approvalsTooltip": "Approvals",
+  "noMembersYet": "No members yet",
+  "roleOwner": "Owner",
+  "roleManagers": "Managers",
+  "roleMembers": "Members",
+  "joinedLabel": "Joined {date}",
+  "@joinedLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "changeRoleTitle": "Change Role",
+  "changeRoleForLabel": "Change role for {name}",
+  "@changeRoleForLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "currentRoleLabel": "Current role: {role}",
+  "@currentRoleLabel": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "newRoleLabel": "New Role",
+  "roleChangeRequestDesc": "This will create a role change request for approval.",
+  "cancel": "Cancel",
+  "submitRequest": "Submit Request",
+  "removeMemberTitle": "Remove Member",
+  "removeMemberConfirm": "Are you sure you want to remove {name}?\n\nThis will create a removal request for approval.",
+  "@removeMemberConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removeMemberConfirmSimple": "Are you sure you want to remove this member from the mess?",
+  "roleAdmin": "Admin",
+  "roleMember": "Member",
+  "roleManager": "Manager",
+  "makeAdmin": "Make Admin",
+  "makeManager": "Make Manager",
+  "makeMember": "Make Member",
+  "remove": "Remove",
+  "youLabel": "YOU",
+  "notificationsTitle": "Notifications",
+  "markAllAsReadTooltip": "Mark all as read",
+  "allMarkedAsRead": "All notifications marked as read",
+  "notifDeleted": "Notification removed",
+  "notifFilterAll": "All",
+  "notifFilterUnread": "Unread",
+  "notifFilterRead": "Read",
+  "noNotificationsFound": "No notifications found",
+  "notifActionGoToPage": "Go to Page",
+  "notifActionViewMeals": "View Meals",
+  "notifActionViewRequest": "View Request",
+  "notifActionGoToSettings": "Go to Settings",
+  "notifCloseBtn": "Close",
+  "notifErrorLoading": "Error loading notifications: {error}",
+  "@notifErrorLoading": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "completeProfileTitle": "Complete Profile",
+  "tellUsAboutYourself": "Tell us about yourself",
+  "completeProfileToContinue": "Please complete your profile to continue.",
+  "phoneNumberOptionalLabel": "Phone Number (Optional)",
+  "saveContinueBtn": "Save & Continue",
+  "editProfileTitle": "Edit Profile",
+  "updateYourProfile": "Update Your Profile",
+  "keepInfoUpToDate": "Keep your personal information up to date.",
+  "phoneNumberLabel": "Phone Number",
+  "addressLabel": "Address",
+  "nidNumberLabel": "NID Number",
+  "bioLabel": "Bio",
+  "saveChangesBtn": "Save Changes",
+  "profileSectionAccount": "Account",
+  "profileSectionApp": "App",
+  "myProfileDetails": "My Profile Details",
+  "profileCompletionLabel": "Profile Completion",
+  "profileComplete": "Your profile is fully complete!",
+  "profileAlmostDone": "Almost there — add your NID to finish!",
+  "profileAddAddressNid": "Add your address and NID for full completion.",
+  "profileAddPhone": "Add your phone number and address.",
+  "profileIncomplete": "Complete your profile to unlock all features.",
+  "profileComplete2": "Your profile is fully complete 🎉",
+  "profileAlmostDone2": "Almost done — just a few more details.",
+  "profileGoodStart": "Good start! Add your address & NID.",
+  "profileAddPhoneAddress": "Add your phone, address, and NID.",
+  "badgeVerifiedUser": "Verified User",
+  "badgeVerifiedProperty": "Verified Property",
+  "badgeVerifiedAgency": "Verified Agency",
+  "logoutBtn": "Logout",
+  "logoutTitle": "Logout",
+  "logoutConfirm": "Are you sure you want to logout? All local data will be removed from this device.",
+  "profileDetailTitle": "My Profile Details",
+  "editProfileTooltip": "Edit Profile",
+  "sectionPersonalInfo": "Personal Info",
+  "sectionVerification": "Verification",
+  "sectionAccountInfo": "Account Info",
+  "fieldFullName": "Full Name",
+  "fieldEmail": "Email",
+  "fieldPhone": "Phone",
+  "fieldAddress": "Address",
+  "fieldBio": "Bio",
+  "fieldNidNumber": "NID Number",
+  "fieldUserId": "User ID",
+  "fieldMemberSince": "Member Since",
+  "fieldLastUpdated": "Last Updated",
+  "fieldNotSet": "Not set",
+  "fieldNotProvided": "Not provided",
+  "copiedTitle": "Copied",
+  "userIdCopied": "User ID copied to clipboard",
+  "editProfileBtn": "Edit Profile",
+  "completeProfileBtn": "Complete Profile",
+  "yourName": "Your Name",
+  "somethingWentWrong": "Something went wrong",
+  "retryBtn": "Retry",
+  "cameraNotImplemented": "Camera/gallery not implemented yet.",
+  "about": "About",
+  "helpSupport": "Help & Support",
+  "reportTitle": "Monthly Report",
+  "downloadPdfTooltip": "Download PDF",
+  "printPdfTooltip": "Print PDF",
+  "noDataForMonth": "No data found for selected month",
+  "noDataForMember": "No data found for selected member",
+  "reportTabOverview": "Overview",
+  "reportTabMemberReport": "Member Report",
+  "reportTabMyReport": "My Report",
+  "reportTotalMeals": "Total Meals",
+  "reportTotalExpenses": "Total Expenses",
+  "reportMealRate": "Meal Rate",
+  "reportColMember": "Member",
+  "reportColMeals": "Meals",
+  "reportColCost": "Cost",
+  "reportColDeposits": "Deposits",
+  "reportColBalance": "Balance",
+  "reportSelectMember": "Select Member",
+  "reportMonthlySummary": "{name}'s Monthly Summary",
+  "@reportMonthlySummary": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reportMealCost": "Meal Cost",
+  "reportTotalDeposits": "Total Deposits",
+  "reportFinalBalance": "Final Balance",
+  "reportDailyActivityLog": "Daily Activity Log",
+  "reportNoActivityThisMonth": "No activity recorded this month.",
+  "reportChipBreakfast": "B: {val}",
+  "@reportChipBreakfast": {
+    "placeholders": {
+      "val": {
+        "type": "String"
+      }
+    }
+  },
+  "reportChipLunch": "L: {val}",
+  "@reportChipLunch": {
+    "placeholders": {
+      "val": {
+        "type": "String"
+      }
+    }
+  },
+  "reportChipDinner": "D: {val}",
+  "@reportChipDinner": {
+    "placeholders": {
+      "val": {
+        "type": "String"
+      }
+    }
+  },
+  "reportChipGuest": "G: {val}",
+  "@reportChipGuest": {
+    "placeholders": {
+      "val": {
+        "type": "String"
+      }
+    }
+  },
+  "reportChipDeposit": "Deposit: ৳{val}",
+  "@reportChipDeposit": {
+    "placeholders": {
+      "val": {
+        "type": "String"
+      }
+    }
+  },
+  "reportChipExpense": "{category}: ৳{amount}",
+  "@reportChipExpense": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reportMiniMeals": "Meals",
+  "reportMiniExpense": "Expense",
+  "reportMiniDeposit": "Deposit",
+  "requestsTitle": "Requests",
+  "requestFilterAll": "All",
+  "requestFilterPending": "Pending",
+  "requestFilterApproved": "Approved",
+  "requestFilterRejected": "Rejected",
+  "requestFilterExpense": "Expense",
+  "requestFilterDeposit": "Deposit",
+  "requestFilterJoin": "Join",
+  "requestFilterRemove": "Remove",
+  "requestFilterRoleLabel": "Role",
+  "requestStatusPending": "Pending",
+  "requestStatusApproved": "Approved",
+  "requestStatusRejected": "Rejected",
+  "requestNoRequests": "No {filter} requests",
+  "@requestNoRequests": {
+    "placeholders": {
+      "filter": { "type": "String" }
+    }
+  },
+  "requestTypeExpense": "Expense",
+  "requestTypeDeposit": "Deposit",
+  "requestTypeJoinMess": "Join Mess",
+  "requestTypeRemoveMember": "Remove Member",
+  "requestTypeRoleChange": "Role Change",
+  "requestCategory": "Category: {category}",
+  "@requestCategory": {
+    "placeholders": {
+      "category": { "type": "String" }
+    }
+  },
+  "requestPayment": "Payment: {method}",
+  "@requestPayment": {
+    "placeholders": {
+      "method": { "type": "String" }
+    }
+  },
+  "requestNote": "Note: {note}",
+  "@requestNote": {
+    "placeholders": {
+      "note": { "type": "String" }
+    }
+  },
+  "requestRequestedBy": "Requested by {name}",
+  "@requestRequestedBy": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "requestBy": "by {name}",
+  "@requestBy": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "requestUnknown": "Unknown",
+  "requestEdit": "Edit",
+  "requestReject": "Reject",
+  "requestApprove": "Approve",
+  "requestCurrentRole": "Current Role: {role}",
+  "@requestCurrentRole": {
+    "placeholders": {
+      "role": { "type": "String" }
+    }
+  },
+  "requestReason": "Reason: {reason}",
+  "@requestReason": {
+    "placeholders": {
+      "reason": { "type": "String" }
+    }
+  },
+  "requestApprovedOn": "Approved on {date}",
+  "@requestApprovedOn": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "requestRejectedOn": "Rejected on {date}",
+  "@requestRejectedOn": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "requestUpdatedOn": "Updated on {date}",
+  "@requestUpdatedOn": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "requestConfirmApproval": "Confirm Approval",
+  "requestConfirmRejection": "Confirm Rejection",
+  "requestApproveExpenseBody": "Are you sure you want to approve this expense request for ৳{amount}?\n\nThis will deduct from the balance.",
+  "@requestApproveExpenseBody": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "requestApproveDepositBody": "Are you sure you want to approve this deposit request for ৳{amount}?\n\nThis will add to the balance.",
+  "@requestApproveDepositBody": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "requestApproveJoinBody": "Approve join request for {name}?\n\nThey will be added as a Member.",
+  "@requestApproveJoinBody": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "requestApproveRemoveBody": "Approve removal of {name}?\n\nThey will be removed from the mess.",
+  "@requestApproveRemoveBody": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "requestApproveRoleBody": "Approve role change for {name} from {oldRole} to {newRole}?",
+  "@requestApproveRoleBody": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "oldRole": { "type": "String" },
+      "newRole": { "type": "String" }
+    }
+  },
+  "requestRejectBody": "Are you sure you want to reject {label} request?\n\nThis will not affect any data.",
+  "@requestRejectBody": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
+  "requestEditExpenseTitle": "Edit Expense Request",
+  "requestEditDepositTitle": "Edit Deposit Request",
+  "requestFieldTitle": "Title",
+  "requestFieldCategory": "Category",
+  "requestFieldAmount": "Amount (৳)",
+  "requestFieldPaymentMethod": "Payment Method",
+  "requestFieldNoteOptional": "Note (optional)",
+  "requestValidationTitleRequired": "Title required",
+  "requestValidationAmountRequired": "Amount required",
+  "requestValidationAmountPositive": "Must be > 0",
+  "requestUpdate": "Update",
+  "requestStatusBadge": "{label}: {count}",
+  "@requestStatusBadge": {
+    "placeholders": {
+      "label": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "requestCategoryBazar": "Bazar",
+  "requestCategoryRent": "Rent",
+  "requestCategoryWifi": "WiFi",
+  "requestCategoryOther": "Other",
+  "requestPaymentCash": "Cash",
+  "requestPaymentBkash": "bKash",
+  "requestPaymentNagad": "Nagad",
+  "requestPaymentBank": "Bank Transfer"
+}

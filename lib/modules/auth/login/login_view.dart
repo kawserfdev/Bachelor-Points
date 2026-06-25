@@ -6,6 +6,7 @@ import '../../../core/providers/auth_providers.dart';
 import '../../../core/routes/go_router_config.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 
 /// Login view migrated from GetX to Riverpod + GoRouter
 class LoginView extends ConsumerStatefulWidget {
@@ -29,14 +30,14 @@ class _LoginViewState extends ConsumerState<LoginView> {
   }
 
   String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) return 'Email is required';
+    if (value == null || value.isEmpty) return AppLocalizations.of(context)!.emailRequired;
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(value)) return 'Please enter a valid email';
+    if (!emailRegex.hasMatch(value)) return AppLocalizations.of(context)!.validEmailRequired;
     return null;
   }
 
   String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) return 'Password is required';
+    if (value == null || value.isEmpty) return AppLocalizations.of(context)!.passwordRequired;
     return null;
   }
 
@@ -101,6 +102,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
 
   @override
   Widget build(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -118,7 +120,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Welcome Back!',
+                  local.welcomeBack,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -126,7 +128,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Sign in to continue',
+                  local.signInToContinue,
                   style: Theme.of(
                     context,
                   ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
@@ -134,16 +136,16 @@ class _LoginViewState extends ConsumerState<LoginView> {
                 ),
                 const SizedBox(height: 48),
                 CustomTextField(
-                  label: 'Email',
-                  hint: 'Enter your email',
+                  label: local.email,
+                  hint: local.enterEmail,
                   prefixIcon: Icons.email_outlined,
                   controller: _emailController,
                   validator: _validateEmail,
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
-                  label: 'Password',
-                  hint: 'Enter your password',
+                  label: local.password,
+                  hint: local.enterPassword,
                   prefixIcon: Icons.lock_outline,
                   controller: _passwordController,
                   isPassword: true,
@@ -154,12 +156,12 @@ class _LoginViewState extends ConsumerState<LoginView> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () => context.push(GoRoutes.forgotPassword),
-                    child: const Text('Forgot Password?'),
+                    child: Text(local.forgotPasswordTitle),
                   ),
                 ),
                 const SizedBox(height: 24),
                 PrimaryButton(
-                  text: 'LOGIN',
+                  text: local.loginBtn,
                   isLoading: _isLoading,
                   onPressed: _login,
                 ),
@@ -170,7 +172,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        'OR',
+                        local.or,
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w500,
@@ -189,7 +191,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
                     height: 22,
                   ),
                   label:  Text(
-                    'Continue with Google',
+                    local.continueWithGoogle,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -210,14 +212,14 @@ class _LoginViewState extends ConsumerState<LoginView> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Don\'t have an account?',
+                      local.dontHaveAccount,
                       style: TextStyle(color: Colors.grey[700]),
                     ),
                     TextButton(
                       onPressed: () => context.push(GoRoutes.signup),
-                      child: const Text(
-                        'Sign Up',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      child: Text(
+                        local.signUp,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],

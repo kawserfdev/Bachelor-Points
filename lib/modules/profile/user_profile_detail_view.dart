@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 
 import '../../core/routes/app_routes.dart';
 import '../../data/models/user_profile_detail_model.dart';
@@ -18,8 +19,10 @@ class UserProfileDetailView extends GetView<UserProfileDetailController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final langCode = Localizations.localeOf(context).languageCode;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -46,80 +49,85 @@ class UserProfileDetailView extends GetView<UserProfileDetailController> {
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
-              _buildAppBar(context, profile, colorScheme, theme),
+              _buildAppBar(context, l10n, profile, colorScheme, theme),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     const SizedBox(height: 20),
-                    _buildCompletionCard(context, profile, theme, colorScheme),
+                    _buildCompletionCard(context, l10n, profile, theme, colorScheme),
                     const SizedBox(height: 20),
                     if (controller.messName.isNotEmpty) ...[
                       _buildMessCard(context, colorScheme, theme),
                       const SizedBox(height: 20),
                     ],
-                    _buildSectionLabel(context, 'Personal Info'),
+                    _buildSectionLabel(context, l10n.sectionPersonalInfo),
                     const SizedBox(height: 12),
                     _buildInfoTile(
+                      context: context,
                       icon: Icons.person_outline_rounded,
-                      label: 'Full Name',
-                      value: profile.fullName.isNotEmpty
-                          ? profile.fullName
-                          : '—',
+                      label: l10n.fieldFullName,
+                      value: profile.fullName.isNotEmpty ? profile.fullName : '—',
                       color: colorScheme.primary,
                       theme: theme,
                     ),
                     _buildInfoTile(
+                      context: context,
                       icon: Icons.email_outlined,
-                      label: 'Email',
+                      label: l10n.fieldEmail,
                       value: profile.email.isNotEmpty ? profile.email : '—',
                       color: const Color(0xFF42A5F5),
                       theme: theme,
                     ),
                     _buildInfoTile(
+                      context: context,
                       icon: Icons.phone_outlined,
-                      label: 'Phone',
+                      label: l10n.fieldPhone,
                       value: profile.phoneNumber.isNotEmpty
                           ? profile.phoneNumber
-                          : 'Not set',
+                          : l10n.fieldNotSet,
                       color: const Color(0xFF66BB6A),
                       theme: theme,
                     ),
                     _buildInfoTile(
+                      context: context,
                       icon: Icons.location_on_outlined,
-                      label: 'Address',
+                      label: l10n.fieldAddress,
                       value: profile.address.isNotEmpty
                           ? profile.address
-                          : 'Not set',
+                          : l10n.fieldNotSet,
                       color: const Color(0xFFFFA726),
                       theme: theme,
                     ),
                     if (profile.bio.isNotEmpty)
                       _buildInfoTile(
+                        context: context,
                         icon: Icons.info_outline_rounded,
-                        label: 'Bio',
+                        label: l10n.fieldBio,
                         value: profile.bio,
                         color: const Color(0xFFAB47BC),
                         theme: theme,
                       ),
                     const SizedBox(height: 20),
-                    _buildSectionLabel(context, 'Verification'),
+                    _buildSectionLabel(context, l10n.sectionVerification),
                     const SizedBox(height: 12),
                     _buildInfoTile(
+                      context: context,
                       icon: Icons.badge_outlined,
-                      label: 'NID Number',
+                      label: l10n.fieldNidNumber,
                       value: profile.nidNumber.isNotEmpty
                           ? profile.nidNumber
-                          : 'Not provided',
+                          : l10n.fieldNotProvided,
                       color: const Color(0xFFEF5350),
                       theme: theme,
                     ),
                     const SizedBox(height: 20),
-                    _buildSectionLabel(context, 'Account Info'),
+                    _buildSectionLabel(context, l10n.sectionAccountInfo),
                     const SizedBox(height: 12),
                     _buildInfoTile(
+                      context: context,
                       icon: Icons.fingerprint_rounded,
-                      label: 'User ID',
+                      label: l10n.fieldUserId,
                       value: profile.uid,
                       color: colorScheme.tertiary,
                       theme: theme,
@@ -127,26 +135,24 @@ class UserProfileDetailView extends GetView<UserProfileDetailController> {
                     ),
                     if (profile.createdAt != null)
                       _buildInfoTile(
+                        context: context,
                         icon: Icons.calendar_today_outlined,
-                        label: 'Member Since',
-                        value: DateFormat(
-                          'd MMM yyyy',
-                        ).format(profile.createdAt!),
+                        label: l10n.fieldMemberSince,
+                        value: DateFormat('d MMM yyyy', langCode).format(profile.createdAt!),
                         color: const Color(0xFF26C6DA),
                         theme: theme,
                       ),
                     if (profile.updatedAt != null)
                       _buildInfoTile(
+                        context: context,
                         icon: Icons.update_rounded,
-                        label: 'Last Updated',
-                        value: DateFormat(
-                          'd MMM yyyy, h:mm a',
-                        ).format(profile.updatedAt!),
+                        label: l10n.fieldLastUpdated,
+                        value: DateFormat('d MMM yyyy, h:mm a', langCode).format(profile.updatedAt!),
                         color: const Color(0xFF78909C),
                         theme: theme,
                       ),
                     const SizedBox(height: 28),
-                    _buildEditButton(context, colorScheme),
+                    _buildEditButton(context, l10n, colorScheme),
                   ]),
                 ),
               ),
@@ -162,6 +168,7 @@ class UserProfileDetailView extends GetView<UserProfileDetailController> {
   // ─────────────────────────────────────────────────────────────
   Widget _buildAppBar(
     BuildContext context,
+    AppLocalizations l10n,
     UserProfileDetail profile,
     ColorScheme colorScheme,
     ThemeData theme,
@@ -177,7 +184,7 @@ class UserProfileDetailView extends GetView<UserProfileDetailController> {
       ),
       actions: [
         IconButton(
-          tooltip: 'Edit Profile',
+          tooltip: l10n.editProfileTooltip,
           icon: const Icon(Icons.edit_outlined, color: Colors.white),
           onPressed: () => context.push(AppRoutes.editProfile),
         ),
@@ -194,6 +201,7 @@ class UserProfileDetailView extends GetView<UserProfileDetailController> {
   // ─────────────────────────────────────────────────────────────
   Widget _buildCompletionCard(
     BuildContext context,
+    AppLocalizations l10n,
     UserProfileDetail profile,
     ThemeData theme,
     ColorScheme colorScheme,
@@ -243,14 +251,14 @@ class UserProfileDetailView extends GetView<UserProfileDetailController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Profile Completion',
+                  l10n.profileCompletionLabel,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _completionMessage(pct),
+                  _completionMessage(l10n, pct),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -260,9 +268,9 @@ class UserProfileDetailView extends GetView<UserProfileDetailController> {
                   OutlinedButton.icon(
                     onPressed: () => context.push(AppRoutes.editProfile),
                     icon: const Icon(Icons.edit_outlined, size: 20),
-                    label: const Text(
-                      'Complete Profile',
-                      style: TextStyle(fontSize: 13),
+                    label: Text(
+                      l10n.completeProfileBtn,
+                      style: const TextStyle(fontSize: 13),
                     ),
                   ),
                 ],
@@ -368,6 +376,7 @@ class UserProfileDetailView extends GetView<UserProfileDetailController> {
   }
 
   Widget _buildInfoTile({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required String value,
@@ -375,6 +384,7 @@ class UserProfileDetailView extends GetView<UserProfileDetailController> {
     required ThemeData theme,
     bool copyable = false,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -423,8 +433,8 @@ class UserProfileDetailView extends GetView<UserProfileDetailController> {
               onTap: () {
                 Clipboard.setData(ClipboardData(text: value));
                 Get.snackbar(
-                  'Copied',
-                  'User ID copied to clipboard',
+                  l10n.copiedTitle,
+                  l10n.userIdCopied,
                   snackPosition: SnackPosition.BOTTOM,
                   duration: const Duration(seconds: 2),
                 );
@@ -440,13 +450,13 @@ class UserProfileDetailView extends GetView<UserProfileDetailController> {
     );
   }
 
-  Widget _buildEditButton(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildEditButton(BuildContext context, AppLocalizations l10n, ColorScheme colorScheme) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: () => context.push(AppRoutes.editProfile),
         icon: const Icon(Icons.edit, size: 20, color: Colors.white),
-        label: const Text('Edit Profile'),
+        label: Text(l10n.editProfileBtn),
         style: FilledButton.styleFrom(
           minimumSize: const Size(double.infinity, 54),
           shape: RoundedRectangleBorder(
@@ -457,12 +467,12 @@ class UserProfileDetailView extends GetView<UserProfileDetailController> {
     );
   }
 
-  String _completionMessage(double pct) {
-    if (pct >= 1.0) return 'Your profile is fully complete 🎉';
-    if (pct >= 0.8) return 'Almost done — just a few more details.';
-    if (pct >= 0.6) return 'Good start! Add your address & NID.';
-    if (pct >= 0.4) return 'Add your phone, address, and NID.';
-    return 'Complete your profile to unlock all features.';
+  String _completionMessage(AppLocalizations l10n, double pct) {
+    if (pct >= 1.0) return l10n.profileComplete2;
+    if (pct >= 0.8) return l10n.profileAlmostDone2;
+    if (pct >= 0.6) return l10n.profileGoodStart;
+    if (pct >= 0.4) return l10n.profileAddPhoneAddress;
+    return l10n.profileIncomplete;
   }
 }
 
@@ -477,6 +487,7 @@ class _HeroBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -533,10 +544,8 @@ class _HeroBackground extends StatelessWidget {
                       onTap: () {
                         // TODO: Add your logic to open camera/gallery here
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Camera/gallery not implemented yet.',
-                            ),
+                          SnackBar(
+                            content: Text(l10n.cameraNotImplemented),
                           ),
                         );
                       },
@@ -567,7 +576,7 @@ class _HeroBackground extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             Text(
-              profile.fullName.isNotEmpty ? profile.fullName : 'Your Name',
+              profile.fullName.isNotEmpty ? profile.fullName : l10n.yourName,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 22,
@@ -600,6 +609,7 @@ class _ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
@@ -614,7 +624,7 @@ class _ErrorState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Something went wrong',
+              l10n.somethingWentWrong,
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
@@ -625,7 +635,7 @@ class _ErrorState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(l10n.retryBtn),
             ),
           ],
         ),

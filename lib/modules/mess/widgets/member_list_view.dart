@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 import '../mess_controller.dart';
 import '../member_controller.dart';
 import '../../../services/auth_service.dart';
@@ -9,6 +10,7 @@ class MemberListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final messController = Get.find<MessController>();
     final memberController = Get.find<MemberController>();
     final currentUserId = Get.find<AuthService>().currentUser.value?.uid;
@@ -36,7 +38,7 @@ class MemberListView extends StatelessWidget {
                 ),
               ),
               title: Text(
-                member.fullName ?? member.email ?? 'Unknown User',
+                member.fullName ?? member.email ?? l10n.unknownMember,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               subtitle: Text(member.role.toUpperCase()),
@@ -56,7 +58,7 @@ class MemberListView extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        'YOU',
+                        l10n.youLabel,
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
@@ -82,26 +84,26 @@ class MemberListView extends StatelessWidget {
                       itemBuilder: (BuildContext context) =>
                           <PopupMenuEntry<String>>[
                             if (member.role != 'admin')
-                              const PopupMenuItem<String>(
+                              PopupMenuItem<String>(
                                 value: 'admin',
-                                child: Text('Make Admin'),
+                                child: Text(l10n.makeAdmin),
                               ),
                             if (member.role != 'manager')
-                              const PopupMenuItem<String>(
+                              PopupMenuItem<String>(
                                 value: 'manager',
-                                child: Text('Make Manager'),
+                                child: Text(l10n.makeManager),
                               ),
                             if (member.role != 'member')
-                              const PopupMenuItem<String>(
+                              PopupMenuItem<String>(
                                 value: 'member',
-                                child: Text('Make Member'),
+                                child: Text(l10n.makeMember),
                               ),
                             const PopupMenuDivider(),
-                            const PopupMenuItem<String>(
+                            PopupMenuItem<String>(
                               value: 'remove',
                               child: Text(
-                                'Remove Member',
-                                style: TextStyle(color: Colors.red),
+                                l10n.removeMemberTitle,
+                                style: const TextStyle(color: Colors.red),
                               ),
                             ),
                           ],
@@ -120,21 +122,20 @@ class MemberListView extends StatelessWidget {
     String memberId,
     MemberController controller,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Remove Member'),
-          content: const Text(
-            'Are you sure you want to remove this member from the mess?',
-          ),
+          title: Text(l10n.removeMemberTitle),
+          content: Text(l10n.removeMemberConfirmSimple),
           actions: <Widget>[
             TextButton(
-              child: const Text('Cancel'),
+              child: Text(l10n.cancel),
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-              child: const Text('Remove', style: TextStyle(color: Colors.red)),
+              child: Text(l10n.remove, style: const TextStyle(color: Colors.red)),
               onPressed: () {
                 controller.removeMember(memberId);
                 Navigator.of(context).pop();

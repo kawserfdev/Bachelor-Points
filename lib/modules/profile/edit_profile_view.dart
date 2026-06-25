@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 import 'edit_profile_controller.dart';
 
 class EditProfileView extends GetView<EditProfileController> {
@@ -7,9 +8,11 @@ class EditProfileView extends GetView<EditProfileController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Profile'),
+        title: Text(l10n.editProfileTitle),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -24,27 +27,27 @@ class EditProfileView extends GetView<EditProfileController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
-                    'Update Your Profile',
-                    style: TextStyle(
+                  Text(
+                    l10n.updateYourProfile,
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Keep your personal information up to date.',
-                    style: TextStyle(color: Colors.grey),
+                  Text(
+                    l10n.keepInfoUpToDate,
+                    style: const TextStyle(color: Colors.grey),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
                   TextFormField(
                     controller: controller.nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Full Name',
-                      prefixIcon: Icon(Icons.person_outline),
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.fieldFullName,
+                      prefixIcon: const Icon(Icons.person_outline),
+                      border: const OutlineInputBorder(),
                     ),
                     validator: controller.validateName,
                     textInputAction: TextInputAction.next,
@@ -52,10 +55,10 @@ class EditProfileView extends GetView<EditProfileController> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: controller.phoneController,
-                    decoration: const InputDecoration(
-                      labelText: 'Phone Number',
-                      prefixIcon: Icon(Icons.phone_outlined),
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.phoneNumberLabel,
+                      prefixIcon: const Icon(Icons.phone_outlined),
+                      border: const OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.phone,
                     textInputAction: TextInputAction.next,
@@ -63,30 +66,30 @@ class EditProfileView extends GetView<EditProfileController> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: controller.addressController,
-                    decoration: const InputDecoration(
-                      labelText: 'Address',
-                      prefixIcon: Icon(Icons.location_on_outlined),
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.addressLabel,
+                      prefixIcon: const Icon(Icons.location_on_outlined),
+                      border: const OutlineInputBorder(),
                     ),
                     textInputAction: TextInputAction.next,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: controller.nidController,
-                    decoration: const InputDecoration(
-                      labelText: 'NID Number',
-                      prefixIcon: Icon(Icons.badge_outlined),
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.nidNumberLabel,
+                      prefixIcon: const Icon(Icons.badge_outlined),
+                      border: const OutlineInputBorder(),
                     ),
                     textInputAction: TextInputAction.next,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: controller.bioController,
-                    decoration: const InputDecoration(
-                      labelText: 'Bio',
-                      prefixIcon: Icon(Icons.info_outline),
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.bioLabel,
+                      prefixIcon: const Icon(Icons.info_outline),
+                      border: const OutlineInputBorder(),
                     ),
                     maxLines: 3,
                     textInputAction: TextInputAction.done,
@@ -109,9 +112,9 @@ class EditProfileView extends GetView<EditProfileController> {
                             width: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text(
-                            'Save Changes',
-                            style: TextStyle(fontSize: 16),
+                        : Text(
+                            l10n.saveChangesBtn,
+                            style: const TextStyle(fontSize: 16),
                           ),
                   )),
                 ],

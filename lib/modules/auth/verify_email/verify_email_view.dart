@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../services/auth_service.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 
 class VerifyEmailView extends StatefulWidget {
   const VerifyEmailView({super.key});
@@ -60,8 +61,8 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
         // Not verified yet — show snackbar only if user pressed button.
         if (!silent && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Email not verified yet. Please check your inbox.'),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.emailNotVerified),
             ),
           );
         }
@@ -111,16 +112,16 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
         await user.sendEmailVerification();
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Verification email sent! Check your inbox.'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.verificationEmailSent),
             backgroundColor: Colors.green,
           ),
         );
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Your email is already verified.'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.emailAlreadyVerified),
           ),
         );
       }
@@ -139,9 +140,10 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
 
   @override
   Widget build(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Verify Email'),
+        title: Text(local.verifyEmailTitle),
       ),
       body: Center(
         child: Padding(
@@ -155,25 +157,24 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                 color: Colors.blue,
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Check Your Email',
-                style: TextStyle(
+              Text(
+                local.checkYourEmail,
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'We have sent a verification link to your email address. '
-                'Please check your inbox and click the link to verify your account.',
+              Text(
+                local.verificationLinkSentDesc,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 16),
               ),
               const SizedBox(height: 12),
-              const Text(
-                'After verifying, click the button below to check your status.',
+              Text(
+                local.afterVerifyingDesc,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: Colors.grey),
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
               const SizedBox(height: 32),
 
@@ -192,7 +193,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text("I've verified my email"),
+                    : Text(local.iveVerifiedEmail),
               ),
               const SizedBox(height: 16),
 
@@ -206,7 +207,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.refresh),
-                label: const Text('Resend Verification Email'),
+                label: Text(local.resendVerificationEmail),
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
@@ -223,7 +224,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                   await Get.find<AuthService>().signOut();
                   // signOut() already navigates to /login via AppNavigation.go
                 },
-                child: const Text('Back to Login'),
+                child: Text(local.backToLogin),
               ),
             ],
           ),

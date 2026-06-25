@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../../../l10n/app_localizations.dart';
 import '../report_controller.dart';
 import '../../../data/models/report_summary_model.dart';
 
@@ -9,18 +10,19 @@ class ReportView extends GetView<ReportController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Monthly Report'),
+        title: Text(l10n.reportTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.download),
-            tooltip: 'Download PDF',
+            tooltip: l10n.downloadPdfTooltip,
             onPressed: () => controller.exportToPdf(downloadOnly: true),
           ),
           IconButton(
             icon: const Icon(Icons.print),
-            tooltip: 'Print PDF',
+            tooltip: l10n.printPdfTooltip,
             onPressed: () => controller.exportToPdf(),
           ),
         ],
@@ -38,22 +40,22 @@ class ReportView extends GetView<ReportController> {
           controller: controller.scrollController,
           slivers: [
             SliverToBoxAdapter(child: _buildMonthSelector()),
-            SliverToBoxAdapter(child: _buildTabSelector()),
+            SliverToBoxAdapter(child: _buildTabSelector(l10n)),
             // ── Overview tab ──
             if (controller.activeTab.value == 0) ...[
               if (controller.summary.value != null)
                 SliverToBoxAdapter(
-                  child: _buildSummaryCard(controller.summary.value!),
+                  child: _buildSummaryCard(controller.summary.value!, l10n),
                 ),
               if (controller.memberSummaries.isNotEmpty)
                 SliverToBoxAdapter(
-                  child: _buildDataTable(controller.memberSummaries),
+                  child: _buildDataTable(controller.memberSummaries, l10n),
                 ),
               if (!controller.isLoading.value && controller.summary.value == null)
-                const SliverToBoxAdapter(
+                SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.all(32.0),
-                    child: Center(child: Text('No data found for selected month')),
+                    padding: const EdgeInsets.all(32.0),
+                    child: Center(child: Text(l10n.noDataForMonth)),
                   ),
                 ),
             ]
@@ -61,19 +63,19 @@ class ReportView extends GetView<ReportController> {
             else ...[
               // Show member dropdown only for managers/owners
               if (controller.currentUserRole.value.canManageMembers)
-                SliverToBoxAdapter(child: _buildMemberDropdown()),
+                SliverToBoxAdapter(child: _buildMemberDropdown(l10n)),
               if (selectedMemberSummary != null) ...[
                 SliverToBoxAdapter(
-                  child: _buildMemberSummaryCard(selectedMemberSummary),
+                  child: _buildMemberSummaryCard(selectedMemberSummary, l10n),
                 ),
                 SliverToBoxAdapter(
-                  child: _buildDailyCards(controller.getSelectedMemberDailyRecords()),
+                  child: _buildDailyCards(controller.getSelectedMemberDailyRecords(), l10n),
                 ),
               ] else
-                const SliverToBoxAdapter(
+                SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.all(32.0),
-                    child: Center(child: Text('No data found for selected member')),
+                    padding: const EdgeInsets.all(32.0),
+                    child: Center(child: Text(l10n.noDataForMember)),
                   ),
                 ),
             ],
@@ -125,20 +127,22 @@ class ReportView extends GetView<ReportController> {
   // ────────────────────────────────────────────────────────────────────────────
   // Tab Selector
   // ────────────────────────────────────────────────────────────────────────────
-  Widget _buildTabSelector() {
+  Widget _buildTabSelector(AppLocalizations l10n) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: SegmentedButton<int>(
         segments:  [
           ButtonSegment<int>(
             value: 0,
-            label: Text('Overview'),
-            icon: Icon(Icons.analytics_outlined),
+            label: Text(l10n.reportTabOverview),
+            icon: const Icon(Icons.analytics_outlined),
           ),
           ButtonSegment<int>(
             value: 1,
-            label: Text(controller.currentUserRole.value.canManageMembers ? 'Member Report' : 'My Report'),
-            icon: Icon(Icons.person_outline),
+            label: Text(controller.currentUserRole.value.canManageMembers
+                ? l10n.reportTabMemberReport
+                : l10n.reportTabMyReport),
+            icon: const Icon(Icons.person_outline),
           ),
         ],
         selected: {controller.activeTab.value},
@@ -150,7 +154,7 @@ class ReportView extends GetView<ReportController> {
   // ────────────────────────────────────────────────────────────────────────────
   // Overview tab widgets
   // ────────────────────────────────────────────────────────────────────────────
-  Widget _buildSummaryCard(dynamic summary) {
+  Widget _buildSummaryCard(dynamic summary, AppLocalizations l10n) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Padding(
@@ -158,9 +162,9 @@ class ReportView extends GetView<ReportController> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _summaryItem('Total Meals', summary.totalMeals.toStringAsFixed(1)),
-            _summaryItem('Total Expenses', '৳${summary.totalExpenses.toStringAsFixed(0)}'),
-            _summaryItem('Meal Rate', '৳${summary.mealRate.toStringAsFixed(2)}'),
+            _summaryItem(l10n.reportTotalMeals, summary.totalMeals.toStringAsFixed(1)),
+            _summaryItem(l10n.reportTotalExpenses, '৳${summary.totalExpenses.toStringAsFixed(0)}'),
+            _summaryItem(l10n.reportMealRate, '৳${summary.mealRate.toStringAsFixed(2)}'),
           ],
         ),
       ),
@@ -177,16 +181,16 @@ class ReportView extends GetView<ReportController> {
     );
   }
 
-  Widget _buildDataTable(List<dynamic> members) {
+  Widget _buildDataTable(List<dynamic> members, AppLocalizations l10n) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: DataTable(
-        columns: const [
-          DataColumn(label: Text('Member')),
-          DataColumn(label: Text('Meals'), numeric: true),
-          DataColumn(label: Text('Cost'), numeric: true),
-          DataColumn(label: Text('Deposits'), numeric: true),
-          DataColumn(label: Text('Balance'), numeric: true),
+        columns: [
+          DataColumn(label: Text(l10n.reportColMember)),
+          DataColumn(label: Text(l10n.reportColMeals), numeric: true),
+          DataColumn(label: Text(l10n.reportColCost), numeric: true),
+          DataColumn(label: Text(l10n.reportColDeposits), numeric: true),
+          DataColumn(label: Text(l10n.reportColBalance), numeric: true),
         ],
         rows: members.map((m) {
           final isNeg = m.finalBalance < 0;
@@ -213,16 +217,16 @@ class ReportView extends GetView<ReportController> {
   // ────────────────────────────────────────────────────────────────────────────
 
   /// Dropdown — only shown to managers/owners. Fixed overflow with isExpanded.
-  Widget _buildMemberDropdown() {
+  Widget _buildMemberDropdown(AppLocalizations l10n) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: DropdownButtonFormField<String>(
         isExpanded: true,
-        value: controller.memberSummaries.any((m) => m.userId == controller.selectedMemberId.value)
+        initialValue: controller.memberSummaries.any((m) => m.userId == controller.selectedMemberId.value)
             ? controller.selectedMemberId.value
             : null,
         decoration: InputDecoration(
-          labelText: 'Select Member',
+          labelText: l10n.reportSelectMember,
           prefixIcon: const Icon(Icons.person_search_outlined),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -240,7 +244,7 @@ class ReportView extends GetView<ReportController> {
     );
   }
 
-  Widget _buildMemberSummaryCard(MemberSummaryModel m) {
+  Widget _buildMemberSummaryCard(MemberSummaryModel m, AppLocalizations l10n) {
     final isNeg = m.finalBalance < 0;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -255,7 +259,7 @@ class ReportView extends GetView<ReportController> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    '${m.userName}\'s Monthly Summary',
+                    l10n.reportMonthlySummary(m.userName),
                     style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -263,16 +267,16 @@ class ReportView extends GetView<ReportController> {
               ],
             ),
             const Divider(height: 24),
-            _rowItem(Icons.restaurant_outlined, 'Total Meals', m.totalMeals.toStringAsFixed(1), null),
+            _rowItem(Icons.restaurant_outlined, l10n.reportTotalMeals, m.totalMeals.toStringAsFixed(1), null),
             const SizedBox(height: 10),
-            _rowItem(Icons.payments_outlined, 'Meal Cost', '৳${m.totalCost.toStringAsFixed(2)}', Colors.red.shade700),
+            _rowItem(Icons.payments_outlined, l10n.reportMealCost, '৳${m.totalCost.toStringAsFixed(2)}', Colors.red.shade700),
             const SizedBox(height: 10),
-            _rowItem(Icons.account_balance_wallet_outlined, 'Total Deposits', '৳${m.totalDeposits.toStringAsFixed(2)}', Colors.blue.shade700),
+            _rowItem(Icons.account_balance_wallet_outlined, l10n.reportTotalDeposits, '৳${m.totalDeposits.toStringAsFixed(2)}', Colors.blue.shade700),
             const Divider(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Final Balance', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                Text(l10n.reportFinalBalance, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
@@ -314,7 +318,7 @@ class ReportView extends GetView<ReportController> {
   // ────────────────────────────────────────────────────────────────────────────
   // Daily Activity Cards (replaces old DataTable)
   // ────────────────────────────────────────────────────────────────────────────
-  Widget _buildDailyCards(List<DailyRecord> records) {
+  Widget _buildDailyCards(List<DailyRecord> records, AppLocalizations l10n) {
     // Only keep days that have at least one activity
     final activeRecords = records
         .where((r) => r.meal != null || r.expenses.isNotEmpty || r.deposits.isNotEmpty)
@@ -325,15 +329,15 @@ class ReportView extends GetView<ReportController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Daily Activity Log',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          Text(
+            l10n.reportDailyActivityLog,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
           if (activeRecords.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: Center(child: Text('No activity recorded this month.')),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Center(child: Text(l10n.reportNoActivityThisMonth)),
             )
           else
             ListView.separated(
@@ -341,14 +345,14 @@ class ReportView extends GetView<ReportController> {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: activeRecords.length,
               separatorBuilder: (ctx, i) => const SizedBox(height: 8),
-              itemBuilder: (ctx, index) => _buildDayCard(activeRecords[index]),
+              itemBuilder: (ctx, index) => _buildDayCard(activeRecords[index], l10n),
             ),
         ],
       ),
     );
   }
 
-  Widget _buildDayCard(DailyRecord r) {
+  Widget _buildDayCard(DailyRecord r, AppLocalizations l10n) {
     final dateStr = DateFormat('dd MMM, yyyy').format(r.date);
     final dayStr  = DateFormat('EEE').format(r.date);
 
@@ -388,24 +392,27 @@ class ReportView extends GetView<ReportController> {
                 // Meals
                 if (r.meal != null) ...[
                   if (r.meal!.breakfast > 0)
-                    _chip(Icons.wb_sunny_outlined, 'B: ${r.meal!.breakfast.toStringAsFixed(1)}', Colors.amber),
+                    _chip(Icons.wb_sunny_outlined, l10n.reportChipBreakfast(r.meal!.breakfast.toStringAsFixed(1)), Colors.amber),
                   if (r.meal!.lunch > 0)
-                    _chip(Icons.lunch_dining_outlined, 'L: ${r.meal!.lunch.toStringAsFixed(1)}', Colors.orange),
+                    _chip(Icons.lunch_dining_outlined, l10n.reportChipLunch(r.meal!.lunch.toStringAsFixed(1)), Colors.orange),
                   if (r.meal!.dinner > 0)
-                    _chip(Icons.dinner_dining_outlined, 'D: ${r.meal!.dinner.toStringAsFixed(1)}', Colors.deepOrange),
+                    _chip(Icons.dinner_dining_outlined, l10n.reportChipDinner(r.meal!.dinner.toStringAsFixed(1)), Colors.deepOrange),
                   if (r.meal!.guestMeals > 0)
-                    _chip(Icons.group_outlined, 'G: ${r.meal!.guestMeals.toStringAsFixed(1)}', Colors.purple),
+                    _chip(Icons.group_outlined, l10n.reportChipGuest(r.meal!.guestMeals.toStringAsFixed(1)), Colors.purple),
                 ],
                 // Expenses
                 for (final e in r.expenses)
                   _chip(
                     e.category == 'bazar' ? Icons.shopping_cart_outlined : Icons.receipt_outlined,
-                    '${e.category[0].toUpperCase()}${e.category.substring(1)}: ৳${e.amount.toStringAsFixed(0)}',
+                    l10n.reportChipExpense(
+                      '${e.category[0].toUpperCase()}${e.category.substring(1)}',
+                      e.amount.toStringAsFixed(0),
+                    ),
                     Colors.orange,
                   ),
                 // Deposits
                 for (final d in r.deposits)
-                  _chip(Icons.account_balance_wallet_outlined, 'Deposit: ৳${d.amount.toStringAsFixed(0)}', Colors.green),
+                  _chip(Icons.account_balance_wallet_outlined, l10n.reportChipDeposit(d.amount.toStringAsFixed(0)), Colors.green),
               ],
             ),
             // ── Summary row ───────────────────────────────────────────────
@@ -415,11 +422,11 @@ class ReportView extends GetView<ReportController> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   if (totalMeals > 0)
-                    _miniStat('Meals', totalMeals.toStringAsFixed(1), Colors.deepPurple),
+                    _miniStat(l10n.reportMiniMeals, totalMeals.toStringAsFixed(1), Colors.deepPurple),
                   if (totalExpense > 0)
-                    _miniStat('Expense', '৳${totalExpense.toStringAsFixed(0)}', Colors.orange.shade700),
+                    _miniStat(l10n.reportMiniExpense, '৳${totalExpense.toStringAsFixed(0)}', Colors.orange.shade700),
                   if (totalDeposit > 0)
-                    _miniStat('Deposit', '৳${totalDeposit.toStringAsFixed(0)}', Colors.green.shade700),
+                    _miniStat(l10n.reportMiniDeposit, '৳${totalDeposit.toStringAsFixed(0)}', Colors.green.shade700),
                 ],
               ),
             ],

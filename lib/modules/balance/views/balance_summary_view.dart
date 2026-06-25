@@ -4,15 +4,17 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../balance_controller.dart';
 import '../../../core/routes/app_routes.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 
 class BalanceSummaryView extends GetView<BalanceController> {
   const BalanceSummaryView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mess Balances'),
+        title: Text(local.messBalancesTitle),
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
@@ -35,8 +37,8 @@ class BalanceSummaryView extends GetView<BalanceController> {
                 }
 
                 if (controller.memberBalances.isEmpty) {
-                  return const Center(
-                    child: Text('No members found or error calculating balances.'),
+                  return Center(
+                    child: Text(local.noMembersOrError),
                   );
                 }
 
@@ -56,7 +58,7 @@ class BalanceSummaryView extends GetView<BalanceController> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(AppRoutes.addDeposit),
         icon: const Icon(Icons.account_balance_wallet),
-        label: const Text('Add Deposit'),
+        label: Text(local.addDepositTitle),
       ),
     );
   }
@@ -70,7 +72,7 @@ class BalanceSummaryView extends GetView<BalanceController> {
           onPressed: () => controller.changeMonth(-1),
         ),
         Obx(() => Text(
-              DateFormat('MMMM yyyy').format(controller.selectedMonth.value),
+              DateFormat('MMMM yyyy', Localizations.localeOf(context).languageCode).format(controller.selectedMonth.value),
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             )),
         IconButton(
@@ -88,6 +90,7 @@ class _GlobalMetricsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<BalanceController>();
+    final local = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -118,7 +121,7 @@ class _GlobalMetricsCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Meal Rate',
+                      local.mealRate,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.8),
                         fontSize: 12,
@@ -141,7 +144,7 @@ class _GlobalMetricsCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Total Mess Meals',
+                      local.totalMessMeals,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.8),
                         fontSize: 12,
@@ -175,7 +178,7 @@ class _GlobalMetricsCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Total Bazar',
+                        local.totalBazar,
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 11,
@@ -206,7 +209,7 @@ class _GlobalMetricsCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Total Fixed Costs',
+                        local.totalFixedCosts,
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 11,
@@ -241,6 +244,7 @@ class _MemberBalanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool getsMoney = member.balance >= 0;
+    final local = AppLocalizations.of(context)!;
 
     return Card(
       elevation: 0,
@@ -279,8 +283,8 @@ class _MemberBalanceCard extends StatelessWidget {
                   ),
                   child: Text(
                     getsMoney
-                        ? 'Gets: ৳${member.balance.toStringAsFixed(0)}'
-                        : 'Owes: ৳${member.balance.abs().toStringAsFixed(0)}',
+                        ? local.getsLabel(member.balance.toStringAsFixed(0))
+                        : local.owesLabel(member.balance.abs().toStringAsFixed(0)),
                     style: TextStyle(
                       color: getsMoney ? Colors.green.shade700 : Colors.red.shade700,
                       fontWeight: FontWeight.bold,
@@ -297,10 +301,10 @@ class _MemberBalanceCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildStatItem('Meals', member.totalMeals.toStringAsFixed(1)),
-                _buildStatItem('Deposits', '৳${member.totalDeposits.toStringAsFixed(0)}'),
-                _buildStatItem('Meal Cost', '৳${member.mealCost.toStringAsFixed(0)}'),
-                _buildStatItem('Fixed Cost', '৳${member.fixedCost.toStringAsFixed(0)}'),
+                _buildStatItem(local.meals, member.totalMeals.toStringAsFixed(1)),
+                _buildStatItem(local.deposits, '৳${member.totalDeposits.toStringAsFixed(0)}'),
+                _buildStatItem(local.mealCost, '৳${member.mealCost.toStringAsFixed(0)}'),
+                _buildStatItem(local.fixedCost, '৳${member.fixedCost.toStringAsFixed(0)}'),
               ],
             )
           ],

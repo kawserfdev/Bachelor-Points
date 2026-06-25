@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 import '../mess_controller.dart';
 import '../member_controller.dart';
 import '../../../data/models/member_model.dart';
@@ -12,17 +13,18 @@ class MembersView extends GetView<MemberController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final messController = Get.find<MessController>();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Members'),
+        title: Text(l10n.membersTitle),
         elevation: 0,
         backgroundColor: Colors.transparent,
         actions: [
           if (controller.isManager)
             IconButton(
               icon: const Icon(Icons.checklist_rounded),
-              tooltip: 'Approvals',
+              tooltip: l10n.approvalsTooltip,
               onPressed: () => context.push(AppRoutes.approvals),
             ),
         ],
@@ -41,7 +43,7 @@ class MembersView extends GetView<MemberController> {
                 Icon(Icons.group_rounded, size: 64, color: Colors.grey[300]),
                 const SizedBox(height: 16),
                 Text(
-                  'No members yet',
+                  l10n.noMembersYet,
                   style: TextStyle(color: Colors.grey[500], fontSize: 16),
                 ),
               ],
@@ -63,20 +65,20 @@ class MembersView extends GetView<MemberController> {
             padding: const EdgeInsets.all(16),
             children: [
               if (admins.isNotEmpty) ...[
-                _buildSectionHeader(context, 'Owner', Icons.admin_panel_settings_rounded,
+                _buildSectionHeader(context, l10n.roleOwner, Icons.admin_panel_settings_rounded,
                     Colors.amber),
                 ...admins.map((m) => _buildMemberCard(context, m)),
                 const SizedBox(height: 16),
               ],
               if (managers.isNotEmpty) ...[
                 _buildSectionHeader(
-                    context, 'Managers', Icons.manage_accounts_rounded, Colors.indigo),
+                    context, l10n.roleManagers, Icons.manage_accounts_rounded, Colors.indigo),
                 ...managers.map((m) => _buildMemberCard(context, m)),
                 const SizedBox(height: 16),
               ],
               if (regularMembers.isNotEmpty) ...[
                 _buildSectionHeader(
-                    context, 'Members', Icons.group_rounded, Colors.teal),
+                    context, l10n.roleMembers, Icons.group_rounded, Colors.teal),
                 ...regularMembers.map((m) => _buildMemberCard(context, m)),
               ],
             ],
@@ -108,9 +110,11 @@ class MembersView extends GetView<MemberController> {
   }
 
   Widget _buildMemberCard(BuildContext context, MemberModel member) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final canManage = controller.isManager && member.role != 'admin';
-    final dateStr = DateFormat('MMM dd, yyyy').format(member.joinedAt);
+    final langCode = Localizations.localeOf(context).languageCode;
+    final dateStr = DateFormat('MMM dd, yyyy', langCode).format(member.joinedAt);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -148,7 +152,7 @@ class MembersView extends GetView<MemberController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    member.fullName ?? 'Unknown',
+                    member.fullName ?? l10n.unknownMember,
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 15,
@@ -166,7 +170,7 @@ class MembersView extends GetView<MemberController> {
                           size: 12, color: Colors.grey[400]),
                       const SizedBox(width: 4),
                       Text(
-                        'Joined $dateStr',
+                        l10n.joinedLabel(dateStr),
                         style:
                             TextStyle(fontSize: 11, color: Colors.grey[500]),
                       ),
@@ -175,23 +179,6 @@ class MembersView extends GetView<MemberController> {
                 ],
               ),
             ),
-            // Role badge
-            // Container(
-            //   padding:
-            //       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            //   decoration: BoxDecoration(
-            //     color: _roleColor(member.role).withAlpha(26),
-            //     borderRadius: BorderRadius.circular(8),
-            //   ),
-            //   child: Text(
-            //     member.role.toUpperCase(),
-            //     style: TextStyle(
-            //       fontSize: 11,
-            //       fontWeight: FontWeight.w700,
-            //       color: _roleColor(member.role),
-            //     ),
-            //   ),
-            // ),
             // Actions menu (only for non-admin members, by admin/manager)
             if (canManage) ...[
               const SizedBox(width: 4),
@@ -205,25 +192,25 @@ class MembersView extends GetView<MemberController> {
                   }
                 },
                 itemBuilder: (_) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'change_role',
                     child: Row(
                       children: [
-                        Icon(Icons.manage_accounts_rounded,
+                        const Icon(Icons.manage_accounts_rounded,
                             size: 18, color: Colors.teal),
-                        SizedBox(width: 8),
-                        Text('Change Role'),
+                        const SizedBox(width: 8),
+                        Text(l10n.changeRoleTitle),
                       ],
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'remove',
                     child: Row(
                       children: [
-                        Icon(Icons.person_remove_rounded,
+                        const Icon(Icons.person_remove_rounded,
                             size: 18, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text('Remove Member'),
+                        const SizedBox(width: 8),
+                        Text(l10n.removeMemberTitle),
                       ],
                     ),
                   ),
@@ -237,6 +224,7 @@ class MembersView extends GetView<MemberController> {
   }
 
   void _showRoleChangeDialog(BuildContext context, MemberModel member) {
+    final l10n = AppLocalizations.of(context)!;
     String newRole = member.role == 'manager' ? 'member' : 'manager';
     final isManager = member.role == 'manager';
 
@@ -246,34 +234,34 @@ class MembersView extends GetView<MemberController> {
         builder: (ctx, setDialogState) => AlertDialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Change Role'),
+          title: Text(l10n.changeRoleTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Change role for ${member.fullName ?? member.email}',
+                l10n.changeRoleForLabel(member.fullName ?? member.email ?? ''),
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 4),
               Text(
-                'Current role: ${member.role.capitalizeFirst}',
+                l10n.currentRoleLabel(member.role.capitalizeFirst ?? member.role),
                 style: TextStyle(fontSize: 13, color: Colors.grey[500]),
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: newRole,
-                decoration: const InputDecoration(
-                  labelText: 'New Role',
-                  border: OutlineInputBorder(),
+                initialValue: newRole,
+                decoration: InputDecoration(
+                  labelText: l10n.newRoleLabel,
+                  border: const OutlineInputBorder(),
                 ),
                 items: [
                   if (isManager)
-                    const DropdownMenuItem(
-                        value: 'member', child: Text('Member')),
+                    DropdownMenuItem(
+                        value: 'member', child: Text(l10n.roleMember)),
                   if (!isManager)
-                    const DropdownMenuItem(
-                        value: 'manager', child: Text('Manager')),
+                    DropdownMenuItem(
+                        value: 'manager', child: Text(l10n.roleManager)),
                 ],
                 onChanged: (v) {
                   if (v != null) {
@@ -283,7 +271,7 @@ class MembersView extends GetView<MemberController> {
               ),
               const SizedBox(height: 12),
               Text(
-                'This will create a role change request for approval.',
+                l10n.roleChangeRequestDesc,
                 style: TextStyle(fontSize: 12, color: Colors.grey[500]),
               ),
             ],
@@ -291,15 +279,15 @@ class MembersView extends GetView<MemberController> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancel'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(ctx).pop();
                 controller.changeRole(member.userId, newRole);
               },
-              child: const Text('Submit Request',
-                  style: TextStyle(color: Colors.teal)),
+              child: Text(l10n.submitRequest,
+                  style: const TextStyle(color: Colors.teal)),
             ),
           ],
         ),
@@ -308,19 +296,19 @@ class MembersView extends GetView<MemberController> {
   }
 
   void _showRemoveConfirmDialog(BuildContext context, MemberModel member) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Remove Member'),
+        title: Text(l10n.removeMemberTitle),
         content: Text(
-          'Are you sure you want to remove ${member.fullName ?? member.email}?\n\n'
-          'This will create a removal request for approval.',
+          l10n.removeMemberConfirm(member.fullName ?? member.email ?? ''),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
@@ -328,7 +316,7 @@ class MembersView extends GetView<MemberController> {
               controller.removeMember(member.userId);
             },
             child:
-                const Text('Submit Request', style: TextStyle(color: Colors.red)),
+                Text(l10n.submitRequest, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),

@@ -5,15 +5,17 @@ import 'package:intl/intl.dart';
 import '../expense_controller.dart';
 import '../widgets/expense_summary_card.dart';
 import '../../../core/routes/app_routes.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 
 class ExpenseListView extends GetView<ExpenseController> {
   const ExpenseListView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Expenses'),
+        title: Text(local.expensesTitle),
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
@@ -42,7 +44,7 @@ class ExpenseListView extends GetView<ExpenseController> {
                       children: [
                         Icon(Icons.receipt_long, size: 64, color: Colors.grey[300]),
                         const SizedBox(height: 16),
-                        Text('No expenses found for this month.',
+                        Text(local.noExpensesFound,
                             style: TextStyle(color: Colors.grey[500])),
                       ],
                     ),
@@ -64,7 +66,7 @@ class ExpenseListView extends GetView<ExpenseController> {
                           child: Icon(_getCategoryIcon(expense.category), color: _getCategoryColor(expense.category)),
                         ),
                         title: Text(
-                          expense.category.toUpperCase(),
+                          _getCategoryLabel(context, expense.category).toUpperCase(),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Column(
@@ -73,7 +75,7 @@ class ExpenseListView extends GetView<ExpenseController> {
                             if (expense.description != null && expense.description!.isNotEmpty)
                               Text(expense.description!, style: const TextStyle(fontSize: 12)),
                             Text(
-                              "${DateFormat('MMM dd, yyyy').format(expense.date)} • Added by ${expense.addedByName ?? 'Unknown'}",
+                              "${DateFormat('MMM dd, yyyy', Localizations.localeOf(context).languageCode).format(expense.date)} • ${local.addedByLabel(expense.addedByName ?? local.unknownMember)}",
                               style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                             ),
                           ],
@@ -98,7 +100,7 @@ class ExpenseListView extends GetView<ExpenseController> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(AppRoutes.addExpense),
         icon: const Icon(Icons.add),
-        label: const Text('Add Expense'),
+        label: Text(local.addExpenseTitle),
       ),
     );
   }
@@ -112,7 +114,7 @@ class ExpenseListView extends GetView<ExpenseController> {
           onPressed: () => controller.changeMonth(-1),
         ),
         Obx(() => Text(
-              DateFormat('MMMM yyyy').format(controller.selectedMonth.value),
+              DateFormat('MMMM yyyy', Localizations.localeOf(context).languageCode).format(controller.selectedMonth.value),
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             )),
         IconButton(
@@ -121,6 +123,16 @@ class ExpenseListView extends GetView<ExpenseController> {
         ),
       ],
     );
+  }
+
+  String _getCategoryLabel(BuildContext context, String category) {
+    final local = AppLocalizations.of(context)!;
+    switch (category) {
+      case 'bazar': return local.categoryBazar;
+      case 'rent': return local.categoryRent;
+      case 'wifi': return local.categoryWifi;
+      default: return local.categoryOther;
+    }
   }
 
   IconData _getCategoryIcon(String category) {

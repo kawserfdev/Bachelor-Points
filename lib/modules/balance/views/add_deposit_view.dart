@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../balance_controller.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 
 class AddDepositView extends StatefulWidget {
   const AddDepositView({super.key});
@@ -28,8 +29,9 @@ class _AddDepositViewState extends State<AddDepositView> {
 
   @override
   Widget build(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Deposit')),
+      appBar: AppBar(title: Text(local.addDepositTitle)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Form(
@@ -41,13 +43,13 @@ class _AddDepositViewState extends State<AddDepositView> {
               const SizedBox(height: 24),
 
               CustomTextField(
-                label: 'Deposit Amount (৳)',
-                hint: 'e.g. 5000',
+                label: local.depositAmountLabel,
+                hint: local.depositAmountHint,
                 prefixIcon: Icons.account_balance_wallet,
                 controller: amountController,
                 validator: (val) {
-                  if (val == null || val.isEmpty) return 'Please enter an amount';
-                  if (double.tryParse(val) == null) return 'Please enter a valid number';
+                  if (val == null || val.isEmpty) return AppLocalizations.of(context)!.enterAmountError;
+                  if (double.tryParse(val) == null) return AppLocalizations.of(context)!.enterValidNumberError;
                   return null;
                 },
               ),
@@ -56,17 +58,17 @@ class _AddDepositViewState extends State<AddDepositView> {
               DropdownButtonFormField<String>(
                 value: selectedPaymentMethod,
                 decoration: InputDecoration(
-                  labelText: 'Payment Method',
+                  labelText: local.paymentMethodLabel,
                   prefixIcon: const Icon(Icons.payment),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   filled: true,
                   fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(128),
                 ),
-                items: const [
-                  DropdownMenuItem(value: 'cash', child: Text('Cash')),
-                  DropdownMenuItem(value: 'bkash', child: Text('bKash')),
-                  DropdownMenuItem(value: 'nagad', child: Text('Nagad')),
-                  DropdownMenuItem(value: 'bank', child: Text('Bank Transfer')),
+                items: [
+                  DropdownMenuItem(value: 'cash', child: Text(local.paymentMethodCash)),
+                  DropdownMenuItem(value: 'bkash', child: Text(local.paymentMethodBkash)),
+                  DropdownMenuItem(value: 'nagad', child: Text(local.paymentMethodNagad)),
+                  DropdownMenuItem(value: 'bank', child: Text(local.paymentMethodBank)),
                 ],
                 onChanged: (value) {
                   if (value != null) setState(() => selectedPaymentMethod = value);
@@ -75,7 +77,7 @@ class _AddDepositViewState extends State<AddDepositView> {
               const SizedBox(height: 48),
 
               Obx(() => PrimaryButton(
-                    text: 'SUBMIT FOR APPROVAL',
+                    text: local.submitForApprovalBtn,
                     isLoading: controller.isLoading.value,
                     onPressed: () {
                       if (formKey.currentState!.validate()) {
@@ -121,7 +123,7 @@ class _AddDepositViewState extends State<AddDepositView> {
                 Icon(Icons.calendar_today, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 12),
                 Text(
-                  DateFormat('MMMM dd, yyyy').format(selectedDate),
+                  DateFormat('MMMM dd, yyyy', Localizations.localeOf(context).languageCode).format(selectedDate),
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ],

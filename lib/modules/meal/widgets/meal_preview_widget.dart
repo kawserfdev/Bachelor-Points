@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../meal_controller.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 
 class MealPreviewWidget extends StatelessWidget {
   const MealPreviewWidget({super.key});
@@ -8,6 +9,7 @@ class MealPreviewWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<MealController>();
+    final local = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -32,7 +34,7 @@ class MealPreviewWidget extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            'Total Meals Selected',
+            local.totalMealsSelected,
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -52,9 +54,9 @@ class MealPreviewWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildBreakdownItem(context, 'Breakfast', controller.breakfast),
-              _buildBreakdownItem(context, 'Lunch', controller.lunch),
-              _buildBreakdownItem(context, 'Dinner', controller.dinner),
+              _buildBreakdownItem(context, local.breakfast, controller.breakfast),
+              _buildBreakdownItem(context, local.lunch, controller.lunch),
+              _buildBreakdownItem(context, local.dinner, controller.dinner),
             ],
           ),
         ],

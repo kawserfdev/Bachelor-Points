@@ -1,4 +1,5 @@
 import 'package:bachelorpoints/firebase_options.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,8 +15,8 @@ import 'services/realtime_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'core/notifications/notification_service.dart';
-
 import 'core/routes/go_router_config.dart';
+import 'core/localization/locale_controller.dart';
 
 /// Global navigator key for use outside the widget tree (e.g., FCM)
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -118,6 +119,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     debugPrint('Building MyApp...');
     final goRouter = ref.watch(goRouterProvider);
     final themeMode = ref.watch(themeControllerProvider);
+    final locale = ref.watch(localeControllerProvider);
 
     return MaterialApp.router(
       title: 'Bachelor Points',
@@ -125,6 +127,9 @@ class _MyAppState extends ConsumerState<MyApp> {
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
       routerConfig: goRouter,
+      locale: locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       debugShowCheckedModeBanner: false,
     );
   }

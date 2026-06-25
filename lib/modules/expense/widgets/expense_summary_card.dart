@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import '../expense_controller.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 
 class ExpenseSummaryCard extends StatelessWidget {
   const ExpenseSummaryCard({super.key});
@@ -8,6 +10,7 @@ class ExpenseSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<ExpenseController>();
+    final local = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -36,7 +39,7 @@ class ExpenseSummaryCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Total Monthly Expense',
+                local.totalMonthlyExpense,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.8),
                   fontSize: 14,
@@ -44,7 +47,7 @@ class ExpenseSummaryCard extends StatelessWidget {
                 ),
               ),
               Obx(() => Text(
-                    "${_getMonthName(controller.selectedMonth.value.month)} ${controller.selectedMonth.value.year}",
+                    DateFormat('MMM yyyy', Localizations.localeOf(context).languageCode).format(controller.selectedMonth.value),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 14,
@@ -76,7 +79,7 @@ class ExpenseSummaryCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Your Estimated Share',
+                        local.yourEstimatedShare,
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 12,
@@ -100,13 +103,5 @@ class ExpenseSummaryCard extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _getMonthName(int month) {
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    return months[month - 1];
   }
 }

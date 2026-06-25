@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../request_controller.dart';
 import 'package:intl/intl.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../data/models/request_model.dart';
 
 class ApprovalView extends GetView<RequestController> {
@@ -9,24 +10,25 @@ class ApprovalView extends GetView<RequestController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Requests'),
+        title: Text(l10n.requestsTitle),
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
       body: Column(
         children: [
-          _buildFilterChips(context),
-          _buildStatusBar(context),
+          _buildFilterChips(context, l10n),
+          _buildStatusBar(context, l10n),
           const Divider(height: 1),
-          Expanded(child: _buildRequestList(context)),
+          Expanded(child: _buildRequestList(context, l10n)),
         ],
       ),
     );
   }
 
-  Widget _buildFilterChips(BuildContext context) {
+  Widget _buildFilterChips(BuildContext context, AppLocalizations l10n) {
     final filters = [
       'All', 'Pending', 'Approved', 'Rejected',
       'Expense', 'Deposit', 'Join', 'Remove', 'RoleChange',
@@ -59,7 +61,7 @@ class ApprovalView extends GetView<RequestController> {
                         ? Colors.white
                         : Theme.of(context).colorScheme.primary,
                   ),
-                  label: Text(filter == 'RoleChange' ? 'Role' : filter),
+                  label: Text(_filterLabel(filter, l10n)),
                   selected: isSelected,
                   onSelected: (_) => controller.activeFilter.value = filter,
                   selectedColor: Theme.of(context).colorScheme.primary,
@@ -80,7 +82,7 @@ class ApprovalView extends GetView<RequestController> {
         ));
   }
 
-  Widget _buildStatusBar(BuildContext context) {
+  Widget _buildStatusBar(BuildContext context, AppLocalizations l10n) {
     return Obx(() => Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: SingleChildScrollView(
@@ -88,19 +90,19 @@ class ApprovalView extends GetView<RequestController> {
             child: Row(
               children: [
                 _StatusBadge(
-                  label: 'Pending',
+                  label: l10n.requestStatusPending,
                   count: controller.pendingCount,
                   color: Colors.orange,
                 ),
                 const SizedBox(width: 12),
                 _StatusBadge(
-                  label: 'Approved',
+                  label: l10n.requestStatusApproved,
                   count: controller.approvedCount,
                   color: Colors.green,
                 ),
                 const SizedBox(width: 12),
                 _StatusBadge(
-                  label: 'Rejected',
+                  label: l10n.requestStatusRejected,
                   count: controller.rejectedCount,
                   color: Colors.red,
                 ),
@@ -110,7 +112,7 @@ class ApprovalView extends GetView<RequestController> {
         ));
   }
 
-  Widget _buildRequestList(BuildContext context) {
+  Widget _buildRequestList(BuildContext context, AppLocalizations l10n) {
     return Obx(() {
       if (controller.isLoading.value && controller.allRequests.isEmpty) {
         return const Center(child: CircularProgressIndicator());
@@ -126,7 +128,7 @@ class ApprovalView extends GetView<RequestController> {
               Icon(Icons.inbox_rounded, size: 64, color: Colors.grey[300]),
               const SizedBox(height: 16),
               Text(
-                'No ${controller.activeFilter.value.toLowerCase()} requests',
+                l10n.requestNoRequests(_filterLabel(controller.activeFilter.value, l10n).toLowerCase()),
                 style: TextStyle(color: Colors.grey[500], fontSize: 16),
               ),
             ],
@@ -142,9 +144,9 @@ class ApprovalView extends GetView<RequestController> {
           itemBuilder: (context, index) {
             final req = requests[index];
             if (req.isFinancial) {
-              return _buildFinancialCard(context, req);
+              return _buildFinancialCard(context, req, l10n);
             }
-            return _buildMemberCard(context, req);
+            return _buildMemberCard(context, req, l10n);
           },
         ),
       );
@@ -155,7 +157,7 @@ class ApprovalView extends GetView<RequestController> {
   // Financial request card (expense / deposit)
   // ──────────────────────────────────────────────
 
-  Widget _buildFinancialCard(BuildContext context, RequestModel request) {
+  Widget _buildFinancialCard(BuildContext context, RequestModel request, AppLocalizations l10n) {
     final theme = Theme.of(context);
     final isExpense = request.requestType == 'expense';
     final dateStr = DateFormat('MMM dd, yyyy').format(request.requestDate);
@@ -183,7 +185,7 @@ class ApprovalView extends GetView<RequestController> {
                   icon: isExpense
                       ? Icons.receipt_long_rounded
                       : Icons.account_balance_wallet_rounded,
-                  label: isExpense ? 'Expense' : 'Deposit',
+                  label: isExpense ? l10n.requestTypeExpense : l10n.requestTypeDeposit,
                   color: isExpense ? Colors.red : Colors.blue,
                 ),
                 const Spacer(),
@@ -199,20 +201,20 @@ class ApprovalView extends GetView<RequestController> {
               ),
             if (request.category != null && request.category!.isNotEmpty)
               Text(
-                'Category: ${request.category!.capitalizeFirst}',
+                l10n.requestCategory(request.category!.capitalizeFirst ?? request.category!),
                 style: TextStyle(fontSize: 13, color: Colors.grey[600]),
               ),
             if (request.paymentMethod != null &&
                 request.paymentMethod!.isNotEmpty)
               Text(
-                'Payment: ${request.paymentMethod!.capitalizeFirst}',
+                l10n.requestPayment(request.paymentMethod!.capitalizeFirst ?? request.paymentMethod!),
                 style: TextStyle(fontSize: 13, color: Colors.grey[600]),
               ),
             if (request.note != null && request.note!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
-                  'Note: ${request.note}',
+                  l10n.requestNote(request.note!),
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey[500],
@@ -249,18 +251,20 @@ class ApprovalView extends GetView<RequestController> {
                 
                 Flexible(
                   child: Text(
-                    'Requested by ${request.createdByName ?? 'Unknown'}', maxLines: 1, overflow: TextOverflow.ellipsis,
+                    l10n.requestRequestedBy(request.createdByName ?? l10n.requestUnknown),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                   ),
                 ),
               ],
             ),
-            _buildAuditTrail(request),
+            _buildAuditTrail(request, l10n),
             if (canModify) ...[
               const SizedBox(height: 12),
               const Divider(height: 1),
               const SizedBox(height: 8),
-              _buildFinancialActions(context, request),
+              _buildFinancialActions(context, request, l10n),
             ],
           ],
         ),
@@ -268,14 +272,14 @@ class ApprovalView extends GetView<RequestController> {
     );
   }
 
-  Widget _buildFinancialActions(BuildContext context, RequestModel request) {
+  Widget _buildFinancialActions(BuildContext context, RequestModel request, AppLocalizations l10n) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         OutlinedButton.icon(
-          onPressed: () => _showEditDialog(context, request),
+          onPressed: () => _showEditDialog(context, request, l10n),
           icon: const Icon(Icons.edit_rounded, size: 18),
-          label: const Text('Edit'),
+          label: Text(l10n.requestEdit),
           style: OutlinedButton.styleFrom(
             foregroundColor: Colors.orange,
             side: const BorderSide(color: Colors.orange),
@@ -286,9 +290,9 @@ class ApprovalView extends GetView<RequestController> {
         ),
         const SizedBox(width: 8),
         OutlinedButton.icon(
-          onPressed: () => _confirmReject(context, request),
+          onPressed: () => _confirmReject(context, request, l10n),
           icon: const Icon(Icons.close_rounded, size: 18),
-          label: const Text('Reject'),
+          label: Text(l10n.requestReject),
           style: OutlinedButton.styleFrom(
             foregroundColor: Colors.red,
             side: const BorderSide(color: Colors.red),
@@ -299,9 +303,9 @@ class ApprovalView extends GetView<RequestController> {
         ),
         const SizedBox(width: 8),
         ElevatedButton.icon(
-          onPressed: () => _confirmApprove(context, request),
+          onPressed: () => _confirmApprove(context, request, l10n),
           icon: const Icon(Icons.check_rounded, size: 18),
-          label: const Text('Approve'),
+          label: Text(l10n.requestApprove),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.green,
             foregroundColor: Colors.white,
@@ -318,11 +322,11 @@ class ApprovalView extends GetView<RequestController> {
   // Member request card (JOIN_MESS, REMOVE_MEMBER, ROLE_CHANGE)
   // ──────────────────────────────────────────────
 
-  Widget _buildMemberCard(BuildContext context, RequestModel request) {
+  Widget _buildMemberCard(BuildContext context, RequestModel request, AppLocalizations l10n) {
     final theme = Theme.of(context);
     final canModify = request.status == 'Pending' && controller.canApprove;
 
-    final (icon, label, color) = _memberRequestMeta(request.requestType);
+    final (icon, label, color) = _memberRequestMeta(request.requestType, l10n);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -371,7 +375,7 @@ class ApprovalView extends GetView<RequestController> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        request.memberName ?? request.userName ?? 'Unknown',
+                        request.memberName ?? request.userName ?? l10n.requestUnknown,
                         style: theme.textTheme.titleSmall
                             ?.copyWith(fontWeight: FontWeight.w700),
                       ),
@@ -407,7 +411,7 @@ class ApprovalView extends GetView<RequestController> {
             if (request.requestType == 'REMOVE_MEMBER' &&
                 request.currentRole != null) ...[
               Text(
-                'Current Role: ${request.currentRole!.capitalizeFirst}',
+                l10n.requestCurrentRole(_roleLabel(request.currentRole!, l10n)),
                 style: TextStyle(fontSize: 13, color: Colors.grey[600]),
               ),
               const SizedBox(height: 4),
@@ -417,7 +421,7 @@ class ApprovalView extends GetView<RequestController> {
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
-                  'Reason: ${request.reason}',
+                  l10n.requestReason(request.reason!),
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey[500],
@@ -444,19 +448,20 @@ class ApprovalView extends GetView<RequestController> {
                 const SizedBox(width: 4),
                 Flexible(
                   child: Text(
-                    'by ${request.createdByName ?? 'Unknown'}',
-                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                    l10n.requestBy(request.createdByName ?? l10n.requestUnknown),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                   ),
                 ),
               ],
             ),
-            _buildAuditTrail(request),
+            _buildAuditTrail(request, l10n),
             if (canModify) ...[
               const SizedBox(height: 12),
               const Divider(height: 1),
               const SizedBox(height: 8),
-              _buildMemberActions(context, request),
+              _buildMemberActions(context, request, l10n),
             ],
           ],
         ),
@@ -464,14 +469,14 @@ class ApprovalView extends GetView<RequestController> {
     );
   }
 
-  Widget _buildMemberActions(BuildContext context, RequestModel request) {
+  Widget _buildMemberActions(BuildContext context, RequestModel request, AppLocalizations l10n) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         OutlinedButton.icon(
-          onPressed: () => _confirmReject(context, request),
+          onPressed: () => _confirmReject(context, request, l10n),
           icon: const Icon(Icons.close_rounded, size: 18),
-          label: const Text('Reject'),
+          label: Text(l10n.requestReject),
           style: OutlinedButton.styleFrom(
             foregroundColor: Colors.red,
             side: const BorderSide(color: Colors.red),
@@ -482,9 +487,9 @@ class ApprovalView extends GetView<RequestController> {
         ),
         const SizedBox(width: 8),
         ElevatedButton.icon(
-          onPressed: () => _confirmApprove(context, request),
+          onPressed: () => _confirmApprove(context, request, l10n),
           icon: const Icon(Icons.check_rounded, size: 18),
-          label: const Text('Approve'),
+          label: Text(l10n.requestApprove),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.green,
             foregroundColor: Colors.white,
@@ -501,7 +506,7 @@ class ApprovalView extends GetView<RequestController> {
   // Shared widgets
   // ──────────────────────────────────────────────
 
-  Widget _buildAuditTrail(RequestModel request) {
+  Widget _buildAuditTrail(RequestModel request, AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -509,7 +514,7 @@ class ApprovalView extends GetView<RequestController> {
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
-              'Approved on ${DateFormat('MMM dd, yyyy – hh:mm a').format(request.approvedAt!)}',
+              l10n.requestApprovedOn(DateFormat('MMM dd, yyyy – hh:mm a').format(request.approvedAt!)),
               style: TextStyle(fontSize: 11, color: Colors.green[600]),
             ),
           ),
@@ -517,7 +522,7 @@ class ApprovalView extends GetView<RequestController> {
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
-              'Rejected on ${DateFormat('MMM dd, yyyy – hh:mm a').format(request.rejectedAt!)}',
+              l10n.requestRejectedOn(DateFormat('MMM dd, yyyy – hh:mm a').format(request.rejectedAt!)),
               style: TextStyle(fontSize: 11, color: Colors.red[600]),
             ),
           ),
@@ -525,7 +530,7 @@ class ApprovalView extends GetView<RequestController> {
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
-              'Updated on ${DateFormat('MMM dd, yyyy – hh:mm a').format(request.updatedAt!)}',
+              l10n.requestUpdatedOn(DateFormat('MMM dd, yyyy – hh:mm a').format(request.updatedAt!)),
               style: TextStyle(fontSize: 11, color: Colors.grey[500]),
             ),
           ),
@@ -537,84 +542,85 @@ class ApprovalView extends GetView<RequestController> {
   // Dialogs
   // ──────────────────────────────────────────────
 
-  void _confirmApprove(BuildContext context, RequestModel request) {
+  void _confirmApprove(BuildContext context, RequestModel request, AppLocalizations l10n) {
     String body;
     if (request.isFinancial) {
-      body =
-          'Are you sure you want to approve this ${request.requestType} request for ৳${request.amount.toStringAsFixed(2)}?\n\n'
-          'This will ${request.requestType == 'expense' ? 'deduct from' : 'add to'} the balance.';
+      if (request.requestType == 'expense') {
+        body = l10n.requestApproveExpenseBody(request.amount.toStringAsFixed(2));
+      } else {
+        body = l10n.requestApproveDepositBody(request.amount.toStringAsFixed(2));
+      }
     } else if (request.requestType == 'JOIN_MESS') {
-      body =
-          'Approve join request for ${request.userName ?? request.userEmail ?? 'Unknown'}?\n\n'
-          'They will be added as a Member.';
+      body = l10n.requestApproveJoinBody(request.userName ?? request.userEmail ?? l10n.requestUnknown);
     } else if (request.requestType == 'REMOVE_MEMBER') {
-      body =
-          'Approve removal of ${request.memberName ?? 'Unknown'}?\n\n'
-          'They will be removed from the mess.';
+      body = l10n.requestApproveRemoveBody(request.memberName ?? l10n.requestUnknown);
     } else {
-      body =
-          'Approve role change for ${request.memberName ?? 'Unknown'} from ${request.oldRole ?? '?'} to ${request.newRole ?? '?'}?';
+      body = l10n.requestApproveRoleBody(
+        request.memberName ?? l10n.requestUnknown,
+        _roleLabel(request.oldRole ?? '?', l10n),
+        _roleLabel(request.newRole ?? '?', l10n),
+      );
     }
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Confirm Approval'),
+        title: Text(l10n.requestConfirmApproval),
         content: Text(body),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
               controller.approveRequest(request);
             },
-            child: const Text('Approve', style: TextStyle(color: Colors.green)),
+            child: Text(l10n.requestApprove, style: const TextStyle(color: Colors.green)),
           ),
         ],
       ),
     );
   }
 
-  void _confirmReject(BuildContext context, RequestModel request) {
-    final label = request.isFinancial ? request.requestType : 'this';
+  void _confirmReject(BuildContext context, RequestModel request, AppLocalizations l10n) {
+    final label = _rejectLabel(request, l10n);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Confirm Rejection'),
+        title: Text(l10n.requestConfirmRejection),
         content: Text(
-          'Are you sure you want to reject $label request?\n\nThis will not affect any data.',
+          l10n.requestRejectBody(label),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
               controller.rejectRequest(request);
             },
-            child: const Text('Reject', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.requestReject, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
     );
   }
 
-  void _showEditDialog(BuildContext context, RequestModel request) {
+  void _showEditDialog(BuildContext context, RequestModel request, AppLocalizations l10n) {
     if (request.requestType == 'expense') {
-      _showEditExpenseDialog(context, request);
+      _showEditExpenseDialog(context, request, l10n);
     } else {
-      _showEditDepositDialog(context, request);
+      _showEditDepositDialog(context, request, l10n);
     }
   }
 
-  void _showEditExpenseDialog(BuildContext context, RequestModel request) {
+  void _showEditExpenseDialog(BuildContext context, RequestModel request, AppLocalizations l10n) {
     final titleCtrl = TextEditingController(text: request.title);
     final amountCtrl =
         TextEditingController(text: request.amount.toString());
@@ -629,7 +635,7 @@ class ApprovalView extends GetView<RequestController> {
         builder: (ctx, setDialogState) => AlertDialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Edit Expense Request'),
+          title: Text(l10n.requestEditExpenseTitle),
           content: SingleChildScrollView(
             child: Form(
               key: formKey,
@@ -638,25 +644,25 @@ class ApprovalView extends GetView<RequestController> {
                 children: [
                   TextFormField(
                     controller: titleCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Title',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.requestFieldTitle,
+                      border: const OutlineInputBorder(),
                     ),
                     validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Title required' : null,
+                        (v == null || v.trim().isEmpty) ? l10n.requestValidationTitleRequired : null,
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: category,
-                    decoration: const InputDecoration(
-                      labelText: 'Category',
-                      border: OutlineInputBorder(),
+                    initialValue: category,
+                    decoration: InputDecoration(
+                      labelText: l10n.requestFieldCategory,
+                      border: const OutlineInputBorder(),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: 'bazar', child: Text('Bazar')),
-                      DropdownMenuItem(value: 'rent', child: Text('Rent')),
-                      DropdownMenuItem(value: 'wifi', child: Text('WiFi')),
-                      DropdownMenuItem(value: 'other', child: Text('Other')),
+                    items: [
+                      DropdownMenuItem(value: 'bazar', child: Text(l10n.requestCategoryBazar)),
+                      DropdownMenuItem(value: 'rent', child: Text(l10n.requestCategoryRent)),
+                      DropdownMenuItem(value: 'wifi', child: Text(l10n.requestCategoryWifi)),
+                      DropdownMenuItem(value: 'other', child: Text(l10n.requestCategoryOther)),
                     ],
                     onChanged: (v) {
                       if (v != null) category = v;
@@ -665,15 +671,15 @@ class ApprovalView extends GetView<RequestController> {
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: amountCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Amount (৳)',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.requestFieldAmount,
+                      border: const OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.number,
                     validator: (v) {
-                      if (v == null || v.isEmpty) return 'Amount required';
+                      if (v == null || v.isEmpty) return l10n.requestValidationAmountRequired;
                       final d = double.tryParse(v);
-                      if (d == null || d <= 0) return 'Must be > 0';
+                      if (d == null || d <= 0) return l10n.requestValidationAmountPositive;
                       return null;
                     },
                   ),
@@ -709,9 +715,9 @@ class ApprovalView extends GetView<RequestController> {
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: noteCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Note (optional)',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.requestFieldNoteOptional,
+                      border: const OutlineInputBorder(),
                     ),
                     maxLines: 2,
                   ),
@@ -722,7 +728,7 @@ class ApprovalView extends GetView<RequestController> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancel'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () {
@@ -740,7 +746,7 @@ class ApprovalView extends GetView<RequestController> {
                   );
                 }
               },
-              child: const Text('Update'),
+              child: Text(l10n.requestUpdate),
             ),
           ],
         ),
@@ -748,7 +754,7 @@ class ApprovalView extends GetView<RequestController> {
     );
   }
 
-  void _showEditDepositDialog(BuildContext context, RequestModel request) {
+  void _showEditDepositDialog(BuildContext context, RequestModel request, AppLocalizations l10n) {
     final amountCtrl =
         TextEditingController(text: request.amount.toString());
     final noteCtrl = TextEditingController(text: request.note);
@@ -762,7 +768,7 @@ class ApprovalView extends GetView<RequestController> {
         builder: (ctx, setDialogState) => AlertDialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Edit Deposit Request'),
+          title: Text(l10n.requestEditDepositTitle),
           content: SingleChildScrollView(
             child: Form(
               key: formKey,
@@ -771,31 +777,30 @@ class ApprovalView extends GetView<RequestController> {
                 children: [
                   TextFormField(
                     controller: amountCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Amount (৳)',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.requestFieldAmount,
+                      border: const OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.number,
                     validator: (v) {
-                      if (v == null || v.isEmpty) return 'Amount required';
+                      if (v == null || v.isEmpty) return l10n.requestValidationAmountRequired;
                       final d = double.tryParse(v);
-                      if (d == null || d <= 0) return 'Must be > 0';
+                      if (d == null || d <= 0) return l10n.requestValidationAmountPositive;
                       return null;
                     },
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: paymentMethod,
-                    decoration: const InputDecoration(
-                      labelText: 'Payment Method',
-                      border: OutlineInputBorder(),
+                    initialValue: paymentMethod,
+                    decoration: InputDecoration(
+                      labelText: l10n.requestFieldPaymentMethod,
+                      border: const OutlineInputBorder(),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: 'cash', child: Text('Cash')),
-                      DropdownMenuItem(value: 'bkash', child: Text('bKash')),
-                      DropdownMenuItem(value: 'nagad', child: Text('Nagad')),
-                      DropdownMenuItem(
-                          value: 'bank', child: Text('Bank Transfer')),
+                    items: [
+                      DropdownMenuItem(value: 'cash', child: Text(l10n.requestPaymentCash)),
+                      DropdownMenuItem(value: 'bkash', child: Text(l10n.requestPaymentBkash)),
+                      DropdownMenuItem(value: 'nagad', child: Text(l10n.requestPaymentNagad)),
+                      DropdownMenuItem(value: 'bank', child: Text(l10n.requestPaymentBank)),
                     ],
                     onChanged: (v) {
                       if (v != null) paymentMethod = v;
@@ -833,9 +838,9 @@ class ApprovalView extends GetView<RequestController> {
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: noteCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Note (optional)',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.requestFieldNoteOptional,
+                      border: const OutlineInputBorder(),
                     ),
                     maxLines: 2,
                   ),
@@ -846,7 +851,7 @@ class ApprovalView extends GetView<RequestController> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancel'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () {
@@ -863,7 +868,7 @@ class ApprovalView extends GetView<RequestController> {
                   );
                 }
               },
-              child: const Text('Update'),
+              child: Text(l10n.requestUpdate),
             ),
           ],
         ),
@@ -875,14 +880,84 @@ class ApprovalView extends GetView<RequestController> {
   // Helpers
   // ──────────────────────────────────────────────
 
-  (IconData, String, Color) _memberRequestMeta(String type) {
+  /// Maps an internal filter value to a localized display label.
+  String _filterLabel(String filter, AppLocalizations l10n) {
+    switch (filter) {
+      case 'All':
+        return l10n.requestFilterAll;
+      case 'Pending':
+        return l10n.requestFilterPending;
+      case 'Approved':
+        return l10n.requestFilterApproved;
+      case 'Rejected':
+        return l10n.requestFilterRejected;
+      case 'Expense':
+        return l10n.requestFilterExpense;
+      case 'Deposit':
+        return l10n.requestFilterDeposit;
+      case 'Join':
+        return l10n.requestFilterJoin;
+      case 'Remove':
+        return l10n.requestFilterRemove;
+      case 'RoleChange':
+        return l10n.requestFilterRoleLabel;
+      default:
+        return filter;
+    }
+  }
+
+  /// Localized label for a request type.
+  String _requestTypeLabel(String type, AppLocalizations l10n) {
+    switch (type) {
+      case 'expense':
+        return l10n.requestTypeExpense;
+      case 'deposit':
+        return l10n.requestTypeDeposit;
+      case 'JOIN_MESS':
+        return l10n.requestTypeJoinMess;
+      case 'REMOVE_MEMBER':
+        return l10n.requestTypeRemoveMember;
+      case 'ROLE_CHANGE':
+        return l10n.requestTypeRoleChange;
+      default:
+        return type;
+    }
+  }
+
+  /// Localized label for a role value (owner/manager/member/admin).
+  String _roleLabel(String role, AppLocalizations l10n) {
+    switch (role.toLowerCase()) {
+      case 'owner':
+        return l10n.roleOwner;
+      case 'manager':
+        return l10n.roleManager;
+      case 'member':
+        return l10n.roleMember;
+      case 'admin':
+        return l10n.roleAdmin;
+      default:
+        return role.capitalizeFirst ?? role;
+    }
+  }
+
+  /// Label used in the reject confirmation dialog.
+  String _rejectLabel(RequestModel request, AppLocalizations l10n) {
+    if (request.isFinancial) {
+      return request.requestType == 'expense'
+          ? l10n.requestTypeExpense
+          : l10n.requestTypeDeposit;
+    }
+    return _requestTypeLabel(request.requestType, l10n);
+  }
+
+  (IconData, String, Color) _memberRequestMeta(String type, AppLocalizations l10n) {
     switch (type) {
       case 'JOIN_MESS':
-        return (Icons.person_add_rounded, 'Join Mess', Colors.indigo);
+        return (Icons.person_add_rounded, l10n.requestTypeJoinMess, Colors.indigo);
       case 'REMOVE_MEMBER':
-        return (Icons.person_remove_rounded, 'Remove Member', Colors.red);
+        return (Icons.person_remove_rounded, l10n.requestTypeRemoveMember, Colors.red);
       case 'ROLE_CHANGE':
-        return (Icons.manage_accounts_rounded, 'Role Change', Colors.teal);
+        return (Icons.manage_accounts_rounded, l10n.requestTypeRoleChange, Colors.teal);
       default:
         return (Icons.help_outline_rounded, type, Colors.grey);
     }
@@ -919,6 +994,7 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
@@ -935,7 +1011,7 @@ class _StatusBadge extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           Text(
-            '$label: $count',
+            l10n.requestStatusBadge(label, count),
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -1003,8 +1079,22 @@ class _StatusChip extends StatelessWidget {
     }
   }
 
+  String _label(AppLocalizations l10n) {
+    switch (status) {
+      case 'Pending':
+        return l10n.requestStatusPending;
+      case 'Approved':
+        return l10n.requestStatusApproved;
+      case 'Rejected':
+        return l10n.requestStatusRejected;
+      default:
+        return status;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final c = _color();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -1013,7 +1103,7 @@ class _StatusChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        status,
+        _label(l10n),
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,
@@ -1030,8 +1120,24 @@ class _RoleChip extends StatelessWidget {
 
   const _RoleChip({required this.role, this.isNew = false});
 
+  String _label(AppLocalizations l10n) {
+    switch (role.toLowerCase()) {
+      case 'owner':
+        return l10n.roleOwner;
+      case 'manager':
+        return l10n.roleManager;
+      case 'member':
+        return l10n.roleMember;
+      case 'admin':
+        return l10n.roleAdmin;
+      default:
+        return role.capitalizeFirst ?? role;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final color = isNew ? Colors.green : Colors.grey;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -1041,7 +1147,7 @@ class _RoleChip extends StatelessWidget {
         border: isNew ? Border.all(color: color, width: 1) : null,
       ),
       child: Text(
-        role.capitalizeFirst ?? role,
+        _label(l10n),
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,

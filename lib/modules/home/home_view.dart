@@ -1,4 +1,5 @@
 import 'package:bachelorpoints/core/theme/app_theme.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 import 'package:bachelorpoints/shared/helpers/constraction_massage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -66,6 +67,7 @@ class HomeView extends GetView<HomeController> {
   Widget _buildExpandButton(BuildContext context) {
     final messController = Get.find<MessController>();
     final colorScheme = Theme.of(context).colorScheme;
+    final local = AppLocalizations.of(context)!;
     return Obx(() {
       final isExpanded = messController.isExpandedFeatures.value;
       return Material(
@@ -102,7 +104,7 @@ class HomeView extends GetView<HomeController> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  isExpanded ? 'Show Less' : 'Show More Features',
+                  isExpanded ? local.showLess : local.showMoreFeatures,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -121,6 +123,7 @@ class HomeView extends GetView<HomeController> {
   // No Mess State
   // ──────────────────────────────────────────
   Widget _buildNoMessState(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -142,14 +145,14 @@ class HomeView extends GetView<HomeController> {
             ),
             const SizedBox(height: 28),
             Text(
-              'You are not in a Mess',
+              local.notInMess,
               style: Theme.of(
                 context,
               ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             Text(
-              'Create a new mess or join an existing one\nusing an invite code.',
+              local.notInMessDesc,
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey[600], fontSize: 15),
             ),
@@ -159,7 +162,7 @@ class HomeView extends GetView<HomeController> {
               child: ElevatedButton.icon(
                 onPressed: () => context.push(AppRoutes.createMess),
                 icon: const Icon(Icons.add),
-                label: const Text('Create Mess'),
+                label: Text(local.createMess),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 54),
                 ),
@@ -171,7 +174,7 @@ class HomeView extends GetView<HomeController> {
               child: OutlinedButton.icon(
                 onPressed: () => context.push(AppRoutes.joinMess),
                 icon: const Icon(Icons.login),
-                label: const Text('Join Mess'),
+                label: Text(local.joinMess),
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 54),
                 ),
@@ -196,7 +199,7 @@ class HomeView extends GetView<HomeController> {
                           ),
                         )
                       : const Icon(Icons.refresh),
-                  label: Text(isLoading ? 'Refreshing...' : 'Refresh'),
+                  label: Text(isLoading ? local.refreshing : local.refresh),
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 54),
                   ),
@@ -220,6 +223,7 @@ class HomeView extends GetView<HomeController> {
   ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final local = AppLocalizations.of(context)!;
 
     // Get current user's role from members list
     final currentUserId = controller.authService.currentUser.value?.uid;
@@ -240,7 +244,7 @@ class HomeView extends GetView<HomeController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Hey ${_userGreeting()}! 👋',
+                    local.heyGreeting(_userGreeting(context)),
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w800,
                       color: colorScheme.onSurface,
@@ -248,7 +252,7 @@ class HomeView extends GetView<HomeController> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Manage your bachelor mess efficiently',
+                    local.manageMessEfficiently,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[500],
@@ -419,11 +423,12 @@ class HomeView extends GetView<HomeController> {
     );
   }
 
-  String _userGreeting() {
+  String _userGreeting(BuildContext context) {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good Morning';
-    if (hour < 17) return 'Good Afternoon';
-    return 'Good Evening';
+    final local = AppLocalizations.of(context)!;
+    if (hour < 12) return local.goodMorning;
+    if (hour < 17) return local.goodAfternoon;
+    return local.goodEvening;
   }
 
   // ──────────────────────────────────────────
@@ -432,6 +437,7 @@ class HomeView extends GetView<HomeController> {
   Widget _buildSummaryCards(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final local = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -439,7 +445,7 @@ class HomeView extends GetView<HomeController> {
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 12),
           child: Text(
-            'Overview',
+            local.overview,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
             ),
@@ -450,7 +456,7 @@ class HomeView extends GetView<HomeController> {
             Expanded(
               child: _SummaryCard(
                 icon: Icons.people_rounded,
-                label: 'Members',
+                label: local.members,
                 value: '${controller.memberCount.value}',
                 color: colorScheme.primary,
                 bgColor: colorScheme.primary.withAlpha(26),
@@ -460,7 +466,7 @@ class HomeView extends GetView<HomeController> {
             Expanded(
               child: _SummaryCard(
                 icon: Icons.shopping_cart_rounded,
-                label: 'Bazar',
+                label: local.bazar,
                 value:
                     '৳${controller.totalBazarExpense.value.toStringAsFixed(0)}',
                 color: const Color(0xFFFF6B6B),
@@ -475,7 +481,7 @@ class HomeView extends GetView<HomeController> {
             Expanded(
               child: _SummaryCard(
                 icon: Icons.restaurant_rounded,
-                label: 'Total Meals',
+                label: local.totalMeals,
                 value: controller.myTotalMeals.value.toStringAsFixed(1),
                 color: const Color(0xFFFFA726),
                 bgColor: const Color(0xFFFFA726).withAlpha(26),
@@ -485,7 +491,7 @@ class HomeView extends GetView<HomeController> {
             Expanded(
               child: _SummaryCard(
                 icon: Icons.calculate_rounded,
-                label: 'Meal Rate',
+                label: local.mealRate,
                 value: '৳${controller.mealRate.value.toStringAsFixed(1)}',
                 color: const Color(0xFF66BB6A),
                 bgColor: const Color(0xFF66BB6A).withAlpha(26),
@@ -503,40 +509,41 @@ class HomeView extends GetView<HomeController> {
   Widget _buildQuickActions(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final local = AppLocalizations.of(context)!;
     final actions = [
       _QuickAction(
         icon: Icons.restaurant_menu_rounded,
-        label: 'Add Meal',
+        label: local.addMeal,
         color: const Color(0xFFFFA726), // Warm Orange
         onTap: () => context.push(AppRoutes.mealEntry),
       ),
       _QuickAction(
         icon: Icons.receipt_long_rounded,
-        label: 'Add Expense',
+        label: local.addExpense,
         color: const Color(0xFFFF6B6B), // Coral Red
         onTap: () => context.push(AppRoutes.addExpense),
       ),
       _QuickAction(
         icon: Icons.account_balance_wallet_rounded,
-        label: 'Add Deposit',
+        label: local.addDeposit,
         color: const Color(0xFF42A5F5), // Sky Blue
         onTap: () => context.push(AppRoutes.addDeposit),
       ),
       _QuickAction(
         icon: Icons.bar_chart_rounded,
-        label: 'Balances',
+        label: local.balances,
         color: const Color(0xFF66BB6A), // Fresh Green
         onTap: () => context.push(AppRoutes.balanceSummary),
       ),
       _QuickAction(
         icon: Icons.analytics_rounded,
-        label: 'Report',
+        label: local.report,
         color: const Color(0xFFAB47BC), // Orchid Purple
         onTap: () => context.push(AppRoutes.report),
       ),
       _QuickAction(
         icon: Icons.chat_bubble_rounded,
-        label: 'Chat',
+        label: local.chat,
         color: const Color(0xFF26A69A), // Deep Teal
         onTap: () {
           showMessage(context, 'Chat functionality coming soon!');
@@ -544,13 +551,13 @@ class HomeView extends GetView<HomeController> {
       ),
       _QuickAction(
         icon: Icons.checklist_rounded,
-        label: 'Approvals',
+        label: local.approvals,
         color: const Color(0xFF78909C), // Slate Blue Grey
         onTap: () => context.push(AppRoutes.approvals),
       ),
       _QuickAction(
         icon: Icons.notifications_active_rounded,
-        label: 'Notifications',
+        label: local.notifications,
         color: const Color(0xFFFFB74D), // Amber
         onTap: () => context.push(
           AppRoutes.notifications,
@@ -564,43 +571,43 @@ class HomeView extends GetView<HomeController> {
       // ),
       _QuickAction(
         icon: Icons.shopping_cart_checkout_rounded,
-        label: 'Shopping',
+        label: local.shopping,
         color: const Color(0xFF00BFA5), // Teal
         onTap: () => context.push(AppRoutes.shoppingList),
       ),
       _QuickAction(
         icon: Icons.add_business_rounded,
-        label: 'Post Property',
+        label: local.postProperty,
         color: const Color(0xFF4CAF50), // Olive Green
         onTap: () => showMessage(context, 'Post Property functionality coming soon!')// context.push(AppRoutes.propertyPost),
       ),
       _QuickAction(
         icon: Icons.list_alt_rounded,
-        label: 'My Listings',
+        label: local.myListings,
         color: const Color(0xFFFF9800), // Dark Amber
         onTap: () => showMessage(context, 'My Listings functionality coming soon!')//context.push(AppRoutes.myListings),
       ),
       _QuickAction(
         icon: Icons.search_off_rounded,
-        label: 'Need Based',
+        label: local.needBased,
         color: const Color(0xFF795548), // Warm Brown
         onTap: () => showMessage(context, 'Need Based functionality coming soon!')// context.push(AppRoutes.needBasedPost),
       ),
       _QuickAction(
         icon: Icons.monetization_on_rounded,
-        label: 'Credits',
+        label: local.credits,
         color: const Color(0xFFFFC107), // Golden Yellow
         onTap: () => showMessage(context, 'Credits functionality coming soon!')// context.push(AppRoutes.creditBalance),
       ),
       _QuickAction(
         icon: Icons.share_rounded,
-        label: 'Referral',
+        label: local.referral,
         color: const Color(0xFF2196F3), // Indigo Blue
         onTap: () => showMessage(context, 'Referral functionality coming soon!')// context.push(AppRoutes.referral),
       ),
       _QuickAction(
         icon: Icons.settings_suggest_rounded,
-        label: 'Settings',
+        label: local.settings,
         color: const Color(0xFF5C6BC0), // Soft Blue Indigo
         onTap: () => context.push(AppRoutes.settings),
       ),
@@ -616,7 +623,7 @@ class HomeView extends GetView<HomeController> {
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 12),
           child: Text(
-            'Quick Actions',
+            local.quickActions,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
             ),
@@ -629,7 +636,7 @@ class HomeView extends GetView<HomeController> {
             crossAxisCount: 4,
             mainAxisSpacing: 14,
             crossAxisSpacing: 14,
-            childAspectRatio: 0.85,
+            childAspectRatio: 0.80,
           ),
           itemCount: messController.isExpandedFeatures.value
               ? actions.length

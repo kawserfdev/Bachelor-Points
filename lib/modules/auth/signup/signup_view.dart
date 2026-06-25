@@ -1,3 +1,4 @@
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -31,20 +32,20 @@ class _SignupViewState extends ConsumerState<SignupView> {
   }
 
   String? _validateName(String? value) {
-    if (value == null || value.isEmpty) return 'Name is required';
+    if (value == null || value.isEmpty) return AppLocalizations.of(context)!.nameRequired;
     return null;
   }
 
   String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) return 'Email is required';
+    if (value == null || value.isEmpty) return AppLocalizations.of(context)!.emailRequired;
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(value)) return 'Please enter a valid email';
+    if (!emailRegex.hasMatch(value)) return AppLocalizations.of(context)!.validEmailRequired;
     return null;
   }
 
   String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) return 'Password is required';
-    if (value.length < 6) return 'Password must be at least 6 characters';
+    if (value == null || value.isEmpty) return AppLocalizations.of(context)!.passwordRequired;
+    if (value.length < 6) return AppLocalizations.of(context)!.passwordLengthError;
     return null;
   }
 
@@ -112,6 +113,7 @@ class _SignupViewState extends ConsumerState<SignupView> {
 
   @override
   Widget build(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -131,7 +133,7 @@ class _SignupViewState extends ConsumerState<SignupView> {
               children: [
                 const SizedBox(height: 20),
                 Text(
-                  'Create Account',
+                  local.createAccount,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -139,7 +141,7 @@ class _SignupViewState extends ConsumerState<SignupView> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Sign up to get started!',
+                  local.signUpToGetStarted,
                   style: Theme.of(
                     context,
                   ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
@@ -147,24 +149,24 @@ class _SignupViewState extends ConsumerState<SignupView> {
                 ),
                 const SizedBox(height: 48),
                 CustomTextField(
-                  label: 'Full Name',
-                  hint: 'Enter your full name',
+                  label: local.fullName,
+                  hint: local.enterFullName,
                   prefixIcon: Icons.person_outline,
                   controller: _nameController,
                   validator: _validateName,
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
-                  label: 'Email',
-                  hint: 'Enter your email',
+                  label: local.email,
+                  hint: local.enterEmail,
                   prefixIcon: Icons.email_outlined,
                   controller: _emailController,
                   validator: _validateEmail,
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
-                  label: 'Password',
-                  hint: 'Create a password',
+                  label: local.password,
+                  hint: local.createPassword,
                   prefixIcon: Icons.lock_outline,
                   controller: _passwordController,
                   isPassword: true,
@@ -172,7 +174,7 @@ class _SignupViewState extends ConsumerState<SignupView> {
                 ),
                 const SizedBox(height: 40),
                 PrimaryButton(
-                  text: 'SIGN UP',
+                  text: local.signUp,
                   isLoading: _isLoading,
                   onPressed: _signup,
                 ),
@@ -183,7 +185,7 @@ class _SignupViewState extends ConsumerState<SignupView> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        'OR',
+                        local.or,
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w500,
@@ -202,7 +204,7 @@ class _SignupViewState extends ConsumerState<SignupView> {
                     height: 22,
                   ),
                   label: Text(
-                    'Continue with Google',
+                    local.continueWithGoogle,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -223,14 +225,14 @@ class _SignupViewState extends ConsumerState<SignupView> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Already have an account?',
+                      local.alreadyHaveAccount,
                       style: TextStyle(color: Colors.grey[700]),
                     ),
                     TextButton(
                       onPressed: () => context.pop(),
-                      child: const Text(
-                        'Login',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      child: Text(
+                        local.loginLink,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 import 'create_profile_controller.dart';
 
 class CreateProfileView extends GetView<CreateProfileController> {
@@ -7,9 +8,11 @@ class CreateProfileView extends GetView<CreateProfileController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Complete Profile'),
+        title: Text(l10n.completeProfileTitle),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -20,27 +23,27 @@ class CreateProfileView extends GetView<CreateProfileController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
-                  'Tell us about yourself',
-                  style: TextStyle(
+                Text(
+                  l10n.tellUsAboutYourself,
+                  style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Please complete your profile to continue.',
-                  style: TextStyle(color: Colors.grey),
+                Text(
+                  l10n.completeProfileToContinue,
+                  style: const TextStyle(color: Colors.grey),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
                 TextFormField(
                   controller: controller.nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Full Name',
-                    prefixIcon: Icon(Icons.person_outline),
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: l10n.fieldFullName,
+                    prefixIcon: const Icon(Icons.person_outline),
+                    border: const OutlineInputBorder(),
                   ),
                   validator: controller.validateName,
                   textInputAction: TextInputAction.next,
@@ -48,10 +51,10 @@ class CreateProfileView extends GetView<CreateProfileController> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: controller.phoneController,
-                  decoration: const InputDecoration(
-                    labelText: 'Phone Number (Optional)',
-                    prefixIcon: Icon(Icons.phone_outlined),
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: l10n.phoneNumberOptionalLabel,
+                    prefixIcon: const Icon(Icons.phone_outlined),
+                    border: const OutlineInputBorder(),
                   ),
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.done,
@@ -74,9 +77,9 @@ class CreateProfileView extends GetView<CreateProfileController> {
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text(
-                          'Save & Continue',
-                          style: TextStyle(fontSize: 16),
+                      : Text(
+                          l10n.saveContinueBtn,
+                          style: const TextStyle(fontSize: 16),
                         ),
                 )),
               ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
 import '../../../shared/helpers/navigation_helper.dart';
 import '../../../data/models/notification_model.dart';
 import '../providers/notification_providers.dart';
@@ -18,25 +19,26 @@ class _NotificationViewState extends ConsumerState<NotificationView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final notificationsAsync = ref.watch(notificationsStreamProvider);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: Text(l10n.notificationsTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.done_all_rounded),
-            tooltip: 'Mark all as read',
+            tooltip: l10n.markAllAsReadTooltip,
             onPressed: () {
               ref
                   .read(notificationControllerProvider.notifier)
                   .markAllAsRead()
                   .then((_) {
                     AppNavigation.showSnackBar(
-                      'Notifications',
-                      'All notifications marked as read',
+                      l10n.notificationsTitle,
+                      l10n.allMarkedAsRead,
                     );
                   });
             },
@@ -54,21 +56,21 @@ class _NotificationViewState extends ConsumerState<NotificationView> {
             child: SizedBox(
               width: double.infinity,
               child: SegmentedButton<NotificationFilter>(
-                segments: const <ButtonSegment<NotificationFilter>>[
+                segments: <ButtonSegment<NotificationFilter>>[
                   ButtonSegment<NotificationFilter>(
                     value: NotificationFilter.all,
-                    label: Text('All'),
-                    icon: Icon(Icons.clear_all_rounded),
+                    label: Text(l10n.notifFilterAll),
+                    icon: const Icon(Icons.clear_all_rounded),
                   ),
                   ButtonSegment<NotificationFilter>(
                     value: NotificationFilter.unread,
-                    label: Text('Unread'),
-                    icon: Icon(Icons.mark_email_unread_rounded),
+                    label: Text(l10n.notifFilterUnread),
+                    icon: const Icon(Icons.mark_email_unread_rounded),
                   ),
                   ButtonSegment<NotificationFilter>(
                     value: NotificationFilter.read,
-                    label: Text('Read'),
-                    icon: Icon(Icons.mark_email_read_rounded),
+                    label: Text(l10n.notifFilterRead),
+                    icon: const Icon(Icons.mark_email_read_rounded),
                   ),
                 ],
                 selected: <NotificationFilter>{_selectedFilter},
@@ -90,7 +92,7 @@ class _NotificationViewState extends ConsumerState<NotificationView> {
                 child: Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Text(
-                    'Error loading notifications: $err',
+                    l10n.notifErrorLoading(err.toString()),
                     style: const TextStyle(color: Colors.red),
                   ),
                 ),
@@ -122,7 +124,7 @@ class _NotificationViewState extends ConsumerState<NotificationView> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No notifications found',
+                          l10n.noNotificationsFound,
                           style: theme.textTheme.titleMedium?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                           ),
@@ -155,8 +157,8 @@ class _NotificationViewState extends ConsumerState<NotificationView> {
                             .read(notificationControllerProvider.notifier)
                             .deleteNotification(notif.id);
                         AppNavigation.showSnackBar(
-                          'Deleted',
-                          'Notification removed',
+                          l10n.notificationsTitle,
+                          l10n.notifDeleted,
                         );
                       },
                       child: Card(
@@ -289,6 +291,7 @@ class _NotificationViewState extends ConsumerState<NotificationView> {
   }
 
   void _showNotificationDetails(BuildContext context, NotificationModel notif) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -299,28 +302,28 @@ class _NotificationViewState extends ConsumerState<NotificationView> {
       builder: (context) {
         IconData iconData = Icons.notifications_rounded;
         Color iconColor = colorScheme.primary;
-        String actionLabel = 'Go to Page';
+        String actionLabel = l10n.notifActionGoToPage;
 
         if (notif.type == 'meal') {
           iconData = Icons.restaurant_rounded;
           iconColor = Colors.orangeAccent;
-          actionLabel = 'View Meals';
+          actionLabel = l10n.notifActionViewMeals;
         } else if (notif.type == 'expense') {
           iconData = Icons.account_balance_wallet_rounded;
           iconColor = Colors.redAccent;
-          actionLabel = 'View Request';
+          actionLabel = l10n.notifActionViewRequest;
         } else if (notif.type == 'deposit') {
           iconData = Icons.monetization_on_rounded;
           iconColor = Colors.green;
-          actionLabel = 'View Request';
+          actionLabel = l10n.notifActionViewRequest;
         } else if (notif.type == 'manager') {
           iconData = Icons.supervised_user_circle_rounded;
           iconColor = Colors.purpleAccent;
-          actionLabel = 'Go to Settings';
+          actionLabel = l10n.notifActionGoToSettings;
         } else if (notif.type == 'request_status') {
           iconData = Icons.info_outline_rounded;
           iconColor = Colors.blueAccent;
-          actionLabel = 'View Request';
+          actionLabel = l10n.notifActionViewRequest;
         }
 
         return Container(
@@ -417,7 +420,7 @@ class _NotificationViewState extends ConsumerState<NotificationView> {
                         ),
                       ),
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Close'),
+                      child: Text(l10n.notifCloseBtn),
                     ),
                   ),
                   if (notif.route != null && notif.route!.isNotEmpty) ...[
