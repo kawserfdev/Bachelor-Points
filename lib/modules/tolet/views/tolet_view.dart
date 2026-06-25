@@ -216,52 +216,56 @@ class _ToletViewState extends State<ToletView>
   // Filter pills
   // ─────────────────────────────────────────────────────────────────────────
   Widget _buildFilterPills(ThemeData theme) {
-    return SizedBox(
-      height: 52,
-      child: Obx(
-        () => ListView.separated(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          itemCount: _filters.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 8),
-          itemBuilder: (_, i) {
-            final filter = _filters[i];
-            final selected =
-                controller.selectedToletFilter.value == filter;
-            return GestureDetector(
-              onTap: () => controller.selectedToletFilter.value = filter,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 220),
-                curve: Curves.easeInOut,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
-                decoration: BoxDecoration(
-                  color: selected
-                      ? AppTheme.primary
-                      : theme.colorScheme.surfaceContainerHighest
-                          .withOpacity(0.6),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
+    return Obx(
+      (){
+        var filterSelected= controller.selectedToletFilter.value;
+        return SizedBox(
+        height: 52,
+        child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            itemCount: _filters.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (_, i) {
+              final filter = _filters[i];
+              final selected =
+                  filterSelected == filter;
+              return GestureDetector(
+                onTap: () => controller.selectedToletFilter.value = filter,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeInOut,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                  decoration: BoxDecoration(
                     color: selected
                         ? AppTheme.primary
-                        : theme.colorScheme.outline.withOpacity(0.2),
+                        : theme.colorScheme.surfaceContainerHighest
+                            .withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: selected
+                          ? AppTheme.primary
+                          : theme.colorScheme.outline.withOpacity(0.2),
+                    ),
+                  ),
+                  child: Text(
+                    filter,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: selected
+                          ? Colors.white
+                          : theme.colorScheme.onSurface.withOpacity(0.7),
+                      fontWeight:
+                          selected ? FontWeight.w700 : FontWeight.w500,
+                    ),
                   ),
                 ),
-                child: Text(
-                  filter,
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: selected
-                        ? Colors.white
-                        : theme.colorScheme.onSurface.withOpacity(0.7),
-                    fontWeight:
-                        selected ? FontWeight.w700 : FontWeight.w500,
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
+              );
+            },
+          ),
+       
+      );
+      }
     );
   }
 
