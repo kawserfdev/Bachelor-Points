@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:bachelorpoints/core/responsive/responsive.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 import 'meal_controller.dart';
+import 'widgets/desktop/meal_calendar.dart';
+import 'widgets/desktop/meal_quick_add.dart';
+import 'widgets/desktop/meal_summary_cards.dart';
+import 'widgets/desktop/meal_table_view.dart';
 import 'widgets/meal_preview_widget.dart';
 import '../../shared/widgets/primary_button.dart';
-import 'package:intl/intl.dart';
-import 'package:bachelorpoints/l10n/app_localizations.dart';
 
 class MealEntryView extends GetView<MealController> {
   const MealEntryView({super.key});
@@ -19,58 +24,94 @@ class MealEntryView extends GetView<MealController> {
         backgroundColor: Colors.transparent,
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+        child: ResponsiveBuilder(
+          builder: (context, deviceType, sizeClass, constraints) {
+            return switch (deviceType) {
+              DeviceType.mobile => _buildMobileBody(context, local),
+              DeviceType.tablet => _buildTabletBody(context, local),
+              DeviceType.desktop => _buildDesktopBody(context, local),
+            };
+          },
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Mobile — preserves the existing single-column scrollable layout exactly.
+  // ---------------------------------------------------------------------------
+  Widget _buildMobileBody(BuildContext context, AppLocalizations local) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildDateSelector(context),
+          const SizedBox(height: 24),
+          const MealPreviewWidget(),
+          const SizedBox(height: 32),
+          _buildCutoffWarning(context, local),
+          _buildMealSelector(context, local.breakfast, Icons.breakfast_dining, controller.breakfast, 'breakfast'),
+          const SizedBox(height: 24),
+          _buildMealSelector(context, local.lunch, Icons.lunch_dining, controller.lunch, 'lunch'),
+          const SizedBox(height: 24),
+          _buildMealSelector(context, local.dinner, Icons.dinner_dining, controller.dinner, 'dinner'),
+          const SizedBox(height: 24),
+          _buildGuestMealSelector(context),
+          const SizedBox(height: 48),
+          _buildSaveButton(context, local),
+          const SizedBox(height: 32),
+          _buildBulkActionsSection(context),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Tablet — adaptive 2-column grid layout.
+  // ---------------------------------------------------------------------------
+  Widget _buildTabletBody(BuildContext context, AppLocalizations local) {
+    final padding = context.responsivePadding;
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(padding),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 960),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildDateSelector(context),
               const SizedBox(height: 24),
               const MealPreviewWidget(),
-              const SizedBox(height: 32),
-              
-              // Warning if cutoff passed
-              Obx(() {
-                if (!controller.canEdit) {
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 24),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.orangeAccent.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.orangeAccent.withValues(alpha: 0.5)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.info_outline, color: Colors.orangeAccent),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            local.editingLockedCutoff,
-                            style: const TextStyle(color: Colors.orangeAccent, fontSize: 13),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
-              }),
-
-              _buildMealSelector(context, local.breakfast, Icons.breakfast_dining, controller.breakfast, 'breakfast'),
               const SizedBox(height: 24),
-              _buildMealSelector(context, local.lunch, Icons.lunch_dining, controller.lunch, 'lunch'),
+              _buildCutoffWarning(context, local),
+              const SizedBox(height: 8),
+              // Two-column grid of meal selectors.
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _buildMealSelector(context, local.breakfast, Icons.breakfast_dining, controller.breakfast, 'breakfast'),
+                  ),
+                  const SizedBox(width: 24),
+                  Expanded(
+                    child: _buildMealSelector(context, local.lunch, Icons.lunch_dining, controller.lunch, 'lunch'),
+                  ),
+                ],
+              ),
               const SizedBox(height: 24),
-              _buildMealSelector(context, local.dinner, Icons.dinner_dining, controller.dinner, 'dinner'),
-              const SizedBox(height: 24),
-              _buildGuestMealSelector(context),
-              const SizedBox(height: 48),
-              
-              Obx(() => PrimaryButton(
-                    text: local.saveMealsBtn,
-                    isLoading: controller.isLoading.value,
-                    onPressed: controller.canEdit ? controller.saveMeal : () {},
-                  )),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _buildMealSelector(context, local.dinner, Icons.dinner_dining, controller.dinner, 'dinner'),
+                  ),
+                  const SizedBox(width: 24),
+                  Expanded(child: _buildGuestMealSelector(context)),
+                ],
+              ),
+              const SizedBox(height: 40),
+              _buildSaveButton(context, local),
               const SizedBox(height: 32),
               _buildBulkActionsSection(context),
             ],
@@ -78,6 +119,92 @@ class MealEntryView extends GetView<MealController> {
         ),
       ),
     );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Desktop — Summary cards, Table + Calendar, Quick Add, Save, Bulk actions.
+  // ---------------------------------------------------------------------------
+  Widget _buildDesktopBody(BuildContext context, AppLocalizations local) {
+    final padding = context.responsivePadding;
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(padding),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Top: summary cards row.
+              const MealSummaryCards(),
+              const SizedBox(height: 24),
+              _buildCutoffWarning(context, local),
+              const SizedBox(height: 8),
+              // Middle: table (left, wider) + calendar (right).
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Expanded(flex: 3, child: MealTableView()),
+                  const SizedBox(width: 24),
+                  Expanded(flex: 2, child: MealCalendar()),
+                ],
+              ),
+              const SizedBox(height: 24),
+              // Quick add presets.
+              const MealQuickAdd(),
+              const SizedBox(height: 32),
+              // Save button.
+              _buildSaveButton(context, local),
+              const SizedBox(height: 32),
+              // Bulk actions.
+              _buildBulkActionsSection(context),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Shared building blocks (used by multiple layouts).
+  // ---------------------------------------------------------------------------
+
+  /// Cutoff warning banner shown when editing is locked.
+  Widget _buildCutoffWarning(BuildContext context, AppLocalizations local) {
+    return Obx(() {
+      if (!controller.canEdit) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 24),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.orangeAccent.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.orangeAccent.withValues(alpha: 0.5)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.info_outline, color: Colors.orangeAccent),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  local.editingLockedCutoff,
+                  style: const TextStyle(color: Colors.orangeAccent, fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+      return const SizedBox.shrink();
+    });
+  }
+
+  /// Save button bound to the existing controller state.
+  Widget _buildSaveButton(BuildContext context, AppLocalizations local) {
+    return Obx(() => PrimaryButton(
+          text: local.saveMealsBtn,
+          isLoading: controller.isLoading.value,
+          onPressed: controller.canEdit ? controller.saveMeal : () {},
+        ));
   }
 
   Widget _buildDateSelector(BuildContext context) {

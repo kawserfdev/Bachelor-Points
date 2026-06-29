@@ -561,6 +561,76 @@ class AppLocalizationsEn extends AppLocalizations {
   String get totalMealsSelected => 'Total Meals Selected';
 
   @override
+  String get mealSummaryTitle => 'Summary';
+
+  @override
+  String get mealSummaryBreakfast => 'Breakfast';
+
+  @override
+  String get mealSummaryLunch => 'Lunch';
+
+  @override
+  String get mealSummaryDinner => 'Dinner';
+
+  @override
+  String get mealSummaryGuest => 'Guest';
+
+  @override
+  String get mealSummaryTotal => 'Total';
+
+  @override
+  String get mealSummaryStatus => 'Status';
+
+  @override
+  String get mealSummaryStatusEditable => 'Editable';
+
+  @override
+  String get mealSummaryStatusLocked => 'Locked';
+
+  @override
+  String get mealTableTitle => 'Meal Portions';
+
+  @override
+  String get mealTableMeal => 'Meal';
+
+  @override
+  String get mealTablePortion => 'Portion';
+
+  @override
+  String get mealTableAction => 'Action';
+
+  @override
+  String get mealCalendarTitle => 'Calendar';
+
+  @override
+  String get mealCalendarToday => 'Today';
+
+  @override
+  String get mealCalendarHint => 'Tap a date to load its meal entry';
+
+  @override
+  String get mealQuickAddTitle => 'Quick Add';
+
+  @override
+  String get mealQuickAddDesc =>
+      'Apply a preset portion to all meals instantly';
+
+  @override
+  String get mealQuickAddFull => 'Full (1.0)';
+
+  @override
+  String get mealQuickAddHalf => 'Half (0.5)';
+
+  @override
+  String get mealQuickAddDouble => 'Double (2.0)';
+
+  @override
+  String get mealQuickAddZero => 'Clear (0.0)';
+
+  @override
+  String get mealQuickAddApply => 'Apply';
+
+  @override
   String get dayCountOne => '1 Day';
 
   @override

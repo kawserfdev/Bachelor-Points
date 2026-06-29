@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../services/auth_service.dart';
+import '../../../shared/widgets/auth_scaffold.dart';
 import 'package:bachelorpoints/l10n/app_localizations.dart';
 
 class VerifyEmailView extends StatefulWidget {
@@ -141,94 +142,90 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
   @override
   Widget build(BuildContext context) {
     final local = AppLocalizations.of(context)!;
-    return Scaffold(
+    return AuthScaffold(
       appBar: AppBar(
         title: Text(local.verifyEmailTitle),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.mark_email_unread_outlined,
-                size: 100,
-                color: Colors.blue,
-              ),
-              const SizedBox(height: 24),
-              Text(
-                local.checkYourEmail,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                local.verificationLinkSentDesc,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                local.afterVerifyingDesc,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-              const SizedBox(height: 32),
-
-              // "I've verified" button — reloads user and checks emailVerified
-              ElevatedButton(
-                onPressed: _isChecking ? null : _checkVerificationStatus,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: _isChecking
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(local.iveVerifiedEmail),
-              ),
-              const SizedBox(height: 16),
-
-              // Resend verification email
-              OutlinedButton.icon(
-                onPressed: _isResending ? null : _resendVerificationEmail,
-                icon: _isResending
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.refresh),
-                label: Text(local.resendVerificationEmail),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Back to login — sign out fully via AuthService to clean up
-              // GetStorage, Google session, and GetX controllers.
-              TextButton(
-                onPressed: () async {
-                  await Get.find<AuthService>().signOut();
-                  // signOut() already navigates to /login via AppNavigation.go
-                },
-                child: Text(local.backToLogin),
-              ),
-            ],
+      centered: true,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.mark_email_unread_outlined,
+            size: 100,
+            color: Colors.blue,
           ),
-        ),
+          const SizedBox(height: 24),
+          Text(
+            local.checkYourEmail,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            local.verificationLinkSentDesc,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 16),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            local.afterVerifyingDesc,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 14, color: Colors.grey),
+          ),
+          const SizedBox(height: 32),
+
+          // "I've verified" button — reloads user and checks emailVerified
+          ElevatedButton(
+            onPressed: _isChecking ? null : _checkVerificationStatus,
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: _isChecking
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(local.iveVerifiedEmail),
+          ),
+          const SizedBox(height: 16),
+
+          // Resend verification email
+          OutlinedButton.icon(
+            onPressed: _isResending ? null : _resendVerificationEmail,
+            icon: _isResending
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.refresh),
+            label: Text(local.resendVerificationEmail),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Back to login — sign out fully via AuthService to clean up
+          // GetStorage, Google session, and GetX controllers.
+          TextButton(
+            onPressed: () async {
+              await Get.find<AuthService>().signOut();
+              // signOut() already navigates to /login via AppNavigation.go
+            },
+            child: Text(local.backToLogin),
+          ),
+        ],
       ),
     );
   }

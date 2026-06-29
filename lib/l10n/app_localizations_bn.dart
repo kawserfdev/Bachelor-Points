@@ -565,6 +565,76 @@ class AppLocalizationsBn extends AppLocalizations {
   String get totalMealsSelected => 'মোট নির্বাচিত মিল';
 
   @override
+  String get mealSummaryTitle => 'সারাংশ';
+
+  @override
+  String get mealSummaryBreakfast => 'সকাল';
+
+  @override
+  String get mealSummaryLunch => 'দুপুর';
+
+  @override
+  String get mealSummaryDinner => 'রাত';
+
+  @override
+  String get mealSummaryGuest => 'অতিথি';
+
+  @override
+  String get mealSummaryTotal => 'মোট';
+
+  @override
+  String get mealSummaryStatus => 'অবস্থা';
+
+  @override
+  String get mealSummaryStatusEditable => 'সম্পাদনযোগ্য';
+
+  @override
+  String get mealSummaryStatusLocked => 'লক করা';
+
+  @override
+  String get mealTableTitle => 'মিলের পরিমাণ';
+
+  @override
+  String get mealTableMeal => 'মিল';
+
+  @override
+  String get mealTablePortion => 'পরিমাণ';
+
+  @override
+  String get mealTableAction => 'ক্রিয়া';
+
+  @override
+  String get mealCalendarTitle => 'ক্যালেন্ডার';
+
+  @override
+  String get mealCalendarToday => 'আজ';
+
+  @override
+  String get mealCalendarHint => 'মিল এন্ট্রি লোড করতে একটি তারিখে ট্যাপ করুন';
+
+  @override
+  String get mealQuickAddTitle => 'দ্রুত যোগ';
+
+  @override
+  String get mealQuickAddDesc =>
+      'সব মিলে একটি প্রিসেট পরিমাণ তৎক্ষণাৎ প্রয়োগ করুন';
+
+  @override
+  String get mealQuickAddFull => 'পূর্ণ (১.০)';
+
+  @override
+  String get mealQuickAddHalf => 'অর্ধ (০.৫)';
+
+  @override
+  String get mealQuickAddDouble => 'দ্বিগুণ (২.০)';
+
+  @override
+  String get mealQuickAddZero => 'মুছুন (০.০)';
+
+  @override
+  String get mealQuickAddApply => 'প্রয়োগ করুন';
+
+  @override
   String get dayCountOne => '১ দিন';
 
   @override

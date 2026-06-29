@@ -1,3 +1,4 @@
+import 'package:bachelorpoints/core/responsive/responsive.dart';
 import 'package:bachelorpoints/core/theme/app_theme.dart';
 import 'package:bachelorpoints/l10n/app_localizations.dart';
 import 'package:bachelorpoints/shared/helpers/constraction_massage.dart';
@@ -11,15 +12,23 @@ import '../mess/mess_controller.dart';
 import '../notifications/providers/notification_providers.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../data/models/member_model.dart';
+import 'widgets/dashboard/saas_dashboard.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Tablet & Desktop render the modern SaaS dashboard. Mobile keeps the
+    // existing single-column design unchanged.
+    final device = context.deviceType;
+    if (device == DeviceType.tablet || device == DeviceType.desktop) {
+      return const SaaSDashboard();
+    }
+
     final messController = Get.find<MessController>();
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    //final colorScheme = theme.colorScheme;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -508,7 +517,7 @@ class HomeView extends GetView<HomeController> {
   // ──────────────────────────────────────────
   Widget _buildQuickActions(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+   // final colorScheme = theme.colorScheme;
     final local = AppLocalizations.of(context)!;
     final actions = [
       _QuickAction(
@@ -776,35 +785,6 @@ class HomeView extends GetView<HomeController> {
           ),
         ),
       ],
-    );
-  }
-
-  // ──────────────────────────────────────────
-  // Logout Dialog
-  // ──────────────────────────────────────────
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Logout'),
-        content: const Text(
-          'Are you sure you want to logout? All local data will be removed from this device.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              controller.logout();
-            },
-            child: const Text('Logout', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
     );
   }
 }

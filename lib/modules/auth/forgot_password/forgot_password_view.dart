@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/providers/auth_providers.dart';
+import '../../../shared/widgets/auth_scaffold.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import 'package:bachelorpoints/l10n/app_localizations.dart';
@@ -69,11 +70,11 @@ class _ForgotPasswordViewState extends ConsumerState<ForgotPasswordView> {
   Widget build(BuildContext context) {
     final local = AppLocalizations.of(context)!;
     // Strip trailing question mark from button title for page header if it exists
-    final headerTitle = local.forgotPasswordTitle.endsWith('?') 
+    final headerTitle = local.forgotPasswordTitle.endsWith('?')
         ? local.forgotPasswordTitle.substring(0, local.forgotPasswordTitle.length - 1)
         : local.forgotPasswordTitle;
-        
-    return Scaffold(
+         
+    return AuthScaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -82,78 +83,74 @@ class _ForgotPasswordViewState extends ConsumerState<ForgotPasswordView> {
           onPressed: () => context.pop(),
         ),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 40),
-                Icon(
-                  Icons.lock_reset_rounded,
-                  size: 80,
-                  color: Theme.of(context).primaryColor,
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  headerTitle,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  local.forgotPasswordDesc,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 48),
-                CustomTextField(
-                  label: local.email,
-                  hint: local.enterEmail,
-                  prefixIcon: Icons.email_outlined,
-                  controller: _emailController,
-                  validator: _validateEmail,
-                ),
-                const SizedBox(height: 32),
-                if (_isSuccess)
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                          color: Colors.green.withValues(alpha: 0.5)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.check_circle, color: Colors.green),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            local.resetLinkSent,
-                            style: const TextStyle(
-                                color: Colors.green,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                else
-                  PrimaryButton(
-                    text: local.sendResetLink,
-                    isLoading: _isLoading,
-                    onPressed: _resetPassword,
-                  ),
-              ],
+      mobilePadding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 40),
+            Icon(
+              Icons.lock_reset_rounded,
+              size: 80,
+              color: Theme.of(context).primaryColor,
             ),
-          ),
+            const SizedBox(height: 24),
+            Text(
+              headerTitle,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              local.forgotPasswordDesc,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Colors.grey[600],
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 48),
+            CustomTextField(
+              label: local.email,
+              hint: local.enterEmail,
+              prefixIcon: Icons.email_outlined,
+              controller: _emailController,
+              validator: _validateEmail,
+            ),
+            const SizedBox(height: 32),
+            if (_isSuccess)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.green.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: Colors.green.withValues(alpha: 0.5)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: Colors.green),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        local.resetLinkSent,
+                        style: const TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              PrimaryButton(
+                text: local.sendResetLink,
+                isLoading: _isLoading,
+                onPressed: _resetPassword,
+              ),
+          ],
         ),
       ),
     );

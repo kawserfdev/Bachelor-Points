@@ -1156,6 +1156,144 @@ abstract class AppLocalizations {
   /// **'Total Meals Selected'**
   String get totalMealsSelected;
 
+  /// No description provided for @mealSummaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get mealSummaryTitle;
+
+  /// No description provided for @mealSummaryBreakfast.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast'**
+  String get mealSummaryBreakfast;
+
+  /// No description provided for @mealSummaryLunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch'**
+  String get mealSummaryLunch;
+
+  /// No description provided for @mealSummaryDinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Dinner'**
+  String get mealSummaryDinner;
+
+  /// No description provided for @mealSummaryGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest'**
+  String get mealSummaryGuest;
+
+  /// No description provided for @mealSummaryTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get mealSummaryTotal;
+
+  /// No description provided for @mealSummaryStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get mealSummaryStatus;
+
+  /// No description provided for @mealSummaryStatusEditable.
+  ///
+  /// In en, this message translates to:
+  /// **'Editable'**
+  String get mealSummaryStatusEditable;
+
+  /// No description provided for @mealSummaryStatusLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get mealSummaryStatusLocked;
+
+  /// No description provided for @mealTableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal Portions'**
+  String get mealTableTitle;
+
+  /// No description provided for @mealTableMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal'**
+  String get mealTableMeal;
+
+  /// No description provided for @mealTablePortion.
+  ///
+  /// In en, this message translates to:
+  /// **'Portion'**
+  String get mealTablePortion;
+
+  /// No description provided for @mealTableAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Action'**
+  String get mealTableAction;
+
+  /// No description provided for @mealCalendarTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get mealCalendarTitle;
+
+  /// No description provided for @mealCalendarToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get mealCalendarToday;
+
+  /// No description provided for @mealCalendarHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a date to load its meal entry'**
+  String get mealCalendarHint;
+
+  /// No description provided for @mealQuickAddTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Add'**
+  String get mealQuickAddTitle;
+
+  /// No description provided for @mealQuickAddDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply a preset portion to all meals instantly'**
+  String get mealQuickAddDesc;
+
+  /// No description provided for @mealQuickAddFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full (1.0)'**
+  String get mealQuickAddFull;
+
+  /// No description provided for @mealQuickAddHalf.
+  ///
+  /// In en, this message translates to:
+  /// **'Half (0.5)'**
+  String get mealQuickAddHalf;
+
+  /// No description provided for @mealQuickAddDouble.
+  ///
+  /// In en, this message translates to:
+  /// **'Double (2.0)'**
+  String get mealQuickAddDouble;
+
+  /// No description provided for @mealQuickAddZero.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear (0.0)'**
+  String get mealQuickAddZero;
+
+  /// No description provided for @mealQuickAddApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get mealQuickAddApply;
+
   /// No description provided for @dayCountOne.
   ///
   /// In en, this message translates to:

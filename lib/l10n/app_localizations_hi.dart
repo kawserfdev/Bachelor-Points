@@ -564,6 +564,76 @@ class AppLocalizationsHi extends AppLocalizations {
   String get totalMealsSelected => 'कुल चयनित भोजन';
 
   @override
+  String get mealSummaryTitle => 'सारांश';
+
+  @override
+  String get mealSummaryBreakfast => 'नाश्ता';
+
+  @override
+  String get mealSummaryLunch => 'दोपहर';
+
+  @override
+  String get mealSummaryDinner => 'रात';
+
+  @override
+  String get mealSummaryGuest => 'अतिथि';
+
+  @override
+  String get mealSummaryTotal => 'कुल';
+
+  @override
+  String get mealSummaryStatus => 'स्थिति';
+
+  @override
+  String get mealSummaryStatusEditable => 'संपादन योग्य';
+
+  @override
+  String get mealSummaryStatusLocked => 'लॉक';
+
+  @override
+  String get mealTableTitle => 'भोजन हिस्से';
+
+  @override
+  String get mealTableMeal => 'भोजन';
+
+  @override
+  String get mealTablePortion => 'हिस्सा';
+
+  @override
+  String get mealTableAction => 'क्रिया';
+
+  @override
+  String get mealCalendarTitle => 'कैलेंडर';
+
+  @override
+  String get mealCalendarToday => 'आज';
+
+  @override
+  String get mealCalendarHint =>
+      'भोजन प्रविष्टि लोड करने के लिए एक तारीख टैप करें';
+
+  @override
+  String get mealQuickAddTitle => 'त्वरित जोड़ें';
+
+  @override
+  String get mealQuickAddDesc => 'सभी भोजन पर तुरंत प्रीसेट हिस्सा लागू करें';
+
+  @override
+  String get mealQuickAddFull => 'पूर्ण (1.0)';
+
+  @override
+  String get mealQuickAddHalf => 'आधा (0.5)';
+
+  @override
+  String get mealQuickAddDouble => 'दोगुना (2.0)';
+
+  @override
+  String get mealQuickAddZero => 'साफ़ करें (0.0)';
+
+  @override
+  String get mealQuickAddApply => 'लागू करें';
+
+  @override
   String get dayCountOne => '1 दिन';
 
   @override
