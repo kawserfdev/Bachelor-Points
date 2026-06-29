@@ -1,7 +1,11 @@
+import 'package:bachelorpoints/core/responsive/responsive.dart';
 import 'package:bachelorpoints/core/routes/app_routes.dart';
 import 'package:bachelorpoints/core/theme/app_theme.dart';
 import 'package:bachelorpoints/data/models/property_model.dart';
 import 'package:bachelorpoints/modules/tolet/property_search/tolet_controller.dart';
+import 'package:bachelorpoints/modules/tolet/widgets/desktop/property_grid.dart';
+import 'package:bachelorpoints/modules/tolet/widgets/desktop/property_listing_table.dart';
+import 'package:bachelorpoints/modules/tolet/widgets/desktop/property_search_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
@@ -18,6 +22,9 @@ class _ToletViewState extends State<ToletView>
   late final ToletController controller;
   late final TextEditingController _searchController;
   late final AnimationController _shimmerController;
+
+  /// Desktop-only view toggle: 'grid' (cards) or 'table' (data table).
+  bool _desktopTableMode = false;
 
   static const List<String> _filters = [
     'All',
@@ -55,39 +62,513 @@ class _ToletViewState extends State<ToletView>
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
-        child: Stack(
-          children: [
-            CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                // ── Header ──────────────────────────────────────────────
-                SliverToBoxAdapter(child: _buildHeader(theme)),
+        child: ResponsiveBuilder(
+          builder: (context, deviceType, sizeClass, constraints) {
+            switch (deviceType) {
+              case DeviceType.desktop:
+                return _buildDesktopBody(context, theme, colorScheme);
+              case DeviceType.tablet:
+              case DeviceType.mobile:
+                return _buildMobileBody(context, theme, colorScheme);
+            }
+          },
+        ),
+      ),
+    );
+  }
 
-                // ── Search bar ──────────────────────────────────────────
-                SliverToBoxAdapter(child: _buildSearchBar(theme)),
+  // ─────────────────────────────────────────────────────────────────────────
+  // Mobile / tablet body — preserves the original CustomScrollView layout
+  // ─────────────────────────────────────────────────────────────────────────
+  Widget _buildMobileBody(
+    BuildContext context,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
+    return Stack(
+      children: [
+        CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            // ── Header ──────────────────────────────────────────────
+            SliverToBoxAdapter(child: _buildHeader(theme)),
 
-                // ── Filter pills ─────────────────────────────────────────
-                SliverToBoxAdapter(child: _buildFilterPills(theme)),
+            // ── Search bar ──────────────────────────────────────────
+            SliverToBoxAdapter(child: _buildSearchBar(theme)),
 
-                // ── Boosted section ──────────────────────────────────────
-                SliverToBoxAdapter(child: _buildBoostedSection(theme)),
+            // ── Filter pills ─────────────────────────────────────────
+            SliverToBoxAdapter(child: _buildFilterPills(theme)),
 
-                // ── Listings ─────────────────────────────────────────────
-                _buildListings(theme, colorScheme),
+            // ── Boosted section ──────────────────────────────────────
+            SliverToBoxAdapter(child: _buildBoostedSection(theme)),
 
-                // ── Bottom padding for FAB ───────────────────────────────
-                const SliverToBoxAdapter(child: SizedBox(height: 96)),
+            // ── Listings ─────────────────────────────────────────────
+            _buildListings(theme, colorScheme),
+
+            // ── Bottom padding for FAB ───────────────────────────────
+            const SliverToBoxAdapter(child: SizedBox(height: 96)),
+          ],
+        ),
+
+        // ── Floating Post Ad button ──────────────────────────────────
+        Positioned(
+          bottom: 20,
+          left: 0,
+          right: 0,
+          child: _buildPostAdButton(context),
+        ),
+      ],
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Desktop body — responsive sidebar + grid/table layout
+  // ─────────────────────────────────────────────────────────────────────────
+  Widget _buildDesktopBody(
+    BuildContext context,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // ── Top bar: title + search + actions ───────────────────────
+          _buildDesktopTopBar(context, theme),
+          const SizedBox(height: 20),
+
+          // ── Main content: filters sidebar + listings ────────────────
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Filters sidebar (fixed width) — uses ToletController state
+                SizedBox(
+                  width: 280,
+                  child: _buildDesktopFiltersSidebar(theme),
+                ),
+                const SizedBox(width: 24),
+
+                // Listings area
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Boosted strip (desktop)
+                      _buildDesktopBoostedStrip(theme),
+                      const SizedBox(height: 16),
+
+                      // Listings grid / table
+                      Expanded(
+                        child: Obx(() {
+                          if (controller.isLoadingListings.value) {
+                            return _buildDesktopShimmer(theme);
+                          }
+                          final listings = controller.filteredListings;
+                          if (listings.isEmpty) {
+                            return _buildEmptyState(theme);
+                          }
+                          if (_desktopTableMode) {
+                            return SingleChildScrollView(
+                              child: PropertyListingTable(
+                                properties: listings,
+                              ),
+                            );
+                          }
+                          return SingleChildScrollView(
+                            child: PropertyGrid(properties: listings),
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
 
-            // ── Floating Post Ad button ──────────────────────────────────
-            Positioned(
-              bottom: 20,
-              left: 0,
-              right: 0,
-              child: _buildPostAdButton(context),
+  // ─────────────────────────────────────────────────────────────────────────
+  // Desktop filters sidebar — uses ToletController state (no extra bindings)
+  // ─────────────────────────────────────────────────────────────────────────
+  Widget _buildDesktopFiltersSidebar(ThemeData theme) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: theme.colorScheme.outline.withValues(alpha: 0.15),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Filters',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () {
+                      controller.searchQuery.value = '';
+                      controller.selectedToletFilter.value = 'All';
+                      _searchController.clear();
+                    },
+                    icon: const Icon(Icons.refresh_rounded, size: 16),
+                    label: const Text('Reset'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Category pills (vertical)
+              _buildFilterSectionLabel(theme, 'Category'),
+              const SizedBox(height: 10),
+              Obx(() => Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _filters.map((filter) {
+                      final selected =
+                          controller.selectedToletFilter.value == filter;
+                      return GestureDetector(
+                        onTap: () =>
+                            controller.selectedToletFilter.value = filter,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: selected
+                                ? AppTheme.primary
+                                : theme.colorScheme.surfaceContainerHighest
+                                    .withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: selected
+                                  ? AppTheme.primary
+                                  : theme.colorScheme.outline
+                                      .withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: Text(
+                            filter,
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: selected
+                                  ? Colors.white
+                                  : theme.colorScheme.onSurface
+                                      .withValues(alpha: 0.7),
+                              fontWeight: selected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  )),
+              const SizedBox(height: 24),
+
+              // Quick stats
+              _buildFilterSectionLabel(theme, 'Summary'),
+              const SizedBox(height: 10),
+              Obx(() {
+                final all = controller.filteredListings;
+                final boosted = controller.boostedListings;
+                return Column(
+                  children: [
+                    _buildStatRow(
+                      theme,
+                      icon: Icons.list_alt_rounded,
+                      label: 'Total Listings',
+                      value: '${all.length}',
+                    ),
+                    const SizedBox(height: 8),
+                    _buildStatRow(
+                      theme,
+                      icon: Icons.local_fire_department_rounded,
+                      label: 'Featured',
+                      value: '${boosted.length}',
+                      accent: Colors.deepOrange,
+                    ),
+                  ],
+                );
+              }),
+              const SizedBox(height: 24),
+
+              // Advanced search CTA
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => context.push(AppRoutes.propertySearch),
+                  icon: const Icon(Icons.tune_rounded, size: 18),
+                  label: const Text('Advanced Search'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterSectionLabel(ThemeData theme, String label) {
+    return Text(
+      label,
+      style: theme.textTheme.labelLarge?.copyWith(
+        fontWeight: FontWeight.w600,
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+      ),
+    );
+  }
+
+  Widget _buildStatRow(
+    ThemeData theme, {
+    required IconData icon,
+    required String label,
+    required String value,
+    Color? accent,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: accent ?? AppTheme.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              label,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
+            ),
+          ),
+          Text(
+            value,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: accent ?? AppTheme.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Desktop top bar
+  // ─────────────────────────────────────────────────────────────────────────
+  Widget _buildDesktopTopBar(BuildContext context, ThemeData theme) {
+    return Row(
+      children: [
+        // Title block
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Tolet',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+              ),
+            ),
+            Text(
+              'Find your dream home 🏡',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
             ),
           ],
+        ),
+        const SizedBox(width: 24),
+
+        // Search bar (flexible)
+        Expanded(
+          child: PropertySearchBar(
+            controller: _searchController,
+            onChanged: (v) => controller.searchQuery.value = v,
+            onSubmitted: (v) => controller.searchQuery.value = v,
+            hintText: 'Search by area, title…',
+          ),
+        ),
+        const SizedBox(width: 16),
+
+        // View toggle (grid / table)
+        _buildViewToggle(theme),
+        const SizedBox(width: 12),
+
+        // Advanced search
+        IconButton.outlined(
+          onPressed: () => context.push(AppRoutes.propertySearch),
+          icon: const Icon(Icons.tune_rounded),
+          tooltip: 'Advanced Search',
+        ),
+        const SizedBox(width: 12),
+
+        // Post Ad button
+        _buildDesktopPostAdButton(context, theme),
+      ],
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Desktop view toggle (grid / table)
+  // ─────────────────────────────────────────────────────────────────────────
+  Widget _buildViewToggle(ThemeData theme) {
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      padding: const EdgeInsets.all(4),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _toggleButton(
+            theme,
+            icon: Icons.grid_view_rounded,
+            label: 'Grid',
+            selected: !_desktopTableMode,
+            onTap: () => setState(() => _desktopTableMode = false),
+          ),
+          _toggleButton(
+            theme,
+            icon: Icons.table_rows_rounded,
+            label: 'Table',
+            selected: _desktopTableMode,
+            onTap: () => setState(() => _desktopTableMode = true),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _toggleButton(
+    ThemeData theme, {
+    required IconData icon,
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? AppTheme.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: selected
+                  ? Colors.white
+                  : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: selected
+                    ? Colors.white
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Desktop boosted strip (horizontal)
+  // ─────────────────────────────────────────────────────────────────────────
+  Widget _buildDesktopBoostedStrip(ThemeData theme) {
+    return Obx(() {
+      final boosted = controller.boostedListings;
+      if (boosted.isEmpty) return const SizedBox.shrink();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('🔥', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 6),
+              Text(
+                'Featured Properties',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 200,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: boosted.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (_, i) => _BoostedCard(property: boosted[i]),
+            ),
+          ),
+        ],
+      );
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Desktop shimmer placeholder
+  // ─────────────────────────────────────────────────────────────────────────
+  Widget _buildDesktopShimmer(ThemeData theme) {
+    return Center(
+      child: CircularProgressIndicator(
+        color: AppTheme.primary,
+        strokeWidth: 3,
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Desktop Post Ad button
+  // ─────────────────────────────────────────────────────────────────────────
+  Widget _buildDesktopPostAdButton(BuildContext context, ThemeData theme) {
+    return FilledButton.icon(
+      onPressed: () => context.push(AppRoutes.propertyPost),
+      icon: const Icon(Icons.add_circle_outline_rounded, size: 20),
+      label: const Text('Post Ad'),
+      style: FilledButton.styleFrom(
+        backgroundColor: AppTheme.primary,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
     );

@@ -1,4 +1,6 @@
+import 'package:bachelorpoints/core/responsive/responsive.dart';
 import 'package:bachelorpoints/modules/tolet/property_detail/property_detail_controller.dart';
+import 'package:bachelorpoints/modules/tolet/widgets/desktop/property_detail_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
@@ -22,67 +24,127 @@ class PropertyDetailView extends GetView<PropertyDetailController> {
     });
 
     return Scaffold(
-      body: Obx(() {
-        if (controller.isLoading.value) return const Center(child: CircularProgressIndicator());
-        final p = controller.property.value;
-        if (p == null) return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          const Icon(Icons.error_outline, size: 64),
-          const SizedBox(height: 12),
-          Text('Property not found', style: TextStyle(color: Colors.grey[600])),
-        ]));
-
-        return CustomScrollView(slivers: [
-          SliverAppBar(expandedHeight: 280, pinned: true, flexibleSpace: FlexibleSpaceBar(
-            background: p.images.isNotEmpty
-                ? PageView.builder(itemCount: p.images.length, itemBuilder: (c, i) => Image.network(p.images[i], fit: BoxFit.cover))
-                : Container(color: colorScheme.surfaceContainerHighest, child: const Icon(Icons.home, size: 80)),
-          )),
-          SliverToBoxAdapter(child: Padding(padding: const EdgeInsets.all(20), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Expanded(child: Text(p.title, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700))),
-              Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                Text('₹${p.price.toInt()}', style: theme.textTheme.titleLarge?.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w800)),
-                const Text('/month', style: TextStyle(fontSize: 12, color: Colors.grey)),
-              ]),
-            ]),
-            const SizedBox(height: 6),
-            Row(children: [Icon(Icons.location_on_outlined, size: 18, color: Colors.grey[600]), const SizedBox(width: 4), Expanded(child: Text(controller.getAddressDisplay(currentUserId), style: TextStyle(color: Colors.grey[600], fontSize: 14)))]),
-            if (p.isBoosted) ...[const SizedBox(height: 8), Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(6), border: Border.all(color: Colors.orange.shade200)), child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.rocket_launch, size: 16, color: Colors.orange), SizedBox(width: 4), Text('Boosted', style: TextStyle(color: Colors.orange, fontSize: 12))]))],
-            const SizedBox(height: 20),
-            Row(children: [
-              _buildInfoTile(context, Icons.bed, 'Bedrooms', '${p.bedrooms}'),
-              const SizedBox(width: 8),
-              _buildInfoTile(context, Icons.bathtub, 'Bathrooms', '${p.bathrooms}'),
-              const SizedBox(width: 8),
-              _buildInfoTile(context, Icons.layers, 'Floor', '${p.floor}'),
-              const SizedBox(width: 8),
-              _buildInfoTile(context, Icons.square_foot, 'Area', '${p.areaSqft.toInt()} sqft'),
-            ]),
-            const SizedBox(height: 16),
-            Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(color: colorScheme.primaryContainer, borderRadius: BorderRadius.circular(20)), child: Text(p.propertyType.capitalizeFirst ?? p.propertyType, style: TextStyle(color: colorScheme.onPrimaryContainer, fontWeight: FontWeight.w600, fontSize: 13))),
-            const SizedBox(height: 20), const Divider(),
-            if (p.description.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              Text('Description', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
-              Text(p.description, style: const TextStyle(fontSize: 14, height: 1.5)),
-              const SizedBox(height: 16), const Divider(),
-            ],
-            const SizedBox(height: 16),
-            Text('Owner Info', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 12),
-            _buildUnlockRow(context, Icons.phone, 'Phone', controller.getPhoneNumber(currentUserId), controller.hasUnlockedContact(currentUserId), '5 Credits', () => _unlock(context, propertyId, currentUserId, isContact: true)),
-            const SizedBox(height: 12),
-            _buildUnlockRow(context, Icons.location_on, 'Address', controller.getAddressDisplay(currentUserId), controller.hasUnlockedAddress(currentUserId), '10 Credits', () => _unlock(context, propertyId, currentUserId, isContact: false)),
-            const SizedBox(height: 26),
-            SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: () => context.push('/tolet/chat?propertyId=${p.id}'), icon: const Icon(Icons.chat), label: const Text('Chat with Owner'), style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)))),
-            const SizedBox(height: 12),
-            SizedBox(width: double.infinity, child: OutlinedButton.icon(onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted'))), icon: const Icon(Icons.flag_outlined), label: const Text('Report Listing'))),
-            const SizedBox(height: 40),
-          ]))),
-        ]);
-      }),
+      body: ResponsiveBuilder(
+        builder: (context, deviceType, sizeClass, constraints) {
+          switch (deviceType) {
+            case DeviceType.desktop:
+              return _buildDesktopBody(context, propertyId);
+            case DeviceType.tablet:
+            case DeviceType.mobile:
+              return _buildMobileBody(
+                context,
+                theme,
+                colorScheme,
+                propertyId,
+                currentUserId,
+              );
+          }
+        },
+      ),
     );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Mobile / tablet body — preserves the original CustomScrollView layout
+  // ─────────────────────────────────────────────────────────────────────────
+  Widget _buildMobileBody(
+    BuildContext context,
+    ThemeData theme,
+    ColorScheme colorScheme,
+    String propertyId,
+    String currentUserId,
+  ) {
+    return Obx(() {
+      if (controller.isLoading.value) return const Center(child: CircularProgressIndicator());
+      final p = controller.property.value;
+      if (p == null) return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        const Icon(Icons.error_outline, size: 64),
+        const SizedBox(height: 12),
+        Text('Property not found', style: TextStyle(color: Colors.grey[600])),
+      ]));
+
+      return CustomScrollView(slivers: [
+        SliverAppBar(expandedHeight: 280, pinned: true, flexibleSpace: FlexibleSpaceBar(
+          background: p.images.isNotEmpty
+              ? PageView.builder(itemCount: p.images.length, itemBuilder: (c, i) => Image.network(p.images[i], fit: BoxFit.cover))
+              : Container(color: colorScheme.surfaceContainerHighest, child: const Icon(Icons.home, size: 80)),
+        )),
+        SliverToBoxAdapter(child: Padding(padding: const EdgeInsets.all(20), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Expanded(child: Text(p.title, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700))),
+            Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+              Text('₹${p.price.toInt()}', style: theme.textTheme.titleLarge?.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w800)),
+              const Text('/month', style: TextStyle(fontSize: 12, color: Colors.grey)),
+            ]),
+          ]),
+          const SizedBox(height: 6),
+          Row(children: [Icon(Icons.location_on_outlined, size: 18, color: Colors.grey[600]), const SizedBox(width: 4), Expanded(child: Text(controller.getAddressDisplay(currentUserId), style: TextStyle(color: Colors.grey[600], fontSize: 14)))]),
+          if (p.isBoosted) ...[const SizedBox(height: 8), Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(6), border: Border.all(color: Colors.orange.shade200)), child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.rocket_launch, size: 16, color: Colors.orange), SizedBox(width: 4), Text('Boosted', style: TextStyle(color: Colors.orange, fontSize: 12))]))],
+          const SizedBox(height: 20),
+          Row(children: [
+            _buildInfoTile(context, Icons.bed, 'Bedrooms', '${p.bedrooms}'),
+            const SizedBox(width: 8),
+            _buildInfoTile(context, Icons.bathtub, 'Bathrooms', '${p.bathrooms}'),
+            const SizedBox(width: 8),
+            _buildInfoTile(context, Icons.layers, 'Floor', '${p.floor}'),
+            const SizedBox(width: 8),
+            _buildInfoTile(context, Icons.square_foot, 'Area', '${p.areaSqft.toInt()} sqft'),
+          ]),
+          const SizedBox(height: 16),
+          Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(color: colorScheme.primaryContainer, borderRadius: BorderRadius.circular(20)), child: Text(p.propertyType.capitalizeFirst ?? p.propertyType, style: TextStyle(color: colorScheme.onPrimaryContainer, fontWeight: FontWeight.w600, fontSize: 13))),
+          const SizedBox(height: 20), const Divider(),
+          if (p.description.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Text('Description', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            Text(p.description, style: const TextStyle(fontSize: 14, height: 1.5)),
+            const SizedBox(height: 16), const Divider(),
+          ],
+          const SizedBox(height: 16),
+          Text('Owner Info', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 12),
+          _buildUnlockRow(context, Icons.phone, 'Phone', controller.getPhoneNumber(currentUserId), controller.hasUnlockedContact(currentUserId), '5 Credits', () => _unlock(context, propertyId, currentUserId, isContact: true)),
+          const SizedBox(height: 12),
+          _buildUnlockRow(context, Icons.location_on, 'Address', controller.getAddressDisplay(currentUserId), controller.hasUnlockedAddress(currentUserId), '10 Credits', () => _unlock(context, propertyId, currentUserId, isContact: false)),
+          const SizedBox(height: 26),
+          SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: () => context.push('/tolet/chat?propertyId=${p.id}'), icon: const Icon(Icons.chat), label: const Text('Chat with Owner'), style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)))),
+          const SizedBox(height: 12),
+          SizedBox(width: double.infinity, child: OutlinedButton.icon(onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted'))), icon: const Icon(Icons.flag_outlined), label: const Text('Report Listing'))),
+          const SizedBox(height: 40),
+        ]))),
+      ]);
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Desktop body — uses the PropertyDetailPanel widget
+  // ─────────────────────────────────────────────────────────────────────────
+  Widget _buildDesktopBody(BuildContext context, String propertyId) {
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      final p = controller.property.value;
+      if (p == null) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64),
+              const SizedBox(height: 12),
+              Text(
+                'Property not found',
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            ],
+          ),
+        );
+      }
+      return PropertyDetailPanel(
+        controller: controller,
+        propertyId: propertyId,
+      );
+    });
   }
 
   Widget _buildInfoTile(BuildContext context, IconData icon, String label, String value) {

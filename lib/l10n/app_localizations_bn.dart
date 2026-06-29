@@ -135,6 +135,178 @@ class AppLocalizationsBn extends AppLocalizations {
       'পরিবর্তন অনুরোধ ম্যানেজারের অনুমোদনের অপেক্ষায়';
 
   @override
+  String get settingsCategoriesTitle => 'সেটিংস বিভাগ';
+
+  @override
+  String get settingsAppearanceTitle => 'অ্যাপিয়ারেন্স';
+
+  @override
+  String get settingsAppearanceDesc => 'অ্যাপটি কেমন দেখাবে নির্বাচন করুন';
+
+  @override
+  String get settingsNotificationsTitle => 'নোটিফিকেশন';
+
+  @override
+  String get settingsNotificationsDesc => 'আপনার সতর্কতা পরিচালনা করুন';
+
+  @override
+  String get settingsLanguageTitle => 'ভাষা';
+
+  @override
+  String get settingsLanguageDesc => 'আপনার ইন্টারফেস ভাষা নির্বাচন করুন';
+
+  @override
+  String get settingsThemeTitle => 'থিম';
+
+  @override
+  String get settingsThemeDesc => 'লাইট, ডার্ক বা সিস্টেম';
+
+  @override
+  String get settingsAccountTitle => 'অ্যাকাউন্ট';
+
+  @override
+  String get settingsAccountDesc => 'প্রোফাইল, নিরাপত্তা এবং সদস্যপদ';
+
+  @override
+  String get settingsSubscriptionTitle => 'সাবস্ক্রিপশন';
+
+  @override
+  String get settingsSubscriptionDesc => 'আপনার বর্তমান প্ল্যান';
+
+  @override
+  String get settingsAdminTitle => 'প্রশাসন';
+
+  @override
+  String get settingsAdminDesc => 'মেস-ব্যাপী নিয়ন্ত্রণ (শুধু ম্যানেজার)';
+
+  @override
+  String get settingsSubscriptionFreePlan => 'ফ্রি প্ল্যান';
+
+  @override
+  String get settingsSubscriptionActive => 'সক্রিয়';
+
+  @override
+  String get settingsSubscriptionFeatures => 'সমস্ত কোর মেস ফিচার আনলকড';
+
+  @override
+  String get settingsSubscriptionManage => 'প্ল্যান পরিচালনা';
+
+  @override
+  String get settingsAccountLogout => 'লগ আউট';
+
+  @override
+  String get settingsAccountLogoutDesc => 'আপনার অ্যাকাউন্ট থেকে সাইন আউট করুন';
+
+  @override
+  String get settingsAccountExitMess => 'মেস ত্যাগের অনুরোধ';
+
+  @override
+  String get settingsAccountExitMessDesc => 'এই মেস ছাড়তে অনুরোধ জমা দিন';
+
+  @override
+  String get settingsAccountMealPlan => 'ডিফল্ট মিল প্ল্যান';
+
+  @override
+  String get settingsAccountMealPlanDesc => 'আপনার নিয়মিত দৈনিক পরিমাণ';
+
+  @override
+  String get settingsAccountRequestChange => 'পরিবর্তনের অনুরোধ';
+
+  @override
+  String get settingsAdminCutoff => 'মিল কাটঅফ টাইম';
+
+  @override
+  String get settingsAdminCutoffDesc => 'দৈনিক মিল সম্পাদনার শেষ সময়';
+
+  @override
+  String get settingsAdminBazar => 'বাজার শিডিউল';
+
+  @override
+  String get settingsAdminBazarDesc => 'সদস্যদের শপিং দায়িত্ব দিন';
+
+  @override
+  String get settingsAdminAssignDuty => 'নতুন দায়িত্ব নির্ধারণ';
+
+  @override
+  String get settingsAdminNoSchedules => 'কোনো বাজার দায়িত্ব নির্ধারিত নেই';
+
+  @override
+  String get settingsAdminSelectMember => 'সদস্য নির্বাচন করুন';
+
+  @override
+  String get settingsAdminSelectDate => 'তারিখ নির্বাচন করুন';
+
+  @override
+  String get settingsAdminAssign => 'নির্ধারণ';
+
+  @override
+  String get settingsAdminCancel => 'বাতিল';
+
+  @override
+  String get settingsExitDialogTitle => 'মেস ত্যাগের অনুরোধ';
+
+  @override
+  String get settingsExitDialogInfo =>
+      'মেস ত্যাগের কারণ দিন। এটি ম্যানেজার/অ্যাডমিনের কাছে দৃশ্যমান হবে।';
+
+  @override
+  String get settingsExitDialogReason => 'ত্যাগের কারণ *';
+
+  @override
+  String get settingsExitDialogHint =>
+      'যেমন নতুন জায়গায় চলে যাচ্ছি / শহর ছাড়ছি';
+
+  @override
+  String get settingsExitDialogSubmit => 'অনুরোধ জমা দিন';
+
+  @override
+  String get settingsMealPlanDialogTitle => 'মিল প্ল্যান পরিবর্তনের অনুরোধ';
+
+  @override
+  String get settingsMealPlanDialogInfo =>
+      'নির্দিষ্ট তারিখের জন্য আপনার নিয়মিত দৈনিক পরিমাণ আপডেটের অনুরোধ করুন। এর জন্য ম্যানেজারের অনুমোদন প্রয়োজন।';
+
+  @override
+  String get settingsMealPlanDialogStart => 'শুরু তারিখ';
+
+  @override
+  String get settingsMealPlanDialogEnd => 'শেষ তারিখ';
+
+  @override
+  String get settingsMealPlanDialogReason => 'পরিবর্তনের কারণ *';
+
+  @override
+  String get settingsMealPlanDialogHint =>
+      'যেমন ডায়েট পরিবর্তন, কয়েকদিনের জন্য শহর ছাড়া ইত্যাদি';
+
+  @override
+  String get settingsMealPlanDialogSubmit => 'অনুরোধ জমা দিন';
+
+  @override
+  String get settingsMealPlanBreakfast => 'ব্রেকফাস্ট';
+
+  @override
+  String get settingsMealPlanLunch => 'লাঞ্চ';
+
+  @override
+  String get settingsMealPlanDinner => 'ডিনার';
+
+  @override
+  String get settingsValidationReasonRequired => 'কারণ আবশ্যক।';
+
+  @override
+  String get settingsValidationMemberDate =>
+      'অনুগ্রহ করে একজন সদস্য এবং তারিখ নির্বাচন করুন';
+
+  @override
+  String get settingsLoadingPreferences => 'প্রিফারেন্স লোড হচ্ছে…';
+
+  @override
+  String settingsErrorPreferences(String error) {
+    return 'প্রিফারেন্স লোডে ত্রুটি: $error';
+  }
+
+  @override
   String heyGreeting(String greeting) {
     return 'হে $greeting! 👋';
   }
@@ -196,6 +368,100 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get shopping => 'বাজার তালিকা';
+
+  @override
+  String get shoppingReminderTitle => 'বাজার রিমাইন্ডার';
+
+  @override
+  String get shoppingReminderNoList =>
+      'কোনো সক্রিয় বাজার তালিকা নেই। বাজারের আইটেম ট্র্যাক করা শুরু করতে একটি তৈরি করুন।';
+
+  @override
+  String shoppingReminderProgress(Object purchased, Object total) {
+    return '$total এর মধ্যে $purchasedটি আইটেম কেনা হয়েছে';
+  }
+
+  @override
+  String get shoppingReminderComplete =>
+      'সব আইটেম কেনা হয়ে গেছে! এই তালিকা শেষ করার সময়।';
+
+  @override
+  String shoppingReminderUrgent(Object count) {
+    return '$countটি জরুরি আইটেম এখনও কিনতে বাকি।';
+  }
+
+  @override
+  String get shoppingReminderCreate => 'তালিকা তৈরি করুন';
+
+  @override
+  String get shoppingReminderCompleteBtn => 'তালিকা শেষ করুন';
+
+  @override
+  String get shoppingTableTitle => 'বাজার তালিকা';
+
+  @override
+  String get shoppingTableItem => 'আইটেম';
+
+  @override
+  String get shoppingTableQty => 'পরিমাণ';
+
+  @override
+  String get shoppingTablePriority => 'অগ্রাধিকার';
+
+  @override
+  String get shoppingTableRequestedBy => 'অনুরোধকারী';
+
+  @override
+  String get shoppingTableStatus => 'অবস্থা';
+
+  @override
+  String get shoppingTableNote => 'নোট';
+
+  @override
+  String get shoppingTableEmpty =>
+      'এখনও কোনো অনুমোদিত আইটেম নেই। সদস্যরা আইটেম অনুরোধ করতে পারে, এবং ম্যানেজাররা এখানে দেখানোর জন্য অনুমোদন করবে।';
+
+  @override
+  String get shoppingChecklistTitle => 'চেকলিস্ট';
+
+  @override
+  String shoppingChecklistProgress(Object purchased, Object total) {
+    return '$total এর মধ্যে $purchased কেনা হয়েছে';
+  }
+
+  @override
+  String get shoppingChecklistEmpty => 'এখনও চেক করার মতো কোনো আইটেম নেই।';
+
+  @override
+  String get shoppingChecklistAllDone => 'সব শেষ! দারুণ কাজ।';
+
+  @override
+  String get shoppingPriorityUrgent => 'জরুরি';
+
+  @override
+  String get shoppingPriorityNormal => 'সাধারণ';
+
+  @override
+  String get shoppingStatusPending => 'অপেক্ষমান';
+
+  @override
+  String get shoppingStatusApproved => 'অনুমোদিত';
+
+  @override
+  String get shoppingStatusRejected => 'প্রত্যাখ্যাত';
+
+  @override
+  String get shoppingStatusPurchased => 'কেনা হয়েছে';
+
+  @override
+  String get shoppingStatusNotPurchased => 'কেনা হয়নি';
+
+  @override
+  String get shoppingFormTitle => 'বাজার আইটেম অনুরোধ';
+
+  @override
+  String get shoppingFormDesc =>
+      'আপনার অনুরোধকৃত আইটেম বাজার তালিকায় দেখানোর আগে মেস ম্যানেজার/অ্যাডমিনের অনুমোদনের জন্য পাঠানো হবে।';
 
   @override
   String get postProperty => 'বিজ্ঞাপন দিন';
@@ -426,6 +692,64 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
+  String get depositSummaryTitle => 'পেমেন্ট সারাংশ';
+
+  @override
+  String get depositSummaryTotalDeposits => 'মোট জমা';
+
+  @override
+  String get depositSummaryTotalCost => 'মোট খরচ';
+
+  @override
+  String get depositSummaryNetBalance => 'নিট ব্যালেন্স';
+
+  @override
+  String get depositSummaryMembers => 'সদস্য';
+
+  @override
+  String get depositTableTitle => 'সদস্য ব্যালেন্স লেজার';
+
+  @override
+  String get depositTableMember => 'সদস্য';
+
+  @override
+  String get depositTableMeals => 'মিল';
+
+  @override
+  String get depositTableDeposits => 'জমা';
+
+  @override
+  String get depositTableMealCost => 'মিল খরচ';
+
+  @override
+  String get depositTableFixedCost => 'ফিক্সড খরচ';
+
+  @override
+  String get depositTableTotalCost => 'মোট খরচ';
+
+  @override
+  String get depositTableBalance => 'ব্যালেন্স';
+
+  @override
+  String get depositTableEmpty => 'এই মাসের জন্য কোনো সদস্য ব্যালেন্স নেই।';
+
+  @override
+  String get depositChartsTitle => 'জমা বিতরণ';
+
+  @override
+  String get depositChartsTotal => 'মোট জমা';
+
+  @override
+  String get depositChartsNoData => 'এই মাসের জন্য কোনো জমা ডেটা নেই।';
+
+  @override
+  String get depositFormTitle => 'নতুন জমা অনুরোধ';
+
+  @override
+  String get depositFormDesc =>
+      'অনুমোদনের জন্য একটি জমা জমা দিন। অনুমোদিত হলে এটি ব্যালেন্সে দেখা যাবে।';
+
+  @override
   String get addExpenseTitle => 'খরচ যোগ করুন';
 
   @override
@@ -633,6 +957,69 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get mealQuickAddApply => 'প্রয়োগ করুন';
+
+  @override
+  String get expenseSummaryTitle => 'খরচের সারাংশ';
+
+  @override
+  String get expenseSummaryTotal => 'এই মাসে মোট';
+
+  @override
+  String get expenseSummaryShare => 'প্রতি জন';
+
+  @override
+  String get expenseSummaryCount => 'এন্ট্রি';
+
+  @override
+  String get expenseSummaryAvg => 'গড়';
+
+  @override
+  String get expenseTableTitle => 'খরচের খাতা';
+
+  @override
+  String get expenseTableDate => 'তারিখ';
+
+  @override
+  String get expenseTableCategory => 'ক্যাটাগরি';
+
+  @override
+  String get expenseTableDescription => 'বিবরণ';
+
+  @override
+  String get expenseTableAddedBy => 'যোগ করেছেন';
+
+  @override
+  String get expenseTableAmount => 'পরিমাণ';
+
+  @override
+  String get expenseTableEmpty => 'বর্তমান ফিল্টারে কোনো খরচ নেই।';
+
+  @override
+  String get expenseFiltersTitle => 'ফিল্টার';
+
+  @override
+  String get expenseFiltersCategory => 'ক্যাটাগরি';
+
+  @override
+  String get expenseFiltersAll => 'সব';
+
+  @override
+  String get expenseFiltersMonth => 'মাস';
+
+  @override
+  String get expenseSearchTitle => 'অনুসন্ধান';
+
+  @override
+  String get expenseSearchHint => 'বিবরণ বা সদস্য দিয়ে খুঁজুন…';
+
+  @override
+  String get expenseChartsTitle => 'ক্যাটাগরি ভাগ';
+
+  @override
+  String get expenseChartsTotal => 'মোট';
+
+  @override
+  String get expenseChartsNoData => 'এখনো চার্ট করার মতো তথ্য নেই।';
 
   @override
   String get dayCountOne => '১ দিন';
@@ -1120,6 +1507,75 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get reportMiniDeposit => 'ডিপোজিট';
+
+  @override
+  String get reportFiltersTitle => 'ফিল্টার ও এক্সপোর্ট';
+
+  @override
+  String get reportExportPdf => 'পিডিএফ এক্সপোর্ট';
+
+  @override
+  String get reportPrintReport => 'প্রিন্ট করুন';
+
+  @override
+  String get reportSummaryTitle => 'মাসিক সারসংক্ষেপ';
+
+  @override
+  String get reportSummaryMembers => 'সদস্য';
+
+  @override
+  String get reportSummaryAvgMeals => 'গড় / সদস্য';
+
+  @override
+  String get reportChartsTitle => 'বিশ্লেষণ';
+
+  @override
+  String get reportChartExpenseBreakdown => 'খরচের বিভাজন';
+
+  @override
+  String get reportChartMemberMeals => 'সদস্যের মিল';
+
+  @override
+  String get reportChartNoData => 'প্রদর্শনের জন্য কোনো ডেটা নেই';
+
+  @override
+  String get reportChartBazar => 'বাজার';
+
+  @override
+  String get reportChartFixed => 'নির্দিষ্ট খরচ';
+
+  @override
+  String get reportTableTitle => 'সদস্য সারসংক্ষেপ';
+
+  @override
+  String get reportTableEmpty => 'এই মাসের জন্য কোনো সদস্যের ডেটা নেই';
+
+  @override
+  String get reportMemberDetailTitle => 'দৈনিক তৎপরতা';
+
+  @override
+  String get reportColDate => 'তারিখ';
+
+  @override
+  String get reportColBreakfast => 'সকাল';
+
+  @override
+  String get reportColLunch => 'দুপুর';
+
+  @override
+  String get reportColDinner => 'রাত';
+
+  @override
+  String get reportColGuest => 'অতিথি';
+
+  @override
+  String get reportColDayExpense => 'খরচ';
+
+  @override
+  String get reportColDayDeposit => 'ডিপোজিট';
+
+  @override
+  String get reportColDayTotal => 'দিনের মোট';
 
   @override
   String get requestsTitle => 'অনুরোধসমূহ';

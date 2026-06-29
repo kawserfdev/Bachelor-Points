@@ -340,6 +340,336 @@ abstract class AppLocalizations {
   /// **'Change Request Pending Manager Approval'**
   String get changeRequestPending;
 
+  /// No description provided for @settingsCategoriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings Categories'**
+  String get settingsCategoriesTitle;
+
+  /// No description provided for @settingsAppearanceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get settingsAppearanceTitle;
+
+  /// No description provided for @settingsAppearanceDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how the app looks'**
+  String get settingsAppearanceDesc;
+
+  /// No description provided for @settingsNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get settingsNotificationsTitle;
+
+  /// No description provided for @settingsNotificationsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your alerts'**
+  String get settingsNotificationsDesc;
+
+  /// No description provided for @settingsLanguageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguageTitle;
+
+  /// No description provided for @settingsLanguageDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Select your interface language'**
+  String get settingsLanguageDesc;
+
+  /// No description provided for @settingsThemeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settingsThemeTitle;
+
+  /// No description provided for @settingsThemeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Light, dark or system'**
+  String get settingsThemeDesc;
+
+  /// No description provided for @settingsAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get settingsAccountTitle;
+
+  /// No description provided for @settingsAccountDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile, security and membership'**
+  String get settingsAccountDesc;
+
+  /// No description provided for @settingsSubscriptionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription'**
+  String get settingsSubscriptionTitle;
+
+  /// No description provided for @settingsSubscriptionDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your current plan'**
+  String get settingsSubscriptionDesc;
+
+  /// No description provided for @settingsAdminTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Administration'**
+  String get settingsAdminTitle;
+
+  /// No description provided for @settingsAdminDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Mess-wide controls (managers only)'**
+  String get settingsAdminDesc;
+
+  /// No description provided for @settingsSubscriptionFreePlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Free Plan'**
+  String get settingsSubscriptionFreePlan;
+
+  /// No description provided for @settingsSubscriptionActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get settingsSubscriptionActive;
+
+  /// No description provided for @settingsSubscriptionFeatures.
+  ///
+  /// In en, this message translates to:
+  /// **'All core mess features unlocked'**
+  String get settingsSubscriptionFeatures;
+
+  /// No description provided for @settingsSubscriptionManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Plan'**
+  String get settingsSubscriptionManage;
+
+  /// No description provided for @settingsAccountLogout.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Out'**
+  String get settingsAccountLogout;
+
+  /// No description provided for @settingsAccountLogoutDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out of your account'**
+  String get settingsAccountLogoutDesc;
+
+  /// No description provided for @settingsAccountExitMess.
+  ///
+  /// In en, this message translates to:
+  /// **'Request to Exit Mess'**
+  String get settingsAccountExitMess;
+
+  /// No description provided for @settingsAccountExitMessDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit a request to leave this mess'**
+  String get settingsAccountExitMessDesc;
+
+  /// No description provided for @settingsAccountMealPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Default Meal Plan'**
+  String get settingsAccountMealPlan;
+
+  /// No description provided for @settingsAccountMealPlanDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your regular daily portions'**
+  String get settingsAccountMealPlanDesc;
+
+  /// No description provided for @settingsAccountRequestChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Change'**
+  String get settingsAccountRequestChange;
+
+  /// No description provided for @settingsAdminCutoff.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal Cutoff Time'**
+  String get settingsAdminCutoff;
+
+  /// No description provided for @settingsAdminCutoffDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Deadline for editing daily meals'**
+  String get settingsAdminCutoffDesc;
+
+  /// No description provided for @settingsAdminBazar.
+  ///
+  /// In en, this message translates to:
+  /// **'Bazar Schedule'**
+  String get settingsAdminBazar;
+
+  /// No description provided for @settingsAdminBazarDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign shopping duties to members'**
+  String get settingsAdminBazarDesc;
+
+  /// No description provided for @settingsAdminAssignDuty.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign New Duty'**
+  String get settingsAdminAssignDuty;
+
+  /// No description provided for @settingsAdminNoSchedules.
+  ///
+  /// In en, this message translates to:
+  /// **'No bazar duties scheduled'**
+  String get settingsAdminNoSchedules;
+
+  /// No description provided for @settingsAdminSelectMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Member'**
+  String get settingsAdminSelectMember;
+
+  /// No description provided for @settingsAdminSelectDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Date'**
+  String get settingsAdminSelectDate;
+
+  /// No description provided for @settingsAdminAssign.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign'**
+  String get settingsAdminAssign;
+
+  /// No description provided for @settingsAdminCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get settingsAdminCancel;
+
+  /// No description provided for @settingsExitDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit Mess Request'**
+  String get settingsExitDialogTitle;
+
+  /// No description provided for @settingsExitDialogInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Please provide a reason for exiting the mess. This will be visible to the manager/admin.'**
+  String get settingsExitDialogInfo;
+
+  /// No description provided for @settingsExitDialogReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason for Exiting *'**
+  String get settingsExitDialogReason;
+
+  /// No description provided for @settingsExitDialogHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Moving to a new place / Leaving the city'**
+  String get settingsExitDialogHint;
+
+  /// No description provided for @settingsExitDialogSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Submit'**
+  String get settingsExitDialogSubmit;
+
+  /// No description provided for @settingsMealPlanDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Meal Plan Change'**
+  String get settingsMealPlanDialogTitle;
+
+  /// No description provided for @settingsMealPlanDialogInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Request updates to your regular daily portions for a specific date range. This requires approval from the manager.'**
+  String get settingsMealPlanDialogInfo;
+
+  /// No description provided for @settingsMealPlanDialogStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Date'**
+  String get settingsMealPlanDialogStart;
+
+  /// No description provided for @settingsMealPlanDialogEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'End Date'**
+  String get settingsMealPlanDialogEnd;
+
+  /// No description provided for @settingsMealPlanDialogReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason for Change *'**
+  String get settingsMealPlanDialogReason;
+
+  /// No description provided for @settingsMealPlanDialogHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Diet change, leaving city for few days, etc.'**
+  String get settingsMealPlanDialogHint;
+
+  /// No description provided for @settingsMealPlanDialogSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Request'**
+  String get settingsMealPlanDialogSubmit;
+
+  /// No description provided for @settingsMealPlanBreakfast.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast'**
+  String get settingsMealPlanBreakfast;
+
+  /// No description provided for @settingsMealPlanLunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch'**
+  String get settingsMealPlanLunch;
+
+  /// No description provided for @settingsMealPlanDinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Dinner'**
+  String get settingsMealPlanDinner;
+
+  /// No description provided for @settingsValidationReasonRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason is required.'**
+  String get settingsValidationReasonRequired;
+
+  /// No description provided for @settingsValidationMemberDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a member and date'**
+  String get settingsValidationMemberDate;
+
+  /// No description provided for @settingsLoadingPreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading preferences…'**
+  String get settingsLoadingPreferences;
+
+  /// No description provided for @settingsErrorPreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading preferences: {error}'**
+  String settingsErrorPreferences(String error);
+
   /// No description provided for @heyGreeting.
   ///
   /// In en, this message translates to:
@@ -459,6 +789,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Shopping'**
   String get shopping;
+
+  /// No description provided for @shoppingReminderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bazar Reminder'**
+  String get shoppingReminderTitle;
+
+  /// No description provided for @shoppingReminderNoList.
+  ///
+  /// In en, this message translates to:
+  /// **'No active shopping list. Create one to start tracking bazar items.'**
+  String get shoppingReminderNoList;
+
+  /// No description provided for @shoppingReminderProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{purchased} of {total} items purchased'**
+  String shoppingReminderProgress(Object purchased, Object total);
+
+  /// No description provided for @shoppingReminderComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'All items purchased! Time to wrap up this list.'**
+  String get shoppingReminderComplete;
+
+  /// No description provided for @shoppingReminderUrgent.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} urgent item(s) still need to be bought.'**
+  String shoppingReminderUrgent(Object count);
+
+  /// No description provided for @shoppingReminderCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create List'**
+  String get shoppingReminderCreate;
+
+  /// No description provided for @shoppingReminderCompleteBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete List'**
+  String get shoppingReminderCompleteBtn;
+
+  /// No description provided for @shoppingTableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping List'**
+  String get shoppingTableTitle;
+
+  /// No description provided for @shoppingTableItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Item'**
+  String get shoppingTableItem;
+
+  /// No description provided for @shoppingTableQty.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get shoppingTableQty;
+
+  /// No description provided for @shoppingTablePriority.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority'**
+  String get shoppingTablePriority;
+
+  /// No description provided for @shoppingTableRequestedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested By'**
+  String get shoppingTableRequestedBy;
+
+  /// No description provided for @shoppingTableStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get shoppingTableStatus;
+
+  /// No description provided for @shoppingTableNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get shoppingTableNote;
+
+  /// No description provided for @shoppingTableEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No approved items yet. Members can request items, and managers will approve them to show up here.'**
+  String get shoppingTableEmpty;
+
+  /// No description provided for @shoppingChecklistTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Checklist'**
+  String get shoppingChecklistTitle;
+
+  /// No description provided for @shoppingChecklistProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{purchased}/{total} purchased'**
+  String shoppingChecklistProgress(Object purchased, Object total);
+
+  /// No description provided for @shoppingChecklistEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No items to check off yet.'**
+  String get shoppingChecklistEmpty;
+
+  /// No description provided for @shoppingChecklistAllDone.
+  ///
+  /// In en, this message translates to:
+  /// **'All done! Great job.'**
+  String get shoppingChecklistAllDone;
+
+  /// No description provided for @shoppingPriorityUrgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Urgent'**
+  String get shoppingPriorityUrgent;
+
+  /// No description provided for @shoppingPriorityNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get shoppingPriorityNormal;
+
+  /// No description provided for @shoppingStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get shoppingStatusPending;
+
+  /// No description provided for @shoppingStatusApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get shoppingStatusApproved;
+
+  /// No description provided for @shoppingStatusRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get shoppingStatusRejected;
+
+  /// No description provided for @shoppingStatusPurchased.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchased'**
+  String get shoppingStatusPurchased;
+
+  /// No description provided for @shoppingStatusNotPurchased.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Purchased'**
+  String get shoppingStatusNotPurchased;
+
+  /// No description provided for @shoppingFormTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Bazar Item'**
+  String get shoppingFormTitle;
+
+  /// No description provided for @shoppingFormDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your requested item will be sent to the mess manager/admin for approval before showing up on the shopping list.'**
+  String get shoppingFormDesc;
 
   /// No description provided for @postProperty.
   ///
@@ -892,6 +1390,120 @@ abstract class AppLocalizations {
   /// **'Owes: ৳{amount}'**
   String owesLabel(String amount);
 
+  /// No description provided for @depositSummaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Summary'**
+  String get depositSummaryTitle;
+
+  /// No description provided for @depositSummaryTotalDeposits.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Deposits'**
+  String get depositSummaryTotalDeposits;
+
+  /// No description provided for @depositSummaryTotalCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Cost'**
+  String get depositSummaryTotalCost;
+
+  /// No description provided for @depositSummaryNetBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Net Balance'**
+  String get depositSummaryNetBalance;
+
+  /// No description provided for @depositSummaryMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Members'**
+  String get depositSummaryMembers;
+
+  /// No description provided for @depositTableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Member Balance Ledger'**
+  String get depositTableTitle;
+
+  /// No description provided for @depositTableMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get depositTableMember;
+
+  /// No description provided for @depositTableMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Meals'**
+  String get depositTableMeals;
+
+  /// No description provided for @depositTableDeposits.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposits'**
+  String get depositTableDeposits;
+
+  /// No description provided for @depositTableMealCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal Cost'**
+  String get depositTableMealCost;
+
+  /// No description provided for @depositTableFixedCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed Cost'**
+  String get depositTableFixedCost;
+
+  /// No description provided for @depositTableTotalCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Cost'**
+  String get depositTableTotalCost;
+
+  /// No description provided for @depositTableBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get depositTableBalance;
+
+  /// No description provided for @depositTableEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No member balances available for this month.'**
+  String get depositTableEmpty;
+
+  /// No description provided for @depositChartsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit Distribution'**
+  String get depositChartsTitle;
+
+  /// No description provided for @depositChartsTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Deposits'**
+  String get depositChartsTotal;
+
+  /// No description provided for @depositChartsNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No deposit data available for this month.'**
+  String get depositChartsNoData;
+
+  /// No description provided for @depositFormTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New Deposit Request'**
+  String get depositFormTitle;
+
+  /// No description provided for @depositFormDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit a deposit for approval. It will appear in balances once approved.'**
+  String get depositFormDesc;
+
   /// No description provided for @addExpenseTitle.
   ///
   /// In en, this message translates to:
@@ -1293,6 +1905,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Apply'**
   String get mealQuickAddApply;
+
+  /// No description provided for @expenseSummaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense Summary'**
+  String get expenseSummaryTitle;
+
+  /// No description provided for @expenseSummaryTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total This Month'**
+  String get expenseSummaryTotal;
+
+  /// No description provided for @expenseSummaryShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Per Person'**
+  String get expenseSummaryShare;
+
+  /// No description provided for @expenseSummaryCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries'**
+  String get expenseSummaryCount;
+
+  /// No description provided for @expenseSummaryAvg.
+  ///
+  /// In en, this message translates to:
+  /// **'Average'**
+  String get expenseSummaryAvg;
+
+  /// No description provided for @expenseTableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense Ledger'**
+  String get expenseTableTitle;
+
+  /// No description provided for @expenseTableDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get expenseTableDate;
+
+  /// No description provided for @expenseTableCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get expenseTableCategory;
+
+  /// No description provided for @expenseTableDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get expenseTableDescription;
+
+  /// No description provided for @expenseTableAddedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Added By'**
+  String get expenseTableAddedBy;
+
+  /// No description provided for @expenseTableAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get expenseTableAmount;
+
+  /// No description provided for @expenseTableEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No expenses match the current filters.'**
+  String get expenseTableEmpty;
+
+  /// No description provided for @expenseFiltersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get expenseFiltersTitle;
+
+  /// No description provided for @expenseFiltersCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get expenseFiltersCategory;
+
+  /// No description provided for @expenseFiltersAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get expenseFiltersAll;
+
+  /// No description provided for @expenseFiltersMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get expenseFiltersMonth;
+
+  /// No description provided for @expenseSearchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get expenseSearchTitle;
+
+  /// No description provided for @expenseSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by description or member…'**
+  String get expenseSearchHint;
+
+  /// No description provided for @expenseChartsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Category Breakdown'**
+  String get expenseChartsTitle;
+
+  /// No description provided for @expenseChartsTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get expenseChartsTotal;
+
+  /// No description provided for @expenseChartsNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No data to chart yet.'**
+  String get expenseChartsNoData;
 
   /// No description provided for @dayCountOne.
   ///
@@ -2193,6 +2931,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Deposit'**
   String get reportMiniDeposit;
+
+  /// No description provided for @reportFiltersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters & Export'**
+  String get reportFiltersTitle;
+
+  /// No description provided for @reportExportPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Export PDF'**
+  String get reportExportPdf;
+
+  /// No description provided for @reportPrintReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Print'**
+  String get reportPrintReport;
+
+  /// No description provided for @reportSummaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Summary'**
+  String get reportSummaryTitle;
+
+  /// No description provided for @reportSummaryMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Members'**
+  String get reportSummaryMembers;
+
+  /// No description provided for @reportSummaryAvgMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg / Member'**
+  String get reportSummaryAvgMeals;
+
+  /// No description provided for @reportChartsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get reportChartsTitle;
+
+  /// No description provided for @reportChartExpenseBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense Breakdown'**
+  String get reportChartExpenseBreakdown;
+
+  /// No description provided for @reportChartMemberMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Member Meals'**
+  String get reportChartMemberMeals;
+
+  /// No description provided for @reportChartNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No data to display'**
+  String get reportChartNoData;
+
+  /// No description provided for @reportChartBazar.
+  ///
+  /// In en, this message translates to:
+  /// **'Bazar'**
+  String get reportChartBazar;
+
+  /// No description provided for @reportChartFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed Costs'**
+  String get reportChartFixed;
+
+  /// No description provided for @reportTableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Member Summary'**
+  String get reportTableTitle;
+
+  /// No description provided for @reportTableEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No member data for this month'**
+  String get reportTableEmpty;
+
+  /// No description provided for @reportMemberDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Activity'**
+  String get reportMemberDetailTitle;
+
+  /// No description provided for @reportColDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get reportColDate;
+
+  /// No description provided for @reportColBreakfast.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast'**
+  String get reportColBreakfast;
+
+  /// No description provided for @reportColLunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch'**
+  String get reportColLunch;
+
+  /// No description provided for @reportColDinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Dinner'**
+  String get reportColDinner;
+
+  /// No description provided for @reportColGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest'**
+  String get reportColGuest;
+
+  /// No description provided for @reportColDayExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses'**
+  String get reportColDayExpense;
+
+  /// No description provided for @reportColDayDeposit.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposits'**
+  String get reportColDayDeposit;
+
+  /// No description provided for @reportColDayTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Day Total'**
+  String get reportColDayTotal;
 
   /// No description provided for @requestsTitle.
   ///

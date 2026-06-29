@@ -2,52 +2,136 @@ import 'package:bachelorpoints/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/responsive/responsive.dart';
 import '../settings_controller.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../../shared/helpers/navigation_helper.dart';
 import '../../notifications/providers/notification_providers.dart';
 import '../../../core/localization/locale_controller.dart';
+import '../widgets/desktop/settings_appearance_card.dart';
+import '../widgets/desktop/settings_notifications_card.dart';
+import '../widgets/desktop/settings_language_card.dart';
+import '../widgets/desktop/settings_account_card.dart';
+import '../widgets/desktop/settings_subscription_card.dart';
+import '../widgets/desktop/settings_admin_card.dart';
 
-class SettingsView extends GetView<SettingsController> {
+class SettingsView extends StatefulWidget {
   const SettingsView({super.key});
+
+  @override
+  State<SettingsView> createState() => _SettingsViewState();
+}
+
+class _SettingsViewState extends State<SettingsView> {
+  late final SettingsController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.find<SettingsController>();
+  }
 
   @override
   Widget build(BuildContext context) {
     final local = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: AppBar(title: Text(local.settings)),
-      body: Obx(() {
-        if (controller.isLoading.value &&
-            controller.isAdmin.value &&
-            controller.members.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        return ListView(
-          padding: const EdgeInsets.all(16.0),
-          children: [
-            if (controller.isAdmin.value) ...[
-              _buildGeneralSettings(context),
-              const SizedBox(height: 16),
-            ],
-            _buildAppearanceCard(context),
-            const SizedBox(height: 16),
-            _buildLanguageCard(context),
-            const SizedBox(height: 16),
-            _buildNotificationPreferencesCard(context),
-            if (controller.isAdmin.value) ...[
-              const SizedBox(height: 16),
-              _buildBazarScheduleCard(context),
-            ],
-            if (controller.messId != null) ...[
-              const SizedBox(height: 16),
-              _buildMealPlanRequestCard(context),
-              const SizedBox(height: 16),
-              _buildMembershipCard(context),
-            ],
-          ],
+    return ResponsiveBuilder(
+      builder: (context, deviceType, sizeClass, constraints) {
+        return Scaffold(
+          appBar: AppBar(title: Text(local.settings)),
+          body: switch (deviceType) {
+            DeviceType.mobile => _buildMobileBody(local),
+            _ => _buildDesktopBody(),
+          },
         );
-      }),
+      },
+    );
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Mobile body — preserves the original ExpansionTile card layout
+  // ────────────────────────────────────────────────────────────────────────────
+  Widget _buildMobileBody(AppLocalizations local) {
+    return Obx(() {
+      if (controller.isLoading.value &&
+          controller.isAdmin.value &&
+          controller.members.isEmpty) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      return ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          if (controller.isAdmin.value) ...[
+            _buildGeneralSettings(context),
+            const SizedBox(height: 16),
+          ],
+          _buildAppearanceCard(context),
+          const SizedBox(height: 16),
+          _buildLanguageCard(context),
+          const SizedBox(height: 16),
+          _buildNotificationPreferencesCard(context),
+          if (controller.isAdmin.value) ...[
+            const SizedBox(height: 16),
+            _buildBazarScheduleCard(context),
+          ],
+          if (controller.messId != null) ...[
+            const SizedBox(height: 16),
+            _buildMealPlanRequestCard(context),
+            const SizedBox(height: 16),
+            _buildMembershipCard(context),
+          ],
+        ],
+      );
+    });
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Desktop body — responsive card grid with dedicated desktop widgets
+  // ────────────────────────────────────────────────────────────────────────────
+  Widget _buildDesktopBody() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1100),
+          child: Obx(() {
+            if (controller.isLoading.value &&
+                controller.isAdmin.value &&
+                controller.members.isEmpty) {
+              return const SizedBox(
+                height: 200,
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final columns = constraints.maxWidth > 760 ? 2 : 1;
+                final cardWidth =
+                    (constraints.maxWidth - 16 * (columns - 1)) / columns;
+
+                final cards = <Widget>[
+                  const SettingsAppearanceCard(),
+                  const SettingsNotificationsCard(),
+                  const SettingsLanguageCard(),
+                  const SettingsAccountCard(),
+                  const SettingsSubscriptionCard(),
+                  if (controller.isAdmin.value) const SettingsAdminCard(),
+                ];
+
+                return Wrap(
+                  spacing: 16,
+                  runSpacing: 16,
+                  children: [
+                    for (final card in cards)
+                      SizedBox(width: cardWidth, child: card),
+                  ],
+                );
+              },
+            );
+          }),
+        ),
+      ),
     );
   }
 

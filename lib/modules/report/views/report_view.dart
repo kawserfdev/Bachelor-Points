@@ -2,88 +2,192 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/responsive/responsive.dart';
 import '../report_controller.dart';
 import '../../../data/models/report_summary_model.dart';
+import '../widgets/desktop/report_summary_cards.dart';
+import '../widgets/desktop/report_charts.dart';
+import '../widgets/desktop/report_filters.dart';
+import '../widgets/desktop/report_member_table.dart';
+import '../widgets/desktop/report_member_detail.dart';
 
-class ReportView extends GetView<ReportController> {
+class ReportView extends StatefulWidget {
   const ReportView({super.key});
+
+  @override
+  State<ReportView> createState() => _ReportViewState();
+}
+
+class _ReportViewState extends State<ReportView> {
+  late final ReportController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.find<ReportController>();
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.reportTitle),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.download),
-            tooltip: l10n.downloadPdfTooltip,
-            onPressed: () => controller.exportToPdf(downloadOnly: true),
+    return ResponsiveBuilder(
+      builder: (context, deviceType, sizeClass, constraints) {
+        final isDesktop = deviceType != DeviceType.mobile;
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(l10n.reportTitle),
+            // On desktop the export buttons live in the filters toolbar.
+            actions: isDesktop
+                ? null
+                : [
+                    IconButton(
+                      icon: const Icon(Icons.download),
+                      tooltip: l10n.downloadPdfTooltip,
+                      onPressed: () =>
+                          controller.exportToPdf(downloadOnly: true),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.print),
+                      tooltip: l10n.printPdfTooltip,
+                      onPressed: () => controller.exportToPdf(),
+                    ),
+                  ],
           ),
-          IconButton(
-            icon: const Icon(Icons.print),
-            tooltip: l10n.printPdfTooltip,
-            onPressed: () => controller.exportToPdf(),
-          ),
-        ],
-      ),
-      body: Obx(() {
-        if (controller.isLoading.value && controller.summary.value == null) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        final selectedMemberSummary = controller.memberSummaries.firstWhereOrNull(
-          (m) => m.userId == controller.selectedMemberId.value,
+          body: switch (deviceType) {
+            DeviceType.mobile => _buildMobileBody(l10n),
+            _ => _buildDesktopBody(),
+          },
         );
-
-        return CustomScrollView(
-          controller: controller.scrollController,
-          slivers: [
-            SliverToBoxAdapter(child: _buildMonthSelector()),
-            SliverToBoxAdapter(child: _buildTabSelector(l10n)),
-            // ── Overview tab ──
-            if (controller.activeTab.value == 0) ...[
-              if (controller.summary.value != null)
-                SliverToBoxAdapter(
-                  child: _buildSummaryCard(controller.summary.value!, l10n),
-                ),
-              if (controller.memberSummaries.isNotEmpty)
-                SliverToBoxAdapter(
-                  child: _buildDataTable(controller.memberSummaries, l10n),
-                ),
-              if (!controller.isLoading.value && controller.summary.value == null)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32.0),
-                    child: Center(child: Text(l10n.noDataForMonth)),
-                  ),
-                ),
-            ]
-            // ── Member Report tab ──
-            else ...[
-              // Show member dropdown only for managers/owners
-              if (controller.currentUserRole.value.canManageMembers)
-                SliverToBoxAdapter(child: _buildMemberDropdown(l10n)),
-              if (selectedMemberSummary != null) ...[
-                SliverToBoxAdapter(
-                  child: _buildMemberSummaryCard(selectedMemberSummary, l10n),
-                ),
-                SliverToBoxAdapter(
-                  child: _buildDailyCards(controller.getSelectedMemberDailyRecords(), l10n),
-                ),
-              ] else
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32.0),
-                    child: Center(child: Text(l10n.noDataForMember)),
-                  ),
-                ),
-            ],
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-          ],
-        );
-      }),
+      },
     );
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Mobile body — preserves the original 3-section scroll layout
+  // ────────────────────────────────────────────────────────────────────────────
+  Widget _buildMobileBody(AppLocalizations l10n) {
+    return Obx(() {
+      if (controller.isLoading.value && controller.summary.value == null) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      final selectedMemberSummary = controller.memberSummaries.firstWhereOrNull(
+        (m) => m.userId == controller.selectedMemberId.value,
+      );
+
+      return CustomScrollView(
+        controller: controller.scrollController,
+        slivers: [
+          SliverToBoxAdapter(child: _buildMonthSelector()),
+          SliverToBoxAdapter(child: _buildTabSelector(l10n)),
+          // ── Overview tab ──
+          if (controller.activeTab.value == 0) ...[
+            if (controller.summary.value != null)
+              SliverToBoxAdapter(
+                child: _buildSummaryCard(controller.summary.value!, l10n),
+              ),
+            if (controller.memberSummaries.isNotEmpty)
+              SliverToBoxAdapter(
+                child: _buildDataTable(controller.memberSummaries, l10n),
+              ),
+            if (!controller.isLoading.value &&
+                controller.summary.value == null)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Center(child: Text(l10n.noDataForMonth)),
+                ),
+              ),
+          ]
+          // ── Member Report tab ──
+          else ...[
+            // Show member dropdown only for managers/owners
+            if (controller.currentUserRole.value.canManageMembers)
+              SliverToBoxAdapter(child: _buildMemberDropdown(l10n)),
+            if (selectedMemberSummary != null) ...[
+              SliverToBoxAdapter(
+                child: _buildMemberSummaryCard(selectedMemberSummary, l10n),
+              ),
+              SliverToBoxAdapter(
+                child: _buildDailyCards(
+                    controller.getSelectedMemberDailyRecords(), l10n),
+              ),
+            ] else
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Center(child: Text(l10n.noDataForMember)),
+                ),
+              ),
+          ],
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+        ],
+      );
+    });
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Desktop body — SaaS dashboard with filters, KPI cards, charts & tables
+  // ────────────────────────────────────────────────────────────────────────────
+  Widget _buildDesktopBody() {
+    final l10n = AppLocalizations.of(context)!;
+    return Obx(() {
+      if (controller.isLoading.value && controller.summary.value == null) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      final selectedMemberSummary = controller.memberSummaries.firstWhereOrNull(
+        (m) => m.userId == controller.selectedMemberId.value,
+      );
+
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1280),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Filter & export toolbar
+                ReportFilters(),
+                const SizedBox(height: 20),
+                // KPI summary cards
+                ReportSummaryCards(),
+                const SizedBox(height: 20),
+                // Tab-specific content
+                if (controller.activeTab.value == 0) ...[
+                  // Overview: charts + member table side by side
+                  SizedBox(
+                    height: 460,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(flex: 2, child: ReportCharts()),
+                        const SizedBox(width: 16),
+                        Expanded(flex: 3, child: ReportMemberTable()),
+                      ],
+                    ),
+                  ),
+                ] else ...[
+                  // Member Report: daily activity table
+                  if (selectedMemberSummary != null)
+                    SizedBox(
+                      height: 520,
+                      child: ReportMemberDetail(),
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Center(child: Text(l10n.noDataForMember)),
+                    ),
+                ],
+                const SizedBox(height: 24),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
   }
 
   // ────────────────────────────────────────────────────────────────────────────

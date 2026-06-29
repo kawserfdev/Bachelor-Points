@@ -143,7 +143,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
 
 /*
-
+when DeviceType is tablet or desktop then Bottom navigationbar  can hide
 lib
 lib/core
 lib/core/auth

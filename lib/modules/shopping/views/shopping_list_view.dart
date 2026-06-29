@@ -3,20 +3,53 @@ import 'package:get/get.dart';
 import 'package:bachelorpoints/core/routes/app_routes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:bachelorpoints/l10n/app_localizations.dart';
+import '../../../core/responsive/responsive.dart';
 import '../shopping_controller.dart';
 import '../../../data/models/shopping_item_model.dart';
 import '../../../data/models/shopping_list_model.dart';
+import '../widgets/desktop/shopping_checklist.dart';
+import '../widgets/desktop/shopping_reminder_card.dart';
+import '../widgets/desktop/shopping_table.dart';
 
-class ShoppingListView extends GetView<ShoppingController> {
+/// Responsive Shopping screen.
+///
+/// Layout strategy (layout-only redesign — no business logic changes):
+/// * **Mobile**  — preserves the original 3-tab design (Shopping List /
+///   Requests / History) with the list-header progress card and item cards.
+/// * **Tablet/Desktop** — SaaS-style dashboard: a "Bazar Reminder" banner,
+///   then a row pairing the approved-items [ShoppingTable] with a compact
+///   [ShoppingChecklist]. The Requests and History tabs reuse the existing
+///   implementations.
+///
+/// The controller ([ShoppingController]) is reused as-is.
+class ShoppingListView extends StatefulWidget {
   const ShoppingListView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final RxInt currentTab = 0.obs;
+  State<ShoppingListView> createState() => _ShoppingListViewState();
+}
 
+class _ShoppingListViewState extends State<ShoppingListView> {
+  late final ShoppingController controller;
+
+  /// Active tab index shared across mobile/desktop layouts.
+  final RxInt currentTab = 0.obs;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.find<ShoppingController>();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Shopping List'),
+        title: Text(local.shopping),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
         actions: [
           Obx(() {
             if (!controller.isManager) return const SizedBox.shrink();
@@ -41,107 +74,17 @@ class ShoppingListView extends GetView<ShoppingController> {
           }),
         ],
       ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        return Column(
-          children: [
-            // List Header / Info Card (only in Shopping List tab)
-            Obx(() {
-              final activeList = controller.activeList.value;
-              if (activeList != null && currentTab.value == 0) {
-                return _buildListHeader(context, activeList);
-              }
-              return const SizedBox.shrink();
-            }),
-
-            // Tab Selector
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 8.0,
-              ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: SegmentedButton<int>(
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.resolveWith<Color>((
-                      states,
-                    ) {
-                      if (states.contains(WidgetState.selected)) {
-                        return Colors.blue;
-                      }
-                      return Colors.white;
-                    }),
-                    foregroundColor: WidgetStateProperty.resolveWith<Color>((
-                      states,
-                    ) {
-                      if (states.contains(WidgetState.selected)) {
-                        return Colors.white;
-                      }
-                      return Colors.black87;
-                    }),
-                    side: WidgetStateProperty.all(
-                      const BorderSide(color: Colors.blue),
-                    ),
-                    shape: WidgetStateProperty.all(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  segments: const [
-                    ButtonSegment<int>(
-                      value: 0,
-                      label: Text('Shopping List'),
-                      icon: Icon(Icons.shopping_cart_rounded),
-                    ),
-                    ButtonSegment<int>(
-                      value: 1,
-                      label: Text('Requests'),
-                      icon: Icon(Icons.receipt_long_rounded),
-                    ),
-                    ButtonSegment<int>(
-                      value: 2,
-                      label: Text('History'),
-                      icon: Icon(Icons.history_rounded),
-                    ),
-                  ],
-                  selected: {currentTab.value},
-                  onSelectionChanged: (val) {
-                    currentTab.value = val.first;
-                  },
-                ),
-              ),
-            ),
-
-            // Tab Content
-            Expanded(
-              child: Obx(() {
-                if (currentTab.value == 0) {
-                  final activeList = controller.activeList.value;
-                  if (activeList == null) {
-                    return _buildNoActiveListState(context);
-                  }
-                  return _buildShoppingListTab(context);
-                } else if (currentTab.value == 1) {
-                  final activeList = controller.activeList.value;
-                  if (activeList == null) {
-                    return const Center(
-                      child: Text('No active shopping list to view requests.'),
-                    );
-                  }
-                  return _buildRequestsTab(context);
-                } else {
-                  return _buildHistoryTab(context);
-                }
-              }),
-            ),
-          ],
-        );
-      }),
+      body: SafeArea(
+        child: ResponsiveBuilder(
+          builder: (context, deviceType, sizeClass, constraints) {
+            return switch (deviceType) {
+              DeviceType.mobile => _buildMobileBody(context, local),
+              DeviceType.tablet => _buildDesktopBody(context, local),
+              DeviceType.desktop => _buildDesktopBody(context, local),
+            };
+          },
+        ),
+      ),
       floatingActionButton: Obx(() {
         final hasActiveList = controller.activeList.value != null;
         if (!hasActiveList) return const SizedBox.shrink();
@@ -152,6 +95,240 @@ class ShoppingListView extends GetView<ShoppingController> {
           icon: const Icon(Icons.add_shopping_cart_rounded),
         );
       }),
+    );
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Mobile — preserves the original 3-tab design exactly.
+  // ────────────────────────────────────────────────────────────────────────────
+  Widget _buildMobileBody(BuildContext context, AppLocalizations local) {
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      return Column(
+        children: [
+          // List Header / Info Card (only in Shopping List tab)
+          Obx(() {
+            final activeList = controller.activeList.value;
+            if (activeList != null && currentTab.value == 0) {
+              return _buildListHeader(context, activeList);
+            }
+            return const SizedBox.shrink();
+          }),
+
+          // Tab Selector
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SegmentedButton<int>(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.resolveWith<Color>((
+                    states,
+                  ) {
+                    if (states.contains(WidgetState.selected)) {
+                      return Colors.blue;
+                    }
+                    return Colors.white;
+                  }),
+                  foregroundColor: WidgetStateProperty.resolveWith<Color>((
+                    states,
+                  ) {
+                    if (states.contains(WidgetState.selected)) {
+                      return Colors.white;
+                    }
+                    return Colors.black87;
+                  }),
+                  side: WidgetStateProperty.all(
+                    const BorderSide(color: Colors.blue),
+                  ),
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                segments: const [
+                  ButtonSegment<int>(
+                    value: 0,
+                    label: Text('Shopping List'),
+                    icon: Icon(Icons.shopping_cart_rounded),
+                  ),
+                  ButtonSegment<int>(
+                    value: 1,
+                    label: Text('Requests'),
+                    icon: Icon(Icons.receipt_long_rounded),
+                  ),
+                  ButtonSegment<int>(
+                    value: 2,
+                    label: Text('History'),
+                    icon: Icon(Icons.history_rounded),
+                  ),
+                ],
+                selected: {currentTab.value},
+                onSelectionChanged: (val) {
+                  currentTab.value = val.first;
+                },
+              ),
+            ),
+          ),
+
+          // Tab Content
+          Expanded(
+            child: Obx(() {
+              if (currentTab.value == 0) {
+                final activeList = controller.activeList.value;
+                if (activeList == null) {
+                  return _buildNoActiveListState(context);
+                }
+                return _buildShoppingListTab(context);
+              } else if (currentTab.value == 1) {
+                final activeList = controller.activeList.value;
+                if (activeList == null) {
+                  return const Center(
+                    child: Text('No active shopping list to view requests.'),
+                  );
+                }
+                return _buildRequestsTab(context);
+              } else {
+                return _buildHistoryTab(context);
+              }
+            }),
+          ),
+        ],
+      );
+    });
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Tablet / Desktop — SaaS dashboard: reminder card + table/checklist row.
+  // ────────────────────────────────────────────────────────────────────────────
+  Widget _buildDesktopBody(BuildContext context, AppLocalizations local) {
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      return Column(
+        children: [
+          _buildDesktopTabSelector(context),
+          Expanded(
+            child: Obx(() {
+              if (currentTab.value == 0) {
+                return _buildDesktopShoppingTab(context, local);
+              } else if (currentTab.value == 1) {
+                final activeList = controller.activeList.value;
+                if (activeList == null) {
+                  return const Center(
+                    child: Text('No active shopping list to view requests.'),
+                  );
+                }
+                return _buildRequestsTab(context);
+              } else {
+                return _buildHistoryTab(context);
+              }
+            }),
+          ),
+        ],
+      );
+    });
+  }
+
+  /// Desktop tab selector — theme-aware, full-width.
+  Widget _buildDesktopTabSelector(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+      child: SegmentedButton<int>(
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+            if (states.contains(WidgetState.selected)) return cs.primary;
+            return cs.surface;
+          }),
+          foregroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+            if (states.contains(WidgetState.selected)) return cs.onPrimary;
+            return cs.onSurface;
+          }),
+          side: WidgetStateProperty.all(BorderSide(color: cs.outlineVariant)),
+          shape: WidgetStateProperty.all(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+        segments: const [
+          ButtonSegment<int>(
+            value: 0,
+            label: Text('Shopping List'),
+            icon: Icon(Icons.shopping_cart_rounded),
+          ),
+          ButtonSegment<int>(
+            value: 1,
+            label: Text('Requests'),
+            icon: Icon(Icons.receipt_long_rounded),
+          ),
+          ButtonSegment<int>(
+            value: 2,
+            label: Text('History'),
+            icon: Icon(Icons.history_rounded),
+          ),
+        ],
+        selected: {currentTab.value},
+        onSelectionChanged: (val) {
+          currentTab.value = val.first;
+        },
+      ),
+    );
+  }
+
+  /// Desktop "Shopping List" tab — reminder card + table/checklist row.
+  Widget _buildDesktopShoppingTab(
+    BuildContext context,
+    AppLocalizations local,
+  ) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 80),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1280),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ShoppingReminderCard(
+                onCreateList: () => _showCreateListDialog(context),
+                onCompleteList: () => _showCompleteListConfirmation(context),
+              ),
+              const SizedBox(height: 24),
+              Obx(() {
+                if (controller.activeList.value == null) {
+                  return const SizedBox.shrink();
+                }
+                final items = controller.approvedItems;
+                return SizedBox(
+                  height: 440,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: ShoppingTable(items: items),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 2,
+                        child: ShoppingChecklist(items: items),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -322,7 +499,7 @@ class ShoppingListView extends GetView<ShoppingController> {
               const SizedBox(height: 8),
               LinearProgressIndicator(
                 value: progress,
-                backgroundColor: colorScheme.surfaceVariant,
+                backgroundColor: colorScheme.surfaceContainerHighest,
                 minHeight: 8,
                 borderRadius: BorderRadius.circular(4),
               ),
@@ -384,7 +561,7 @@ class ShoppingListView extends GetView<ShoppingController> {
           margin: const EdgeInsets.symmetric(vertical: 6),
           elevation: 0,
           color: item.isPurchased
-              ? colorScheme.surfaceVariant.withAlpha(80)
+              ? colorScheme.surfaceContainerHighest.withAlpha(80)
               : colorScheme.surface,
           shape: RoundedRectangleBorder(
             side: BorderSide(
@@ -595,7 +772,7 @@ class ShoppingListView extends GetView<ShoppingController> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: colorScheme.surfaceVariant.withAlpha(50),
+                      color: colorScheme.surfaceContainerHighest.withAlpha(50),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(

@@ -134,6 +134,178 @@ class AppLocalizationsEn extends AppLocalizations {
   String get changeRequestPending => 'Change Request Pending Manager Approval';
 
   @override
+  String get settingsCategoriesTitle => 'Settings Categories';
+
+  @override
+  String get settingsAppearanceTitle => 'Appearance';
+
+  @override
+  String get settingsAppearanceDesc => 'Choose how the app looks';
+
+  @override
+  String get settingsNotificationsTitle => 'Notifications';
+
+  @override
+  String get settingsNotificationsDesc => 'Manage your alerts';
+
+  @override
+  String get settingsLanguageTitle => 'Language';
+
+  @override
+  String get settingsLanguageDesc => 'Select your interface language';
+
+  @override
+  String get settingsThemeTitle => 'Theme';
+
+  @override
+  String get settingsThemeDesc => 'Light, dark or system';
+
+  @override
+  String get settingsAccountTitle => 'Account';
+
+  @override
+  String get settingsAccountDesc => 'Profile, security and membership';
+
+  @override
+  String get settingsSubscriptionTitle => 'Subscription';
+
+  @override
+  String get settingsSubscriptionDesc => 'Your current plan';
+
+  @override
+  String get settingsAdminTitle => 'Administration';
+
+  @override
+  String get settingsAdminDesc => 'Mess-wide controls (managers only)';
+
+  @override
+  String get settingsSubscriptionFreePlan => 'Free Plan';
+
+  @override
+  String get settingsSubscriptionActive => 'Active';
+
+  @override
+  String get settingsSubscriptionFeatures => 'All core mess features unlocked';
+
+  @override
+  String get settingsSubscriptionManage => 'Manage Plan';
+
+  @override
+  String get settingsAccountLogout => 'Log Out';
+
+  @override
+  String get settingsAccountLogoutDesc => 'Sign out of your account';
+
+  @override
+  String get settingsAccountExitMess => 'Request to Exit Mess';
+
+  @override
+  String get settingsAccountExitMessDesc =>
+      'Submit a request to leave this mess';
+
+  @override
+  String get settingsAccountMealPlan => 'Default Meal Plan';
+
+  @override
+  String get settingsAccountMealPlanDesc => 'Your regular daily portions';
+
+  @override
+  String get settingsAccountRequestChange => 'Request Change';
+
+  @override
+  String get settingsAdminCutoff => 'Meal Cutoff Time';
+
+  @override
+  String get settingsAdminCutoffDesc => 'Deadline for editing daily meals';
+
+  @override
+  String get settingsAdminBazar => 'Bazar Schedule';
+
+  @override
+  String get settingsAdminBazarDesc => 'Assign shopping duties to members';
+
+  @override
+  String get settingsAdminAssignDuty => 'Assign New Duty';
+
+  @override
+  String get settingsAdminNoSchedules => 'No bazar duties scheduled';
+
+  @override
+  String get settingsAdminSelectMember => 'Select Member';
+
+  @override
+  String get settingsAdminSelectDate => 'Select Date';
+
+  @override
+  String get settingsAdminAssign => 'Assign';
+
+  @override
+  String get settingsAdminCancel => 'Cancel';
+
+  @override
+  String get settingsExitDialogTitle => 'Exit Mess Request';
+
+  @override
+  String get settingsExitDialogInfo =>
+      'Please provide a reason for exiting the mess. This will be visible to the manager/admin.';
+
+  @override
+  String get settingsExitDialogReason => 'Reason for Exiting *';
+
+  @override
+  String get settingsExitDialogHint =>
+      'e.g. Moving to a new place / Leaving the city';
+
+  @override
+  String get settingsExitDialogSubmit => 'Request Submit';
+
+  @override
+  String get settingsMealPlanDialogTitle => 'Request Meal Plan Change';
+
+  @override
+  String get settingsMealPlanDialogInfo =>
+      'Request updates to your regular daily portions for a specific date range. This requires approval from the manager.';
+
+  @override
+  String get settingsMealPlanDialogStart => 'Start Date';
+
+  @override
+  String get settingsMealPlanDialogEnd => 'End Date';
+
+  @override
+  String get settingsMealPlanDialogReason => 'Reason for Change *';
+
+  @override
+  String get settingsMealPlanDialogHint =>
+      'e.g. Diet change, leaving city for few days, etc.';
+
+  @override
+  String get settingsMealPlanDialogSubmit => 'Submit Request';
+
+  @override
+  String get settingsMealPlanBreakfast => 'Breakfast';
+
+  @override
+  String get settingsMealPlanLunch => 'Lunch';
+
+  @override
+  String get settingsMealPlanDinner => 'Dinner';
+
+  @override
+  String get settingsValidationReasonRequired => 'Reason is required.';
+
+  @override
+  String get settingsValidationMemberDate => 'Please select a member and date';
+
+  @override
+  String get settingsLoadingPreferences => 'Loading preferences…';
+
+  @override
+  String settingsErrorPreferences(String error) {
+    return 'Error loading preferences: $error';
+  }
+
+  @override
   String heyGreeting(String greeting) {
     return 'Hey $greeting! 👋';
   }
@@ -194,6 +366,100 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shopping => 'Shopping';
+
+  @override
+  String get shoppingReminderTitle => 'Bazar Reminder';
+
+  @override
+  String get shoppingReminderNoList =>
+      'No active shopping list. Create one to start tracking bazar items.';
+
+  @override
+  String shoppingReminderProgress(Object purchased, Object total) {
+    return '$purchased of $total items purchased';
+  }
+
+  @override
+  String get shoppingReminderComplete =>
+      'All items purchased! Time to wrap up this list.';
+
+  @override
+  String shoppingReminderUrgent(Object count) {
+    return '$count urgent item(s) still need to be bought.';
+  }
+
+  @override
+  String get shoppingReminderCreate => 'Create List';
+
+  @override
+  String get shoppingReminderCompleteBtn => 'Complete List';
+
+  @override
+  String get shoppingTableTitle => 'Shopping List';
+
+  @override
+  String get shoppingTableItem => 'Item';
+
+  @override
+  String get shoppingTableQty => 'Quantity';
+
+  @override
+  String get shoppingTablePriority => 'Priority';
+
+  @override
+  String get shoppingTableRequestedBy => 'Requested By';
+
+  @override
+  String get shoppingTableStatus => 'Status';
+
+  @override
+  String get shoppingTableNote => 'Note';
+
+  @override
+  String get shoppingTableEmpty =>
+      'No approved items yet. Members can request items, and managers will approve them to show up here.';
+
+  @override
+  String get shoppingChecklistTitle => 'Checklist';
+
+  @override
+  String shoppingChecklistProgress(Object purchased, Object total) {
+    return '$purchased/$total purchased';
+  }
+
+  @override
+  String get shoppingChecklistEmpty => 'No items to check off yet.';
+
+  @override
+  String get shoppingChecklistAllDone => 'All done! Great job.';
+
+  @override
+  String get shoppingPriorityUrgent => 'Urgent';
+
+  @override
+  String get shoppingPriorityNormal => 'Normal';
+
+  @override
+  String get shoppingStatusPending => 'Pending';
+
+  @override
+  String get shoppingStatusApproved => 'Approved';
+
+  @override
+  String get shoppingStatusRejected => 'Rejected';
+
+  @override
+  String get shoppingStatusPurchased => 'Purchased';
+
+  @override
+  String get shoppingStatusNotPurchased => 'Not Purchased';
+
+  @override
+  String get shoppingFormTitle => 'Request Bazar Item';
+
+  @override
+  String get shoppingFormDesc =>
+      'Your requested item will be sent to the mess manager/admin for approval before showing up on the shopping list.';
 
   @override
   String get postProperty => 'Post Property';
@@ -423,6 +689,65 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get depositSummaryTitle => 'Payment Summary';
+
+  @override
+  String get depositSummaryTotalDeposits => 'Total Deposits';
+
+  @override
+  String get depositSummaryTotalCost => 'Total Cost';
+
+  @override
+  String get depositSummaryNetBalance => 'Net Balance';
+
+  @override
+  String get depositSummaryMembers => 'Members';
+
+  @override
+  String get depositTableTitle => 'Member Balance Ledger';
+
+  @override
+  String get depositTableMember => 'Member';
+
+  @override
+  String get depositTableMeals => 'Meals';
+
+  @override
+  String get depositTableDeposits => 'Deposits';
+
+  @override
+  String get depositTableMealCost => 'Meal Cost';
+
+  @override
+  String get depositTableFixedCost => 'Fixed Cost';
+
+  @override
+  String get depositTableTotalCost => 'Total Cost';
+
+  @override
+  String get depositTableBalance => 'Balance';
+
+  @override
+  String get depositTableEmpty =>
+      'No member balances available for this month.';
+
+  @override
+  String get depositChartsTitle => 'Deposit Distribution';
+
+  @override
+  String get depositChartsTotal => 'Total Deposits';
+
+  @override
+  String get depositChartsNoData => 'No deposit data available for this month.';
+
+  @override
+  String get depositFormTitle => 'New Deposit Request';
+
+  @override
+  String get depositFormDesc =>
+      'Submit a deposit for approval. It will appear in balances once approved.';
+
+  @override
   String get addExpenseTitle => 'Add Expense';
 
   @override
@@ -629,6 +954,69 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mealQuickAddApply => 'Apply';
+
+  @override
+  String get expenseSummaryTitle => 'Expense Summary';
+
+  @override
+  String get expenseSummaryTotal => 'Total This Month';
+
+  @override
+  String get expenseSummaryShare => 'Per Person';
+
+  @override
+  String get expenseSummaryCount => 'Entries';
+
+  @override
+  String get expenseSummaryAvg => 'Average';
+
+  @override
+  String get expenseTableTitle => 'Expense Ledger';
+
+  @override
+  String get expenseTableDate => 'Date';
+
+  @override
+  String get expenseTableCategory => 'Category';
+
+  @override
+  String get expenseTableDescription => 'Description';
+
+  @override
+  String get expenseTableAddedBy => 'Added By';
+
+  @override
+  String get expenseTableAmount => 'Amount';
+
+  @override
+  String get expenseTableEmpty => 'No expenses match the current filters.';
+
+  @override
+  String get expenseFiltersTitle => 'Filters';
+
+  @override
+  String get expenseFiltersCategory => 'Category';
+
+  @override
+  String get expenseFiltersAll => 'All';
+
+  @override
+  String get expenseFiltersMonth => 'Month';
+
+  @override
+  String get expenseSearchTitle => 'Search';
+
+  @override
+  String get expenseSearchHint => 'Search by description or member…';
+
+  @override
+  String get expenseChartsTitle => 'Category Breakdown';
+
+  @override
+  String get expenseChartsTotal => 'Total';
+
+  @override
+  String get expenseChartsNoData => 'No data to chart yet.';
 
   @override
   String get dayCountOne => '1 Day';
@@ -1111,6 +1499,75 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportMiniDeposit => 'Deposit';
+
+  @override
+  String get reportFiltersTitle => 'Filters & Export';
+
+  @override
+  String get reportExportPdf => 'Export PDF';
+
+  @override
+  String get reportPrintReport => 'Print';
+
+  @override
+  String get reportSummaryTitle => 'Monthly Summary';
+
+  @override
+  String get reportSummaryMembers => 'Members';
+
+  @override
+  String get reportSummaryAvgMeals => 'Avg / Member';
+
+  @override
+  String get reportChartsTitle => 'Analytics';
+
+  @override
+  String get reportChartExpenseBreakdown => 'Expense Breakdown';
+
+  @override
+  String get reportChartMemberMeals => 'Member Meals';
+
+  @override
+  String get reportChartNoData => 'No data to display';
+
+  @override
+  String get reportChartBazar => 'Bazar';
+
+  @override
+  String get reportChartFixed => 'Fixed Costs';
+
+  @override
+  String get reportTableTitle => 'Member Summary';
+
+  @override
+  String get reportTableEmpty => 'No member data for this month';
+
+  @override
+  String get reportMemberDetailTitle => 'Daily Activity';
+
+  @override
+  String get reportColDate => 'Date';
+
+  @override
+  String get reportColBreakfast => 'Breakfast';
+
+  @override
+  String get reportColLunch => 'Lunch';
+
+  @override
+  String get reportColDinner => 'Dinner';
+
+  @override
+  String get reportColGuest => 'Guest';
+
+  @override
+  String get reportColDayExpense => 'Expenses';
+
+  @override
+  String get reportColDayDeposit => 'Deposits';
+
+  @override
+  String get reportColDayTotal => 'Day Total';
 
   @override
   String get requestsTitle => 'Requests';
