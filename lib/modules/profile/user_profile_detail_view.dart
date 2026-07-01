@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:bachelorpoints/l10n/app_localizations.dart';
 
+import '../../core/responsive/responsive.dart';
 import '../../core/routes/app_routes.dart';
 import '../../data/models/user_profile_detail_model.dart';
 import 'user_profile_detail_controller.dart';
@@ -14,6 +15,11 @@ import 'user_profile_detail_controller.dart';
 /// Shows the current user's personal info, profile completion ring,
 /// mess membership, and account metadata — all driven reactively by
 /// [UserProfileDetailController] which streams the Firestore document.
+///
+/// The layout is fully responsive:
+/// * **Mobile** — single-column scrollable list (original layout).
+/// * **Tablet / Desktop** — content centred with a constrained max width;
+///   the info tiles are arranged in a 2-column grid to use horizontal space.
 class UserProfileDetailView extends GetView<UserProfileDetailController> {
   const UserProfileDetailView({super.key});
 
@@ -51,109 +57,124 @@ class UserProfileDetailView extends GetView<UserProfileDetailController> {
             slivers: [
               _buildAppBar(context, l10n, profile, colorScheme, theme),
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    const SizedBox(height: 20),
-                    _buildCompletionCard(context, l10n, profile, theme, colorScheme),
-                    const SizedBox(height: 20),
-                    if (controller.messName.isNotEmpty) ...[
-                      _buildMessCard(context, colorScheme, theme),
-                      const SizedBox(height: 20),
-                    ],
-                    _buildSectionLabel(context, l10n.sectionPersonalInfo),
-                    const SizedBox(height: 12),
-                    _buildInfoTile(
-                      context: context,
-                      icon: Icons.person_outline_rounded,
-                      label: l10n.fieldFullName,
-                      value: profile.fullName.isNotEmpty ? profile.fullName : '—',
-                      color: colorScheme.primary,
-                      theme: theme,
-                    ),
-                    _buildInfoTile(
-                      context: context,
-                      icon: Icons.email_outlined,
-                      label: l10n.fieldEmail,
-                      value: profile.email.isNotEmpty ? profile.email : '—',
-                      color: const Color(0xFF42A5F5),
-                      theme: theme,
-                    ),
-                    _buildInfoTile(
-                      context: context,
-                      icon: Icons.phone_outlined,
-                      label: l10n.fieldPhone,
-                      value: profile.phoneNumber.isNotEmpty
-                          ? profile.phoneNumber
-                          : l10n.fieldNotSet,
-                      color: const Color(0xFF66BB6A),
-                      theme: theme,
-                    ),
-                    _buildInfoTile(
-                      context: context,
-                      icon: Icons.location_on_outlined,
-                      label: l10n.fieldAddress,
-                      value: profile.address.isNotEmpty
-                          ? profile.address
-                          : l10n.fieldNotSet,
-                      color: const Color(0xFFFFA726),
-                      theme: theme,
-                    ),
-                    if (profile.bio.isNotEmpty)
-                      _buildInfoTile(
-                        context: context,
-                        icon: Icons.info_outline_rounded,
-                        label: l10n.fieldBio,
-                        value: profile.bio,
-                        color: const Color(0xFFAB47BC),
-                        theme: theme,
+                padding: EdgeInsets.fromLTRB(
+                  context.responsivePadding,
+                  0,
+                  context.responsivePadding,
+                  100,
+                ),
+                sliver: SliverToBoxAdapter(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 760),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 20),
+                          _buildCompletionCard(context, l10n, profile, theme, colorScheme),
+                          const SizedBox(height: 20),
+                          if (controller.messName.isNotEmpty) ...[
+                            _buildMessCard(context, colorScheme, theme),
+                            const SizedBox(height: 20),
+                          ],
+                          _buildSectionLabel(context, l10n.sectionPersonalInfo),
+                          const SizedBox(height: 12),
+                          _buildInfoTileGrid(
+                            context,
+                            children: [
+                              _InfoTileData(
+                                icon: Icons.person_outline_rounded,
+                                label: l10n.fieldFullName,
+                                value: profile.fullName.isNotEmpty ? profile.fullName : '—',
+                                color: colorScheme.primary,
+                              ),
+                              _InfoTileData(
+                                icon: Icons.email_outlined,
+                                label: l10n.fieldEmail,
+                                value: profile.email.isNotEmpty ? profile.email : '—',
+                                color: const Color(0xFF42A5F5),
+                              ),
+                              _InfoTileData(
+                                icon: Icons.phone_outlined,
+                                label: l10n.fieldPhone,
+                                value: profile.phoneNumber.isNotEmpty
+                                    ? profile.phoneNumber
+                                    : l10n.fieldNotSet,
+                                color: const Color(0xFF66BB6A),
+                              ),
+                              _InfoTileData(
+                                icon: Icons.location_on_outlined,
+                                label: l10n.fieldAddress,
+                                value: profile.address.isNotEmpty
+                                    ? profile.address
+                                    : l10n.fieldNotSet,
+                                color: const Color(0xFFFFA726),
+                              ),
+                              if (profile.bio.isNotEmpty)
+                                _InfoTileData(
+                                  icon: Icons.info_outline_rounded,
+                                  label: l10n.fieldBio,
+                                  value: profile.bio,
+                                  color: const Color(0xFFAB47BC),
+                                ),
+                            ],
+                            theme: theme,
+                          ),
+                          const SizedBox(height: 20),
+                          _buildSectionLabel(context, l10n.sectionVerification),
+                          const SizedBox(height: 12),
+                          _buildInfoTileGrid(
+                            context,
+                            children: [
+                              _InfoTileData(
+                                icon: Icons.badge_outlined,
+                                label: l10n.fieldNidNumber,
+                                value: profile.nidNumber.isNotEmpty
+                                    ? profile.nidNumber
+                                    : l10n.fieldNotProvided,
+                                color: const Color(0xFFEF5350),
+                              ),
+                            ],
+                            theme: theme,
+                          ),
+                          const SizedBox(height: 20),
+                          _buildSectionLabel(context, l10n.sectionAccountInfo),
+                          const SizedBox(height: 12),
+                          _buildInfoTileGrid(
+                            context,
+                            children: [
+                              _InfoTileData(
+                                icon: Icons.fingerprint_rounded,
+                                label: l10n.fieldUserId,
+                                value: profile.uid,
+                                color: colorScheme.tertiary,
+                                copyable: true,
+                              ),
+                              if (profile.createdAt != null)
+                                _InfoTileData(
+                                  icon: Icons.calendar_today_outlined,
+                                  label: l10n.fieldMemberSince,
+                                  value: DateFormat('d MMM yyyy', langCode)
+                                      .format(profile.createdAt!),
+                                  color: const Color(0xFF26C6DA),
+                                ),
+                              if (profile.updatedAt != null)
+                                _InfoTileData(
+                                  icon: Icons.update_rounded,
+                                  label: l10n.fieldLastUpdated,
+                                  value: DateFormat('d MMM yyyy, h:mm a', langCode)
+                                      .format(profile.updatedAt!),
+                                  color: const Color(0xFF78909C),
+                                ),
+                            ],
+                            theme: theme,
+                          ),
+                          const SizedBox(height: 28),
+                          _buildEditButton(context, l10n, colorScheme),
+                        ],
                       ),
-                    const SizedBox(height: 20),
-                    _buildSectionLabel(context, l10n.sectionVerification),
-                    const SizedBox(height: 12),
-                    _buildInfoTile(
-                      context: context,
-                      icon: Icons.badge_outlined,
-                      label: l10n.fieldNidNumber,
-                      value: profile.nidNumber.isNotEmpty
-                          ? profile.nidNumber
-                          : l10n.fieldNotProvided,
-                      color: const Color(0xFFEF5350),
-                      theme: theme,
                     ),
-                    const SizedBox(height: 20),
-                    _buildSectionLabel(context, l10n.sectionAccountInfo),
-                    const SizedBox(height: 12),
-                    _buildInfoTile(
-                      context: context,
-                      icon: Icons.fingerprint_rounded,
-                      label: l10n.fieldUserId,
-                      value: profile.uid,
-                      color: colorScheme.tertiary,
-                      theme: theme,
-                      copyable: true,
-                    ),
-                    if (profile.createdAt != null)
-                      _buildInfoTile(
-                        context: context,
-                        icon: Icons.calendar_today_outlined,
-                        label: l10n.fieldMemberSince,
-                        value: DateFormat('d MMM yyyy', langCode).format(profile.createdAt!),
-                        color: const Color(0xFF26C6DA),
-                        theme: theme,
-                      ),
-                    if (profile.updatedAt != null)
-                      _buildInfoTile(
-                        context: context,
-                        icon: Icons.update_rounded,
-                        label: l10n.fieldLastUpdated,
-                        value: DateFormat('d MMM yyyy, h:mm a', langCode).format(profile.updatedAt!),
-                        color: const Color(0xFF78909C),
-                        theme: theme,
-                      ),
-                    const SizedBox(height: 28),
-                    _buildEditButton(context, l10n, colorScheme),
-                  ]),
+                  ),
                 ),
               ),
             ],
@@ -361,6 +382,42 @@ class UserProfileDetailView extends GetView<UserProfileDetailController> {
   }
 
   // ─────────────────────────────────────────────────────────────
+  // Responsive info-tile grid — single column on mobile, 2 columns on wide
+  // ─────────────────────────────────────────────────────────────
+  Widget _buildInfoTileGrid(
+    BuildContext context, {
+    required List<_InfoTileData> children,
+    required ThemeData theme,
+  }) {
+    if (context.isWide && children.length > 1) {
+      return Wrap(
+        spacing: 12,
+        runSpacing: 10,
+        children: children
+            .map((d) => _SizedInfoTile(
+                  data: d,
+                  theme: theme,
+                  width: (MediaQuery.sizeOf(context).width.clamp(0, 760) - 12) / 2,
+                ))
+            .toList(),
+      );
+    }
+    return Column(
+      children: children
+          .map((d) => _buildInfoTile(
+                context: context,
+                icon: d.icon,
+                label: d.label,
+                value: d.value,
+                color: d.color,
+                theme: theme,
+                copyable: d.copyable,
+              ))
+          .toList(),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
   // Helpers
   // ─────────────────────────────────────────────────────────────
   Widget _buildSectionLabel(BuildContext context, String label) {
@@ -473,6 +530,104 @@ class UserProfileDetailView extends GetView<UserProfileDetailController> {
     if (pct >= 0.6) return l10n.profileGoodStart;
     if (pct >= 0.4) return l10n.profileAddPhoneAddress;
     return l10n.profileIncomplete;
+  }
+}
+
+/// Plain data holder for an info tile, used by the responsive grid helper.
+class _InfoTileData {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+  final bool copyable;
+
+  const _InfoTileData({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+    this.copyable = false,
+  });
+}
+
+/// A fixed-width info tile used inside the 2-column [Wrap] on wide screens.
+class _SizedInfoTile extends StatelessWidget {
+  const _SizedInfoTile({required this.data, required this.theme, required this.width});
+
+  final _InfoTileData data;
+  final ThemeData theme;
+  final double width;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return SizedBox(
+      width: width,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest.withAlpha(70),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: theme.colorScheme.outlineVariant.withAlpha(50),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: data.color.withAlpha(26),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(data.icon, color: data.color, size: 20),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    data.label,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    data.value,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            if (data.copyable)
+              GestureDetector(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: data.value));
+                  Get.snackbar(
+                    l10n.copiedTitle,
+                    l10n.userIdCopied,
+                    snackPosition: SnackPosition.BOTTOM,
+                    duration: const Duration(seconds: 2),
+                  );
+                },
+                child: Icon(
+                  Icons.copy_rounded,
+                  size: 18,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

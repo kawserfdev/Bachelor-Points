@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bachelorpoints/l10n/app_localizations.dart';
+import '../../core/responsive/responsive.dart';
 import '../../services/auth_service.dart';
 import '../../core/routes/app_routes.dart';
 import 'profile_controller.dart';
 
 /// Profile tab — displays user info, completion progress, KYC status,
 /// credit balance, referral info, and app settings.
+///
+/// The layout is fully responsive:
+/// * **Mobile** — single-column scrollable list (original layout).
+/// * **Tablet / Desktop** — content centred with a constrained max width;
+///   the menu items are arranged in a 2-column grid to use horizontal space.
 class ProfileView extends GetView<ProfileController> {
   const ProfileView({super.key});
 
@@ -27,198 +33,236 @@ class ProfileView extends GetView<ProfileController> {
 
     return SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Obx(
-          () => Column(
-            children: [
-              // ── Profile Header ──
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      colorScheme.primary,
-                      colorScheme.primary.withAlpha(204),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  children: [
-                    _buildAvatar(displayName),
-                    const SizedBox(height: 14),
-                    // Verification badges row
-                    if (controller.badges.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Wrap(
-                          spacing: 6,
-                          children: controller.badges.map((b) {
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withAlpha(51),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.verified_rounded,
-                                    size: 14,
-                                    color: Colors.amber.shade300,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    _badgeLabel(l10n, b.badgeType),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                        ),
+        padding: EdgeInsets.all(context.responsivePadding),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: Obx(
+              () => Column(
+                children: [
+                  // ── Profile Header ──
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          colorScheme.primary,
+                          colorScheme.primary.withAlpha(204),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                    Text(
-                      displayName,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                      ),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      email,
-                      style: TextStyle(
-                        color: Colors.white.withAlpha(204),
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // ── Profile Completion ──
-              _buildCompletionCard(context, l10n, theme),
-              const SizedBox(height: 16),
-
-              // ── Credit Summary ──
-              _buildCreditCard(l10n, theme, colorScheme),
-              const SizedBox(height: 16),
-
-              // ── Account Section ──
-              _buildSectionHeader(l10n.profileSectionAccount, Icons.person_outline_rounded),
-              _ProfileMenuItem(
-                icon: Icons.account_circle_outlined,
-                iconBgColor: const Color(0xFF6366F1).withAlpha(26),
-                iconColor: const Color(0xFF6366F1),
-                label: l10n.myProfileDetails,
-                onTap: () => context.push(AppRoutes.profileDetail),
-              ),
-              _ProfileMenuItem(
-                icon: Icons.monetization_on_rounded,
-                iconBgColor: const Color(0xFFFFC107).withAlpha(26),
-                iconColor: const Color(0xFFFF8F00),
-                label: l10n.credits,
-                trailing: Text(
-                  '${controller.creditBalance.value}',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: colorScheme.primary,
-                  ),
-                ),
-                onTap: () => context.push(AppRoutes.creditBalance),
-              ),
-              _ProfileMenuItem(
-                icon: Icons.share_rounded,
-                iconBgColor: const Color(0xFF2196F3).withAlpha(26),
-                iconColor: const Color(0xFF2196F3),
-                label: l10n.referral,
-                trailing: controller.pendingCommission > 0
-                    ? Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF4CAF50).withAlpha(26),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '+${controller.pendingCommission}',
-                          style: const TextStyle(
-                            color: Color(0xFF4CAF50),
-                            fontWeight: FontWeight.w700,
-                            fontSize: 12,
+                    child: Column(
+                      children: [
+                        _buildAvatar(displayName),
+                        const SizedBox(height: 14),
+                        // Verification badges row
+                        if (controller.badges.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Wrap(
+                              spacing: 6,
+                              children: controller.badges.map((b) {
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withAlpha(51),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.verified_rounded,
+                                        size: 14,
+                                        color: Colors.amber.shade300,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        _badgeLabel(l10n, b.badgeType),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        Text(
+                          displayName,
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
-                      )
-                    : null,
-                onTap: () => context.push(AppRoutes.referral),
-              ),
-              const SizedBox(height: 12),
-
-              // ── App Section ──
-              _buildSectionHeader(l10n.profileSectionApp, Icons.settings_rounded),
-              _ProfileMenuItem(
-                icon: Icons.settings_rounded,
-                iconBgColor: const Color(0xFF5C6BC0).withAlpha(26),
-                iconColor: const Color(0xFF5C6BC0),
-                label: l10n.settings,
-                onTap: () => context.push(AppRoutes.settings),
-              ),
-              _ProfileMenuItem(
-                icon: Icons.info_outline_rounded,
-                iconBgColor: const Color(0xFF66BB6A).withAlpha(26),
-                iconColor: const Color(0xFF66BB6A),
-                label: l10n.about,
-                onTap: () {},
-              ),
-              _ProfileMenuItem(
-                icon: Icons.help_outline_rounded,
-                iconBgColor: const Color(0xFFFFA726).withAlpha(26),
-                iconColor: const Color(0xFFFFA726),
-                label: l10n.helpSupport,
-                onTap: () {},
-              ),
-
-              const SizedBox(height: 32),
-
-              // ── Logout Button ──
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => _showLogoutDialog(context, l10n),
-                  icon: const Icon(Icons.logout_rounded, color: Colors.red),
-                  label: Text(
-                    l10n.logoutBtn,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 52),
-                    side: BorderSide(color: Colors.red.withAlpha(77)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                        const SizedBox(height: 4),
+                        Text(
+                          email,
+                          style: TextStyle(
+                            color: Colors.white.withAlpha(204),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
+                  const SizedBox(height: 20),
+
+                  // ── Profile Completion ──
+                  _buildCompletionCard(context, l10n, theme),
+                  const SizedBox(height: 16),
+
+                  // ── Credit Summary ──
+                  _buildCreditCard(l10n, theme, colorScheme),
+                  const SizedBox(height: 16),
+
+                  // ── Account Section ──
+                  _buildSectionHeader(l10n.profileSectionAccount, Icons.person_outline_rounded),
+                  _buildMenuGroup(
+                    context,
+                    children: [
+                      _ProfileMenuItem(
+                        icon: Icons.account_circle_outlined,
+                        iconBgColor: const Color(0xFF6366F1).withAlpha(26),
+                        iconColor: const Color(0xFF6366F1),
+                        label: l10n.myProfileDetails,
+                        onTap: () => context.push(AppRoutes.profileDetail),
+                      ),
+                      _ProfileMenuItem(
+                        icon: Icons.monetization_on_rounded,
+                        iconBgColor: const Color(0xFFFFC107).withAlpha(26),
+                        iconColor: const Color(0xFFFF8F00),
+                        label: l10n.credits,
+                        trailing: Text(
+                          '${controller.creditBalance.value}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: colorScheme.primary,
+                          ),
+                        ),
+                        onTap: () => context.push(AppRoutes.creditBalance),
+                      ),
+                      _ProfileMenuItem(
+                        icon: Icons.share_rounded,
+                        iconBgColor: const Color(0xFF2196F3).withAlpha(26),
+                        iconColor: const Color(0xFF2196F3),
+                        label: l10n.referral,
+                        trailing: controller.pendingCommission > 0
+                            ? Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF4CAF50).withAlpha(26),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '+${controller.pendingCommission}',
+                                  style: const TextStyle(
+                                    color: Color(0xFF4CAF50),
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              )
+                            : null,
+                        onTap: () => context.push(AppRoutes.referral),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // ── App Section ──
+                  _buildSectionHeader(l10n.profileSectionApp, Icons.settings_rounded),
+                  _buildMenuGroup(
+                    context,
+                    children: [
+                      _ProfileMenuItem(
+                        icon: Icons.settings_rounded,
+                        iconBgColor: const Color(0xFF5C6BC0).withAlpha(26),
+                        iconColor: const Color(0xFF5C6BC0),
+                        label: l10n.settings,
+                        onTap: () => context.push(AppRoutes.settings),
+                      ),
+                      _ProfileMenuItem(
+                        icon: Icons.info_outline_rounded,
+                        iconBgColor: const Color(0xFF66BB6A).withAlpha(26),
+                        iconColor: const Color(0xFF66BB6A),
+                        label: l10n.about,
+                        onTap: () {},
+                      ),
+                      _ProfileMenuItem(
+                        icon: Icons.help_outline_rounded,
+                        iconBgColor: const Color(0xFFFFA726).withAlpha(26),
+                        iconColor: const Color(0xFFFFA726),
+                        label: l10n.helpSupport,
+                        onTap: () {},
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // ── Logout Button ──
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showLogoutDialog(context, l10n),
+                      icon: const Icon(Icons.logout_rounded, color: Colors.red),
+                      label: Text(
+                        l10n.logoutBtn,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 52),
+                        side: BorderSide(color: Colors.red.withAlpha(77)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Responsive menu group — single column on mobile, 2-column grid on wide
+  // ─────────────────────────────────────────────────────────────────────────
+  Widget _buildMenuGroup(BuildContext context, {required List<Widget> children}) {
+    // On wide screens, lay the menu items out in a 2-column grid so the
+    // horizontal space is used. On mobile they stack vertically as before.
+    if (context.isWide) {
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: children.length,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+          childAspectRatio: 4.2,
+        ),
+        itemBuilder: (context, i) => children[i],
+      );
+    }
+    return Column(children: children);
   }
 
   // ── Avatar Widget ──
