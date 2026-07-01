@@ -73,7 +73,7 @@ class _SaasSidebarState extends ConsumerState<SaasSidebar> {
 
   // ── Layout constants ─────────────────────────────────────────────────────
   static const double _expandedWidth = 264;
-  static const double _collapsedWidth = 72;
+  static const double _collapsedWidth = 82;
   static const Duration _animDuration = Duration(milliseconds: 280);
   static const Curve _animCurve = Curves.easeInOutCubicEmphasized;
 

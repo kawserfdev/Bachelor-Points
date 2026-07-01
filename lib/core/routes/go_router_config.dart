@@ -305,8 +305,8 @@ GoRouter buildGoRouter(Ref ref) {
         },
       ),
 
-      // ── Main App Shell (bottom nav tabs) ─────────────────────────────────
-      // ShellRoute keeps the BottomNavigationBar alive across tab switches.
+      // ── Main App Shell (bottom nav tabs & core features) ────────────────
+      // ShellRoute keeps the AppWrapper (which manages drawer and bottom bar) alive.
       ShellRoute(
         builder: (context, state, child) => AppWrapper(child: child),
         routes: [
@@ -331,200 +331,202 @@ GoRouter buildGoRouter(Ref ref) {
               return const ProfileView();
             },
           ),
+
+          // ── Profile Detail & Edit (now part of shell) ────────────────────────
+          GoRoute(
+            path: GoRoutes.profileDetail,
+            builder: (context, state) {
+              UserProfileDetailBinding().dependencies();
+              return const UserProfileDetailView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.editProfile,
+            builder: (context, state) {
+              EditProfileBinding().dependencies();
+              return const EditProfileView();
+            },
+          ),
+
+          // ── Mess Management (now part of shell) ──────────────────────────────
+          GoRoute(
+            path: GoRoutes.createMess,
+            builder: (context, state) {
+              MessBinding().dependencies();
+              return const CreateMessView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.joinMess,
+            builder: (context, state) {
+              MessBinding().dependencies();
+              return const JoinMessView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.members,
+            builder: (context, state) {
+              MessBinding().dependencies();
+              RequestBinding().dependencies();
+              return const MembersView();
+            },
+          ),
+
+          // ── Core Features (now part of shell) ────────────────────────────────
+          GoRoute(
+            path: GoRoutes.mealEntry,
+            builder: (context, state) {
+              MealBinding().dependencies();
+              return const MealEntryView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.expenses,
+            builder: (context, state) {
+              ExpenseBinding().dependencies();
+              return const ExpenseListView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.addExpense,
+            builder: (context, state) {
+              ExpenseBinding().dependencies();
+              return const AddExpenseView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.balanceSummary,
+            builder: (context, state) {
+              BalanceBinding().dependencies();
+              return const BalanceSummaryView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.addDeposit,
+            builder: (context, state) {
+              BalanceBinding().dependencies();
+              return const AddDepositView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.approvals,
+            builder: (context, state) {
+              RequestBinding().dependencies();
+              return const ApprovalView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.notifications,
+            builder: (context, state) => const NotificationView(),
+          ),
+          GoRoute(
+            path: GoRoutes.chat,
+            builder: (context, state) {
+              ChatBinding().dependencies();
+              return const ChatView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.report,
+            builder: (context, state) {
+              ReportBinding().dependencies();
+              return const ReportView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.shoppingList,
+            builder: (context, state) {
+              ShoppingBinding().dependencies();
+              return const ShoppingListView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.addShoppingItem,
+            builder: (context, state) {
+              ShoppingBinding().dependencies();
+              return const AddShoppingItemView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.settings,
+            builder: (context, state) {
+              SettingsBinding().dependencies();
+              return const SettingsView();
+            },
+          ),
+
+          // ── Tolet Feature (now part of shell) ────────────────────────────────
+          GoRoute(
+            path: GoRoutes.propertySearch,
+            builder: (context, state) {
+              PropertySearchBinding().dependencies();
+              return const PropertySearchView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.propertyMapSearch,
+            builder: (context, state) {
+              PropertySearchBinding().dependencies();
+              return const PropertyMapSearchView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.propertyDetail,
+            builder: (context, state) {
+              PropertyDetailBinding().dependencies();
+              return const PropertyDetailView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.propertyPost,
+            builder: (context, state) {
+              PropertyPostBinding().dependencies();
+              return const PropertyPostView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.myListings,
+            builder: (context, state) {
+              ListingManagementBinding().dependencies();
+              return const ListingManagementView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.needBasedPost,
+            builder: (context, state) {
+              NeedBasedPostBinding().dependencies();
+              return const NeedBasedPostView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.toletChat,
+            builder: (context, state) {
+              ToletChatBinding().dependencies();
+              return const ToletChatView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.creditBalance,
+            builder: (context, state) {
+              CreditBinding().dependencies();
+              return const CreditBalanceView();
+            },
+          ),
+          GoRoute(
+            path: GoRoutes.referral,
+            builder: (context, state) {
+              CreditBinding().dependencies();
+              return const ReferralView();
+            },
+          ),
         ],
       ),
 
-      // ── Profile Detail & Edit (pushed on top of shell) ───────────────────────────
-      GoRoute(
-        path: GoRoutes.profileDetail,
-        builder: (context, state) {
-          UserProfileDetailBinding().dependencies();
-          return const UserProfileDetailView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.editProfile,
-        builder: (context, state) {
-          EditProfileBinding().dependencies();
-          return const EditProfileView();
-        },
-      ),
-
-      // ── Mess Management ───────────────────────────────────────────────────
-      GoRoute(
-        path: GoRoutes.createMess,
-        builder: (context, state) {
-          MessBinding().dependencies();
-          return const CreateMessView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.joinMess,
-        builder: (context, state) {
-          MessBinding().dependencies();
-          return const JoinMessView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.members,
-        builder: (context, state) {
-          MessBinding().dependencies();
-          RequestBinding().dependencies();
-          return const MembersView();
-        },
-      ),
-
-      // ── Core Features ─────────────────────────────────────────────────────
-      GoRoute(
-        path: GoRoutes.mealEntry,
-        builder: (context, state) {
-          MealBinding().dependencies();
-          return const MealEntryView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.expenses,
-        builder: (context, state) {
-          ExpenseBinding().dependencies();
-          return const ExpenseListView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.addExpense,
-        builder: (context, state) {
-          ExpenseBinding().dependencies();
-          return const AddExpenseView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.balanceSummary,
-        builder: (context, state) {
-          BalanceBinding().dependencies();
-          return const BalanceSummaryView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.addDeposit,
-        builder: (context, state) {
-          BalanceBinding().dependencies();
-          return const AddDepositView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.approvals,
-        builder: (context, state) {
-          RequestBinding().dependencies();
-          return const ApprovalView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.notifications,
-        builder: (context, state) => const NotificationView(),
-      ),
-      GoRoute(
-        path: GoRoutes.chat,
-        builder: (context, state) {
-          ChatBinding().dependencies();
-          return const ChatView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.report,
-        builder: (context, state) {
-          ReportBinding().dependencies();
-          return const ReportView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.shoppingList,
-        builder: (context, state) {
-          ShoppingBinding().dependencies();
-          return const ShoppingListView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.addShoppingItem,
-        builder: (context, state) {
-          ShoppingBinding().dependencies();
-          return const AddShoppingItemView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.settings,
-        builder: (context, state) {
-          SettingsBinding().dependencies();
-          return const SettingsView();
-        },
-      ),
-
-      // ── Tolet Feature ─────────────────────────────────────────────────────
-      // /tolet itself redirects to /tolet/search via the redirect guard above.
+      // ── Tolet Feature Redirect ──────────────────────────────────────────
+      // /tolet itself redirects to /tolet/search via the redirect guard.
       GoRoute(
         path: GoRoutes.toletHome,
         redirect: (context, state) => GoRoutes.propertySearch,
-      ),
-      GoRoute(
-        path: GoRoutes.propertySearch,
-        builder: (context, state) {
-          PropertySearchBinding().dependencies();
-          return const PropertySearchView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.propertyMapSearch,
-        builder: (context, state) {
-          PropertySearchBinding().dependencies();
-          return const PropertyMapSearchView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.propertyDetail,
-        builder: (context, state) {
-          PropertyDetailBinding().dependencies();
-          return const PropertyDetailView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.propertyPost,
-        builder: (context, state) {
-          PropertyPostBinding().dependencies();
-          return const PropertyPostView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.myListings,
-        builder: (context, state) {
-          ListingManagementBinding().dependencies();
-          return const ListingManagementView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.needBasedPost,
-        builder: (context, state) {
-          NeedBasedPostBinding().dependencies();
-          return const NeedBasedPostView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.toletChat,
-        builder: (context, state) {
-          ToletChatBinding().dependencies();
-          return const ToletChatView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.creditBalance,
-        builder: (context, state) {
-          CreditBinding().dependencies();
-          return const CreditBalanceView();
-        },
-      ),
-      GoRoute(
-        path: GoRoutes.referral,
-        builder: (context, state) {
-          CreditBinding().dependencies();
-          return const ReferralView();
-        },
       ),
     ],
   );

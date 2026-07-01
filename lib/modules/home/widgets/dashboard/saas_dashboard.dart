@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/routes/app_routes.dart';
-import '../../../../shared/widgets/saas_sidebar.dart';
 import '../../../mess/mess_controller.dart';
 import '../../../notifications/providers/notification_providers.dart';
 import '../../home_controller.dart';
@@ -42,55 +41,39 @@ class SaaSDashboard extends StatelessWidget {
         return _NoMessState();
       }
 
-      final isDesktop = context.deviceType == DeviceType.desktop;
-
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        body: Row(
+        body: Column(
           children: [
-            // ── Sidebar ──
-            SaasSidebar(
+            _DashboardTopBar(
+              controller: controller,
               messName: mess.name,
               inviteCode: mess.inviteCode,
-              extended: isDesktop,
-              showToggle: isDesktop,
             ),
-            // ── Main content ──
             Expanded(
-              child: Column(
-                children: [
-                  _DashboardTopBar(
-                    controller: controller,
-                    messName: mess.name,
-                    inviteCode: mess.inviteCode,
-                  ),
-                  Expanded(
-                    child: RefreshIndicator(
-                      onRefresh: () => messController.refresh(),
-                      child: SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(28, 8, 28, 48),
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            maxWidth: 1400,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildStatCards(context, controller),
-                              const SizedBox(height: 24),
-                              _buildChartsRow(context, controller),
-                              const SizedBox(height: 28),
-                              _buildQuickActions(context),
-                              const SizedBox(height: 28),
-                              _buildRecentActivity(context, messController),
-                            ],
-                          ),
-                        ),
-                      ),
+              child: RefreshIndicator(
+                onRefresh: () => messController.refresh(),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(28, 8, 28, 48),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: 1400,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildStatCards(context, controller),
+                        const SizedBox(height: 24),
+                        _buildChartsRow(context, controller),
+                        const SizedBox(height: 28),
+                        _buildQuickActions(context),
+                        const SizedBox(height: 28),
+                        _buildRecentActivity(context, messController),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           ],
