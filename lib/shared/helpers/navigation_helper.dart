@@ -26,9 +26,18 @@ class AppNavigation {
   }
 
   /// Pop the current route.
-  /// Equivalent to Get.back() or Navigator.pop(context).
+  ///
+  /// Uses GoRouter's [pop] instead of a raw [Navigator.pop] on the root
+  /// navigator. With a [ShellRoute], routes live inside a nested navigator
+  /// managed by GoRouter; calling `navigatorKey.currentState?.pop()` pops the
+  /// root navigator (which only holds the shell page), emptying the stack and
+  /// triggering the "popped the last page off of the stack" assertion.
+  /// `GoRouter.of(context).pop()` delegates to the correct nested navigator.
   static void back() {
-    navigatorKey.currentState?.pop();
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      GoRouter.of(context).pop();
+    }
   }
 
   /// Show a snackbar with [title] and [message].

@@ -56,12 +56,21 @@ class SaasSidebar extends ConsumerStatefulWidget {
   /// (state is locked to [extended]).
   final bool showToggle;
 
+  /// Custom accent colour used for the **selected** drawer item.
+  ///
+  /// When `null` (default) the theme's [ColorScheme.primary] /
+  /// [ColorScheme.primaryContainer] are used. Provide a [Color] to override the
+  /// selected tile's background tint, icon, label, and left accent bar — making
+  /// the active-item colour fully changeable at the call site.
+  final Color? selectedColor;
+
   const SaasSidebar({
     super.key,
     required this.messName,
     required this.inviteCode,
     this.extended = true,
     this.showToggle = true,
+    this.selectedColor,
   });
 
   @override
@@ -70,6 +79,7 @@ class SaasSidebar extends ConsumerStatefulWidget {
 
 class _SaasSidebarState extends ConsumerState<SaasSidebar> {
   late bool _collapsed;
+  GoRouter? _router;
 
   // ── Layout constants ─────────────────────────────────────────────────────
   static const double _expandedWidth = 264;
@@ -84,6 +94,20 @@ class _SaasSidebarState extends ConsumerState<SaasSidebar> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Subscribe to GoRouter route changes so the selected item updates even
+    // when this widget is nested inside a GetX `Obx` (which only rebuilds on
+    // Rx changes, not on GoRouter navigation).
+    final router = GoRouter.of(context);
+    if (_router != router) {
+      _router?.routerDelegate.removeListener(_onRouteChanged);
+      _router = router;
+      router.routerDelegate.addListener(_onRouteChanged);
+    }
+  }
+
+  @override
   void didUpdateWidget(covariant SaasSidebar oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Adapt when the parent changes the desired initial state (e.g. device
@@ -91,6 +115,25 @@ class _SaasSidebarState extends ConsumerState<SaasSidebar> {
     if (oldWidget.extended != widget.extended) {
       _collapsed = !widget.extended;
     }
+  }
+
+  @override
+  void dispose() {
+    _router?.routerDelegate.removeListener(_onRouteChanged);
+    super.dispose();
+  }
+
+  /// Called by [GoRouter.routerDelegate] whenever the active route changes.
+  ///
+  /// The rebuild is deferred to a post-frame callback because the router
+  /// delegate notifies listeners **during** the navigator's transition, when
+  /// the navigator is locked. Calling [setState] synchronously here would trip
+  /// the `!_debugLocked` assertion and the "popped the last page" error.
+  void _onRouteChanged() {
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   void _toggleCollapsed() {
@@ -145,16 +188,17 @@ class _SaasSidebarState extends ConsumerState<SaasSidebar> {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 children: [
                   for (final item in items)
-                    _SaasSidebarTile(
-                      item: item,
-                      selected: _isSelected(item, location),
-                      collapsed: _collapsed,
-                      badge: item.route == AppRoutes.notifications &&
-                              unreadCount > 0
-                          ? unreadCount
-                          : null,
-                      onTap: () => _handleTap(context, item),
-                    ),
+                      _SaasSidebarTile(
+                        item: item,
+                        selected: _isSelected(item, location),
+                        collapsed: _collapsed,
+                        selectedColor: widget.selectedColor,
+                        badge: item.route == AppRoutes.notifications &&
+                                unreadCount > 0
+                            ? unreadCount
+                            : null,
+                        onTap: () => _handleTap(context, item),
+                      ),
                 ],
               ),
             ),
@@ -577,12 +621,17 @@ class _SaasSidebarTile extends StatefulWidget {
   final int? badge;
   final VoidCallback onTap;
 
+  /// Optional override for the selected item's accent colour. When `null` the
+  /// theme's [ColorScheme.primary] is used.
+  final Color? selectedColor;
+
   const _SaasSidebarTile({
     required this.item,
     required this.selected,
     required this.collapsed,
     required this.onTap,
     this.badge,
+    this.selectedColor,
   });
 
   @override
@@ -599,18 +648,22 @@ class _SaasSidebarTileState extends State<_SaasSidebarTile> {
     final selected = widget.selected;
     final hovered = _isHovered;
 
+    // Resolved accent colour for the selected state: falls back to the theme
+    // primary when no override is supplied.
+    final accent = widget.selectedColor ?? cs.primary;
+
     // Background colour depends on state priority: selected > hover > default.
     Color bgColor;
     if (selected) {
-      bgColor = cs.primaryContainer.withValues(alpha: 0.55);
+      bgColor = accent.withValues(alpha: 0.16);
     } else if (hovered) {
       bgColor = cs.surfaceContainerHighest.withValues(alpha: 0.7);
     } else {
       bgColor = Colors.transparent;
     }
 
-    final iconColor = selected ? cs.primary : cs.onSurfaceVariant;
-    final labelColor = selected ? cs.primary : cs.onSurfaceVariant;
+    final iconColor = selected ? accent : cs.onSurfaceVariant;
+    final labelColor = selected ? accent : cs.onSurfaceVariant;
     final labelWeight = selected ? FontWeight.w700 : FontWeight.w500;
 
     final tile = MouseRegion(
@@ -632,9 +685,9 @@ class _SaasSidebarTileState extends State<_SaasSidebarTile> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: widget.collapsed
-              ? _buildCollapsed(cs, iconColor, selected)
+              ? _buildCollapsed(cs, accent, iconColor, selected)
               : _buildExpanded(
-                  theme, cs, iconColor, labelColor, labelWeight, selected),
+                  theme, cs, accent, iconColor, labelColor, labelWeight, selected),
         ),
       ),
     );
@@ -651,7 +704,8 @@ class _SaasSidebarTileState extends State<_SaasSidebarTile> {
   }
 
   /// Icon-only layout for collapsed mode.
-  Widget _buildCollapsed(ColorScheme cs, Color iconColor, bool selected) {
+  Widget _buildCollapsed(
+      ColorScheme cs, Color accent, Color iconColor, bool selected) {
     return Stack(
       clipBehavior: Clip.none,
       alignment: Alignment.center,
@@ -665,7 +719,7 @@ class _SaasSidebarTileState extends State<_SaasSidebarTile> {
             child: Container(
               width: 3,
               decoration: BoxDecoration(
-                color: cs.primary,
+                color: accent,
                 borderRadius: const BorderRadius.only(
                   topRight: Radius.circular(3),
                   bottomRight: Radius.circular(3),
@@ -695,6 +749,7 @@ class _SaasSidebarTileState extends State<_SaasSidebarTile> {
   Widget _buildExpanded(
     ThemeData theme,
     ColorScheme cs,
+    Color accent,
     Color iconColor,
     Color labelColor,
     FontWeight labelWeight,
@@ -712,7 +767,7 @@ class _SaasSidebarTileState extends State<_SaasSidebarTile> {
             child: Container(
               width: 3,
               decoration: BoxDecoration(
-                color: cs.primary,
+                color: accent,
                 borderRadius: const BorderRadius.only(
                   topRight: Radius.circular(3),
                   bottomRight: Radius.circular(3),

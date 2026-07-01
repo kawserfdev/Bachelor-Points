@@ -292,9 +292,13 @@ class DonutChart extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              SizedBox(
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Donut (120) + gap (20) + legend min width (~120) ≈ 260.
+              // Below that, stack the donut above the legend to avoid overflow.
+              final sideBySide = constraints.maxWidth >= 280;
+
+              final donut = SizedBox(
                 width: 120,
                 height: 120,
                 child: CustomPaint(
@@ -324,49 +328,69 @@ class DonutChart extends StatelessWidget {
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: segments.map((s) {
-                    final pct = total > 0 ? (s.value / total * 100) : 0.0;
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 10,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              color: s.color,
-                              borderRadius: BorderRadius.circular(3),
+              );
+
+              final legend = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: segments.map((s) {
+                  final pct = total > 0 ? (s.value / total * 100) : 0.0;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: s.color,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            s.label,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: cs.onSurfaceVariant,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              s.label,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: cs.onSurfaceVariant,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
+                        ),
+                        Text(
+                          '${pct.toStringAsFixed(0)}%',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: cs.onSurface,
                           ),
-                          Text(
-                            '${pct.toStringAsFixed(0)}%',
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: cs.onSurface,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ],
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              );
+
+              if (sideBySide) {
+                // Expanded expands horizontally inside the Row.
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    donut,
+                    const SizedBox(width: 20),
+                    Expanded(child: legend),
+                  ],
+                );
+              }
+              // Stacked: plain children (no Expanded) so the Column can
+              // shrink-wrap inside the unbounded-height scroll parent.
+              return Column(
+                children: [
+                  Center(child: donut),
+                  const SizedBox(height: 16),
+                  legend,
+                ],
+              );
+            },
           ),
         ],
       ),
