@@ -111,11 +111,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 60),
-            Icon(
-              Icons.lock_person_rounded,
-              size: 80,
-              color: Theme.of(context).primaryColor,
-            ),
+            Image.asset("assets/applogo.png", height: 80),
             const SizedBox(height: 24),
             Text(
               local.welcomeBack,

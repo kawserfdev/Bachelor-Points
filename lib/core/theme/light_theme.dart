@@ -5,13 +5,13 @@ import 'package:google_fonts/google_fonts.dart';
 final ThemeData lightTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.light,
-  primaryColor: const Color(0xFF6366F1),
+  primaryColor: const Color(0xFF961BFC),
   colorScheme: ColorScheme.fromSeed(
-    seedColor: const Color(0xFF6366F1),
+    seedColor: const Color(0xFF961BFC),
     brightness: Brightness.light,
     surface: const Color(0xFFFFFFFF),
     onSurface: const Color(0xFF09090B),
-    primary: const Color(0xFF6366F1),
+    primary: const Color(0xFF961BFC),
     onPrimary: Colors.white,
     secondary: const Color(0xFF71717A),
     onSecondary: Colors.white,
@@ -54,13 +54,13 @@ final ThemeData lightTheme = ThemeData(
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(16),
-      borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+      borderSide: const BorderSide(color: Color(0xFF961BFC), width: 2),
     ),
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-      backgroundColor: const Color(0xFF6366F1),
+      backgroundColor: const Color(0xFF961BFC),
       foregroundColor: Colors.white,
       elevation: 0,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
@@ -84,7 +84,7 @@ final ThemeData lightTheme = ThemeData(
   ),
   bottomNavigationBarTheme: const BottomNavigationBarThemeData(
     backgroundColor: Color(0xFFFFFFFF),
-    selectedItemColor: Color(0xFF6366F1),
+    selectedItemColor: Color(0xFF961BFC),
     unselectedItemColor: Color(0xFF71717A),
     elevation: 8,
   ),
