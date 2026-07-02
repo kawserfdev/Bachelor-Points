@@ -23,12 +23,11 @@ class AuthGate extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset("assets/applogo.png", height: 80, ),
-            // Icon(
-            //   Icons.restaurant_menu_rounded,
-            //   size: 80,
-            //   color: Theme.of(context).colorScheme.primary,
-            // ),
+            Icon(
+              Icons.restaurant_menu_rounded,
+              size: 80,
+              color: Theme.of(context).colorScheme.primary,
+            ),
             const SizedBox(height: 24),
             Text(
               'BachelorPoints',
