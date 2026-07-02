@@ -69,15 +69,9 @@ class AuthScaffold extends StatelessWidget {
         body: SafeArea(
           child: centered
               ? Center(
-                  child: Padding(
-                    padding: mobilePadding,
-                    child: child,
-                  ),
+                  child: Padding(padding: mobilePadding, child: child),
                 )
-              : SingleChildScrollView(
-                  padding: mobilePadding,
-                  child: child,
-                ),
+              : child,
         ),
       );
     }
@@ -108,8 +102,7 @@ class AuthScaffold extends StatelessWidget {
                 elevation: isDesktop ? 12 : 6,
                 shadowColor: cs.primary.withValues(alpha: 0.2),
                 shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(isDesktop ? 28 : 24),
+                  borderRadius: BorderRadius.circular(isDesktop ? 28 : 24),
                 ),
                 child: SafeArea(
                   child: centered

@@ -320,7 +320,7 @@ class _SettingsViewState extends State<SettingsView> {
                   const SizedBox(height: 8),
                 ],
               );
-            },
+            }, 
           ),
         ],
       ),

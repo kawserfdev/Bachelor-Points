@@ -1,0 +1,1 @@
+{"name": "bachelorpoints", "version": "1.0.0", "private": true, "description": "Bachelor Points — Flutter web dashboard + FCM notification API", "dependencies": {"firebase-admin": "^12.1.0"}}

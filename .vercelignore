@@ -1,0 +1,31 @@
+# Build artifacts — Vercel rebuilds these in the cloud
+build/
+.dart_tool/
+
+# Native platform directories (not needed for web deploy)
+android/
+ios/
+macos/
+windows/
+linux/
+
+# Flutter SDK caches
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+
+# Local Vercel backend (kept separate; API function copied to root api/)
+vercel_backend/
+
+# Coverage & test artifacts
+coverage/
+test/
+integration_test/
+
+# Misc
+*.log
+.DS_Store
+.idea/
+.vscode/
+*.iml
