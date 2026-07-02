@@ -7,6 +7,7 @@ import '../mess_controller.dart';
 import '../member_controller.dart';
 import '../../../data/models/member_model.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/localization/number_converter.dart';
 
 class MembersView extends GetView<MemberController> {
   const MembersView({super.key});
@@ -114,7 +115,11 @@ class MembersView extends GetView<MemberController> {
     final theme = Theme.of(context);
     final canManage = controller.isManager && member.role != 'admin';
     final langCode = Localizations.localeOf(context).languageCode;
-    final dateStr = DateFormat('MMM dd, yyyy', langCode).format(member.joinedAt);
+    final isBangla = langCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
+    final dateStr =
+        convert(DateFormat('MMM dd, yyyy', langCode).format(member.joinedAt));
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),

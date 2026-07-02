@@ -13,6 +13,7 @@ import '../notifications/providers/notification_providers.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../data/models/member_model.dart';
 import 'widgets/dashboard/saas_dashboard.dart';
+import '../../core/localization/number_converter.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
@@ -233,6 +234,10 @@ class HomeView extends GetView<HomeController> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final local = AppLocalizations.of(context)!;
+    final isBangla =
+        Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
 
     // Get current user's role from members list
     final currentUserId = controller.authService.currentUser.value?.uid;
@@ -276,7 +281,7 @@ class HomeView extends GetView<HomeController> {
               builder: (context, ref, child) {
                 final unreadCount = ref.watch(unreadNotificationsCountProvider);
                 return Badge(
-                  label: Text('$unreadCount'),
+                  label: Text(convert('$unreadCount')),
                   isLabelVisible: unreadCount > 0,
                   alignment: const Alignment(0.65, -0.65),
                   child: Container(
@@ -447,6 +452,10 @@ class HomeView extends GetView<HomeController> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final local = AppLocalizations.of(context)!;
+    final isBangla =
+        Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -466,7 +475,7 @@ class HomeView extends GetView<HomeController> {
               child: _SummaryCard(
                 icon: Icons.people_rounded,
                 label: local.members,
-                value: '${controller.memberCount.value}',
+                value: convert('${controller.memberCount.value}'),
                 color: colorScheme.primary,
                 bgColor: colorScheme.primary.withAlpha(26),
               ),
@@ -476,8 +485,8 @@ class HomeView extends GetView<HomeController> {
               child: _SummaryCard(
                 icon: Icons.shopping_cart_rounded,
                 label: local.bazar,
-                value:
-                    '৳${controller.totalBazarExpense.value.toStringAsFixed(0)}',
+                value: convert(
+                    '৳${controller.totalBazarExpense.value.toStringAsFixed(0)}'),
                 color: const Color(0xFFFF6B6B),
                 bgColor: const Color(0xFFFF6B6B).withAlpha(26),
               ),
@@ -491,7 +500,8 @@ class HomeView extends GetView<HomeController> {
               child: _SummaryCard(
                 icon: Icons.restaurant_rounded,
                 label: local.totalMeals,
-                value: controller.myTotalMeals.value.toStringAsFixed(1),
+                value: convert(
+                    controller.myTotalMeals.value.toStringAsFixed(1)),
                 color: const Color(0xFFFFA726),
                 bgColor: const Color(0xFFFFA726).withAlpha(26),
               ),
@@ -501,7 +511,8 @@ class HomeView extends GetView<HomeController> {
               child: _SummaryCard(
                 icon: Icons.calculate_rounded,
                 label: local.mealRate,
-                value: '৳${controller.mealRate.value.toStringAsFixed(1)}',
+                value: convert(
+                    '৳${controller.mealRate.value.toStringAsFixed(1)}'),
                 color: const Color(0xFF66BB6A),
                 bgColor: const Color(0xFF66BB6A).withAlpha(26),
               ),
@@ -697,6 +708,10 @@ class HomeView extends GetView<HomeController> {
     final theme = Theme.of(context);
     final members = messController.members;
     final displayMembers = members.take(4).toList();
+    final isBangla =
+        Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
 
     if (members.isEmpty) return const SizedBox.shrink();
 
@@ -719,7 +734,7 @@ class HomeView extends GetView<HomeController> {
               TextButton(
                 onPressed: () => context.push(AppRoutes.members),
                 child: Text(
-                  'See All (${members.length})',
+                  convert('See All (${members.length})'),
                   style: TextStyle(
                     color: theme.colorScheme.primary,
                     fontWeight: FontWeight.w600,

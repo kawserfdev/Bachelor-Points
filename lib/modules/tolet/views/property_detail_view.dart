@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../credit/credit_controller.dart';
 import '../../../core/auth/auth_service.dart';
+import '../../../core/localization/number_converter.dart';
 
 /// Full property detail view with gallery, info, and unlock system.
 class PropertyDetailView extends GetView<PropertyDetailController> {
@@ -54,6 +55,11 @@ class PropertyDetailView extends GetView<PropertyDetailController> {
     String propertyId,
     String currentUserId,
   ) {
+    final isBangla =
+        Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
+
     return Obx(() {
       if (controller.isLoading.value) return const Center(child: CircularProgressIndicator());
       final p = controller.property.value;
@@ -73,7 +79,7 @@ class PropertyDetailView extends GetView<PropertyDetailController> {
           Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Expanded(child: Text(p.title, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700))),
             Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-              Text('₹${p.price.toInt()}', style: theme.textTheme.titleLarge?.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w800)),
+              Text(convert('₹${p.price.toInt()}'), style: theme.textTheme.titleLarge?.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w800)),
               const Text('/month', style: TextStyle(fontSize: 12, color: Colors.grey)),
             ]),
           ]),
@@ -82,13 +88,13 @@ class PropertyDetailView extends GetView<PropertyDetailController> {
           if (p.isBoosted) ...[const SizedBox(height: 8), Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(6), border: Border.all(color: Colors.orange.shade200)), child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.rocket_launch, size: 16, color: Colors.orange), SizedBox(width: 4), Text('Boosted', style: TextStyle(color: Colors.orange, fontSize: 12))]))],
           const SizedBox(height: 20),
           Row(children: [
-            _buildInfoTile(context, Icons.bed, 'Bedrooms', '${p.bedrooms}'),
+            _buildInfoTile(context, Icons.bed, 'Bedrooms', convert('${p.bedrooms}')),
             const SizedBox(width: 8),
-            _buildInfoTile(context, Icons.bathtub, 'Bathrooms', '${p.bathrooms}'),
+            _buildInfoTile(context, Icons.bathtub, 'Bathrooms', convert('${p.bathrooms}')),
             const SizedBox(width: 8),
-            _buildInfoTile(context, Icons.layers, 'Floor', '${p.floor}'),
+            _buildInfoTile(context, Icons.layers, 'Floor', convert('${p.floor}')),
             const SizedBox(width: 8),
-            _buildInfoTile(context, Icons.square_foot, 'Area', '${p.areaSqft.toInt()} sqft'),
+            _buildInfoTile(context, Icons.square_foot, 'Area', convert('${p.areaSqft.toInt()} sqft')),
           ]),
           const SizedBox(height: 16),
           Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(color: colorScheme.primaryContainer, borderRadius: BorderRadius.circular(20)), child: Text(p.propertyType.capitalizeFirst ?? p.propertyType, style: TextStyle(color: colorScheme.onPrimaryContainer, fontWeight: FontWeight.w600, fontSize: 13))),
@@ -103,9 +109,9 @@ class PropertyDetailView extends GetView<PropertyDetailController> {
           const SizedBox(height: 16),
           Text('Owner Info', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
-          _buildUnlockRow(context, Icons.phone, 'Phone', controller.getPhoneNumber(currentUserId), controller.hasUnlockedContact(currentUserId), '5 Credits', () => _unlock(context, propertyId, currentUserId, isContact: true)),
+          _buildUnlockRow(context, Icons.phone, 'Phone', controller.getPhoneNumber(currentUserId), controller.hasUnlockedContact(currentUserId), convert('5 Credits'), () => _unlock(context, propertyId, currentUserId, isContact: true)),
           const SizedBox(height: 12),
-          _buildUnlockRow(context, Icons.location_on, 'Address', controller.getAddressDisplay(currentUserId), controller.hasUnlockedAddress(currentUserId), '10 Credits', () => _unlock(context, propertyId, currentUserId, isContact: false)),
+          _buildUnlockRow(context, Icons.location_on, 'Address', controller.getAddressDisplay(currentUserId), controller.hasUnlockedAddress(currentUserId), convert('10 Credits'), () => _unlock(context, propertyId, currentUserId, isContact: false)),
           const SizedBox(height: 26),
           SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: () => context.push('/tolet/chat?propertyId=${p.id}'), icon: const Icon(Icons.chat), label: const Text('Chat with Owner'), style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)))),
           const SizedBox(height: 12),
@@ -166,9 +172,13 @@ class PropertyDetailView extends GetView<PropertyDetailController> {
     final creditCtrl = Get.find<CreditController>();
     final label = isContact ? 'Phone' : 'Address';
     final cost = isContact ? 5 : 10;
+    final isBangla =
+        Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
     showDialog(context: context, builder: (ctx) => AlertDialog(
       title: Text('Unlock $label'),
-      content: Text('Unlock for $cost credits?'),
+      content: Text(convert('Unlock for $cost credits?')),
       actions: [
         TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
         FilledButton(onPressed: () async {
@@ -180,7 +190,7 @@ class PropertyDetailView extends GetView<PropertyDetailController> {
           } else {
             if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(creditCtrl.error.value.isNotEmpty ? creditCtrl.error.value : 'Failed'), backgroundColor: Colors.red));
           }
-        }, child: Text('Unlock ($cost Credits)')),
+        }, child: Text(convert('Unlock ($cost Credits)'))),
       ],
     ));
   }

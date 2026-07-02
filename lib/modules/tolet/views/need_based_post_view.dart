@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../need_based_post/need_based_post_controller.dart';
+import '../../../core/localization/number_converter.dart';
 
 /// Need-based post: Tenant posts what they need, landlords contact them.
 class NeedBasedPostView extends GetView<NeedBasedPostController> {
@@ -8,6 +9,11 @@ class NeedBasedPostView extends GetView<NeedBasedPostController> {
 
   @override
   Widget build(BuildContext context) {
+    final isBangla =
+        Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Need Based Posts')),
       floatingActionButton: FloatingActionButton.extended(onPressed: () => _showCreateDialog(context), icon: const Icon(Icons.add), label: const Text('Post Need')),
@@ -31,11 +37,11 @@ class NeedBasedPostView extends GetView<NeedBasedPostController> {
                     Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(8)), child: Text(p.propertyType.capitalizeFirst ?? p.propertyType, style: TextStyle(fontSize: 11, color: Colors.blue[700]))),
                   ]),
                   const SizedBox(height: 10),
-                  Text('Need ${p.bedrooms} Bed ${p.propertyType.capitalizeFirst}', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                  Text(convert('Need ${p.bedrooms} Bed ${p.propertyType.capitalizeFirst}'), style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
                   const SizedBox(height: 4),
                   Row(children: [const Icon(Icons.location_on, size: 16, color: Colors.grey), const SizedBox(width: 4), Text('${p.area}, ${p.district}', style: TextStyle(color: Colors.grey[600], fontSize: 13))]),
                   const SizedBox(height: 4),
-                  Text('Budget: ₹${p.minBudget.toInt()} - ₹${p.maxBudget.toInt()}', style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.primary, fontSize: 14)),
+                  Text(convert('Budget: ₹${p.minBudget.toInt()} - ₹${p.maxBudget.toInt()}'), style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.primary, fontSize: 14)),
                   if (p.description.isNotEmpty) ...[const SizedBox(height: 6), Text(p.description, style: TextStyle(fontSize: 13, color: Colors.grey[700]))],
                 ]),
               ),

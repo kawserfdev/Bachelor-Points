@@ -4,6 +4,7 @@ import '../request_controller.dart';
 import 'package:intl/intl.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../data/models/request_model.dart';
+import '../../../core/localization/number_converter.dart';
 
 class ApprovalView extends GetView<RequestController> {
   const ApprovalView({super.key});
@@ -159,8 +160,11 @@ class ApprovalView extends GetView<RequestController> {
 
   Widget _buildFinancialCard(BuildContext context, RequestModel request, AppLocalizations l10n) {
     final theme = Theme.of(context);
+    final isBangla = Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
     final isExpense = request.requestType == 'expense';
-    final dateStr = DateFormat('MMM dd, yyyy').format(request.requestDate);
+    final dateStr = convert(DateFormat('MMM dd, yyyy').format(request.requestDate));
     final canModify = request.status == 'Pending' && controller.canApprove;
 
     return Card(
@@ -228,7 +232,7 @@ class ApprovalView extends GetView<RequestController> {
             Row(
               children: [
                 Text(
-                  '৳${request.amount.toStringAsFixed(2)}',
+                  convert('৳${request.amount.toStringAsFixed(2)}'),
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                     color: isExpense ? Colors.red : Colors.green,
@@ -259,7 +263,7 @@ class ApprovalView extends GetView<RequestController> {
                 ),
               ],
             ),
-            _buildAuditTrail(request, l10n),
+            _buildAuditTrail(context, request, l10n),
             if (canModify) ...[
               const SizedBox(height: 12),
               const Divider(height: 1),
@@ -273,48 +277,51 @@ class ApprovalView extends GetView<RequestController> {
   }
 
   Widget _buildFinancialActions(BuildContext context, RequestModel request, AppLocalizations l10n) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        OutlinedButton.icon(
-          onPressed: () => _showEditDialog(context, request, l10n),
-          icon: const Icon(Icons.edit_rounded, size: 18),
-          label: Text(l10n.requestEdit),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: Colors.orange,
-            side: const BorderSide(color: Colors.orange),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          OutlinedButton.icon(
+            onPressed: () => _showEditDialog(context, request, l10n),
+            icon: const Icon(Icons.edit_rounded, size: 18),
+            label: Text(l10n.requestEdit),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.orange,
+              side: const BorderSide(color: Colors.orange),
+              shape:
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        OutlinedButton.icon(
-          onPressed: () => _confirmReject(context, request, l10n),
-          icon: const Icon(Icons.close_rounded, size: 18),
-          label: Text(l10n.requestReject),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: Colors.red,
-            side: const BorderSide(color: Colors.red),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          const SizedBox(width: 8),
+          OutlinedButton.icon(
+            onPressed: () => _confirmReject(context, request, l10n),
+            icon: const Icon(Icons.close_rounded, size: 18),
+            label: Text(l10n.requestReject),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.red,
+              side: const BorderSide(color: Colors.red),
+              shape:
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        ElevatedButton.icon(
-          onPressed: () => _confirmApprove(context, request, l10n),
-          icon: const Icon(Icons.check_rounded, size: 18),
-          label: Text(l10n.requestApprove),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green,
-            foregroundColor: Colors.white,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          const SizedBox(width: 8),
+          ElevatedButton.icon(
+            onPressed: () => _confirmApprove(context, request, l10n),
+            icon: const Icon(Icons.check_rounded, size: 18),
+            label: Text(l10n.requestApprove),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+              shape:
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -324,6 +331,9 @@ class ApprovalView extends GetView<RequestController> {
 
   Widget _buildMemberCard(BuildContext context, RequestModel request, AppLocalizations l10n) {
     final theme = Theme.of(context);
+    final isBangla = Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
     final canModify = request.status == 'Pending' && controller.canApprove;
 
     final (icon, label, color) = _memberRequestMeta(request.requestType, l10n);
@@ -439,7 +449,7 @@ class ApprovalView extends GetView<RequestController> {
                     size: 14, color: Colors.grey[400]),
                 const SizedBox(width: 4),
                 Text(
-                  DateFormat('MMM dd, yyyy').format(request.createdAt),
+                  convert(DateFormat('MMM dd, yyyy').format(request.createdAt)),
                   style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                 ),
                 const SizedBox(width: 12),
@@ -456,7 +466,7 @@ class ApprovalView extends GetView<RequestController> {
                 ),
               ],
             ),
-            _buildAuditTrail(request, l10n),
+            _buildAuditTrail(context, request, l10n),
             if (canModify) ...[
               const SizedBox(height: 12),
               const Divider(height: 1),
@@ -506,7 +516,10 @@ class ApprovalView extends GetView<RequestController> {
   // Shared widgets
   // ──────────────────────────────────────────────
 
-  Widget _buildAuditTrail(RequestModel request, AppLocalizations l10n) {
+  Widget _buildAuditTrail(BuildContext context, RequestModel request, AppLocalizations l10n) {
+    final isBangla = Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -514,7 +527,7 @@ class ApprovalView extends GetView<RequestController> {
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
-              l10n.requestApprovedOn(DateFormat('MMM dd, yyyy – hh:mm a').format(request.approvedAt!)),
+              l10n.requestApprovedOn(convert(DateFormat('MMM dd, yyyy – hh:mm a').format(request.approvedAt!))),
               style: TextStyle(fontSize: 11, color: Colors.green[600]),
             ),
           ),
@@ -522,7 +535,7 @@ class ApprovalView extends GetView<RequestController> {
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
-              l10n.requestRejectedOn(DateFormat('MMM dd, yyyy – hh:mm a').format(request.rejectedAt!)),
+              l10n.requestRejectedOn(convert(DateFormat('MMM dd, yyyy – hh:mm a').format(request.rejectedAt!))),
               style: TextStyle(fontSize: 11, color: Colors.red[600]),
             ),
           ),
@@ -530,7 +543,7 @@ class ApprovalView extends GetView<RequestController> {
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
-              l10n.requestUpdatedOn(DateFormat('MMM dd, yyyy – hh:mm a').format(request.updatedAt!)),
+              l10n.requestUpdatedOn(convert(DateFormat('MMM dd, yyyy – hh:mm a').format(request.updatedAt!))),
               style: TextStyle(fontSize: 11, color: Colors.grey[500]),
             ),
           ),
@@ -543,12 +556,15 @@ class ApprovalView extends GetView<RequestController> {
   // ──────────────────────────────────────────────
 
   void _confirmApprove(BuildContext context, RequestModel request, AppLocalizations l10n) {
+    final isBangla = Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
     String body;
     if (request.isFinancial) {
       if (request.requestType == 'expense') {
-        body = l10n.requestApproveExpenseBody(request.amount.toStringAsFixed(2));
+        body = l10n.requestApproveExpenseBody(convert(request.amount.toStringAsFixed(2)));
       } else {
-        body = l10n.requestApproveDepositBody(request.amount.toStringAsFixed(2));
+        body = l10n.requestApproveDepositBody(convert(request.amount.toStringAsFixed(2)));
       }
     } else if (request.requestType == 'JOIN_MESS') {
       body = l10n.requestApproveJoinBody(request.userName ?? request.userEmail ?? l10n.requestUnknown);
@@ -621,6 +637,9 @@ class ApprovalView extends GetView<RequestController> {
   }
 
   void _showEditExpenseDialog(BuildContext context, RequestModel request, AppLocalizations l10n) {
+    final isBangla = Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
     final titleCtrl = TextEditingController(text: request.title);
     final amountCtrl =
         TextEditingController(text: request.amount.toString());
@@ -707,7 +726,7 @@ class ApprovalView extends GetView<RequestController> {
                         children: [
                           const Icon(Icons.calendar_today, size: 18),
                           const SizedBox(width: 8),
-                          Text(DateFormat('MMM dd, yyyy').format(date)),
+                          Text(convert(DateFormat('MMM dd, yyyy').format(date))),
                         ],
                       ),
                     ),
@@ -755,6 +774,9 @@ class ApprovalView extends GetView<RequestController> {
   }
 
   void _showEditDepositDialog(BuildContext context, RequestModel request, AppLocalizations l10n) {
+    final isBangla = Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
     final amountCtrl =
         TextEditingController(text: request.amount.toString());
     final noteCtrl = TextEditingController(text: request.note);
@@ -830,7 +852,7 @@ class ApprovalView extends GetView<RequestController> {
                         children: [
                           const Icon(Icons.calendar_today, size: 18),
                           const SizedBox(width: 8),
-                          Text(DateFormat('MMM dd, yyyy').format(date)),
+                          Text(convert(DateFormat('MMM dd, yyyy').format(date))),
                         ],
                       ),
                     ),
@@ -995,6 +1017,9 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isBangla = Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
@@ -1011,7 +1036,7 @@ class _StatusBadge extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           Text(
-            l10n.requestStatusBadge(label, count),
+            convert(l10n.requestStatusBadge(label, count)),
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,

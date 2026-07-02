@@ -10,6 +10,7 @@ import '../widgets/desktop/report_charts.dart';
 import '../widgets/desktop/report_filters.dart';
 import '../widgets/desktop/report_member_table.dart';
 import '../widgets/desktop/report_member_detail.dart';
+import '../../../core/localization/number_converter.dart';
 
 class ReportView extends StatefulWidget {
   const ReportView({super.key});
@@ -26,6 +27,11 @@ class _ReportViewState extends State<ReportView> {
     super.initState();
     controller = Get.find<ReportController>();
   }
+
+  bool get _isBangla =>
+      Localizations.localeOf(context).languageCode == 'bn';
+  String _convert(String text) =>
+      _isBangla ? NumberConverter.englishToBangla(text) : text;
 
   @override
   Widget build(BuildContext context) {
@@ -209,9 +215,9 @@ class _ReportViewState extends State<ReportView> {
             },
           ),
           Text(
-            DateFormat('MMMM yyyy').format(
+            _convert(DateFormat('MMMM yyyy').format(
               DateTime(controller.selectedYear.value, controller.selectedMonth.value),
-            ),
+            )),
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           IconButton(
@@ -266,9 +272,9 @@ class _ReportViewState extends State<ReportView> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _summaryItem(l10n.reportTotalMeals, summary.totalMeals.toStringAsFixed(1)),
-            _summaryItem(l10n.reportTotalExpenses, '৳${summary.totalExpenses.toStringAsFixed(0)}'),
-            _summaryItem(l10n.reportMealRate, '৳${summary.mealRate.toStringAsFixed(2)}'),
+            _summaryItem(l10n.reportTotalMeals, _convert(summary.totalMeals.toStringAsFixed(1))),
+            _summaryItem(l10n.reportTotalExpenses, _convert('৳${summary.totalExpenses.toStringAsFixed(0)}')),
+            _summaryItem(l10n.reportMealRate, _convert('৳${summary.mealRate.toStringAsFixed(2)}')),
           ],
         ),
       ),
@@ -300,11 +306,11 @@ class _ReportViewState extends State<ReportView> {
           final isNeg = m.finalBalance < 0;
           return DataRow(cells: [
             DataCell(Text(m.userName)),
-            DataCell(Text(m.totalMeals.toStringAsFixed(1))),
-            DataCell(Text('৳${m.totalCost.toStringAsFixed(0)}')),
-            DataCell(Text('৳${m.totalDeposits.toStringAsFixed(0)}')),
+            DataCell(Text(_convert(m.totalMeals.toStringAsFixed(1)))),
+            DataCell(Text(_convert('৳${m.totalCost.toStringAsFixed(0)}'))),
+            DataCell(Text(_convert('৳${m.totalDeposits.toStringAsFixed(0)}'))),
             DataCell(Text(
-              '৳${m.finalBalance.toStringAsFixed(0)}',
+              _convert('৳${m.finalBalance.toStringAsFixed(0)}'),
               style: TextStyle(
                 color: isNeg ? Colors.red : Colors.green,
                 fontWeight: FontWeight.bold,
@@ -371,11 +377,11 @@ class _ReportViewState extends State<ReportView> {
               ],
             ),
             const Divider(height: 24),
-            _rowItem(Icons.restaurant_outlined, l10n.reportTotalMeals, m.totalMeals.toStringAsFixed(1), null),
+            _rowItem(Icons.restaurant_outlined, l10n.reportTotalMeals, _convert(m.totalMeals.toStringAsFixed(1)), null),
             const SizedBox(height: 10),
-            _rowItem(Icons.payments_outlined, l10n.reportMealCost, '৳${m.totalCost.toStringAsFixed(2)}', Colors.red.shade700),
+            _rowItem(Icons.payments_outlined, l10n.reportMealCost, _convert('৳${m.totalCost.toStringAsFixed(2)}'), Colors.red.shade700),
             const SizedBox(height: 10),
-            _rowItem(Icons.account_balance_wallet_outlined, l10n.reportTotalDeposits, '৳${m.totalDeposits.toStringAsFixed(2)}', Colors.blue.shade700),
+            _rowItem(Icons.account_balance_wallet_outlined, l10n.reportTotalDeposits, _convert('৳${m.totalDeposits.toStringAsFixed(2)}'), Colors.blue.shade700),
             const Divider(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -389,7 +395,7 @@ class _ReportViewState extends State<ReportView> {
                     border: Border.all(color: isNeg ? Colors.red.shade200 : Colors.green.shade200),
                   ),
                   child: Text(
-                    '৳${m.finalBalance.toStringAsFixed(2)}',
+                    _convert('৳${m.finalBalance.toStringAsFixed(2)}'),
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -457,8 +463,8 @@ class _ReportViewState extends State<ReportView> {
   }
 
   Widget _buildDayCard(DailyRecord r, AppLocalizations l10n) {
-    final dateStr = DateFormat('dd MMM, yyyy').format(r.date);
-    final dayStr  = DateFormat('EEE').format(r.date);
+    final dateStr = _convert(DateFormat('dd MMM, yyyy').format(r.date));
+    final dayStr  = _convert(DateFormat('EEE').format(r.date));
 
     final totalMeals   = r.meal?.totalMeals ?? 0.0;
     final totalExpense = r.expenses.fold(0.0, (s, e) => s + e.amount);
@@ -496,13 +502,13 @@ class _ReportViewState extends State<ReportView> {
                 // Meals
                 if (r.meal != null) ...[
                   if (r.meal!.breakfast > 0)
-                    _chip(Icons.wb_sunny_outlined, l10n.reportChipBreakfast(r.meal!.breakfast.toStringAsFixed(1)), Colors.amber),
+                    _chip(Icons.wb_sunny_outlined, l10n.reportChipBreakfast(_convert(r.meal!.breakfast.toStringAsFixed(1))), Colors.amber),
                   if (r.meal!.lunch > 0)
-                    _chip(Icons.lunch_dining_outlined, l10n.reportChipLunch(r.meal!.lunch.toStringAsFixed(1)), Colors.orange),
+                    _chip(Icons.lunch_dining_outlined, l10n.reportChipLunch(_convert(r.meal!.lunch.toStringAsFixed(1))), Colors.orange),
                   if (r.meal!.dinner > 0)
-                    _chip(Icons.dinner_dining_outlined, l10n.reportChipDinner(r.meal!.dinner.toStringAsFixed(1)), Colors.deepOrange),
+                    _chip(Icons.dinner_dining_outlined, l10n.reportChipDinner(_convert(r.meal!.dinner.toStringAsFixed(1))), Colors.deepOrange),
                   if (r.meal!.guestMeals > 0)
-                    _chip(Icons.group_outlined, l10n.reportChipGuest(r.meal!.guestMeals.toStringAsFixed(1)), Colors.purple),
+                    _chip(Icons.group_outlined, l10n.reportChipGuest(_convert(r.meal!.guestMeals.toStringAsFixed(1))), Colors.purple),
                 ],
                 // Expenses
                 for (final e in r.expenses)
@@ -510,13 +516,13 @@ class _ReportViewState extends State<ReportView> {
                     e.category == 'bazar' ? Icons.shopping_cart_outlined : Icons.receipt_outlined,
                     l10n.reportChipExpense(
                       '${e.category[0].toUpperCase()}${e.category.substring(1)}',
-                      e.amount.toStringAsFixed(0),
+                      _convert(e.amount.toStringAsFixed(0)),
                     ),
                     Colors.orange,
                   ),
                 // Deposits
                 for (final d in r.deposits)
-                  _chip(Icons.account_balance_wallet_outlined, l10n.reportChipDeposit(d.amount.toStringAsFixed(0)), Colors.green),
+                  _chip(Icons.account_balance_wallet_outlined, l10n.reportChipDeposit(_convert(d.amount.toStringAsFixed(0))), Colors.green),
               ],
             ),
             // ── Summary row ───────────────────────────────────────────────
@@ -526,11 +532,11 @@ class _ReportViewState extends State<ReportView> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   if (totalMeals > 0)
-                    _miniStat(l10n.reportMiniMeals, totalMeals.toStringAsFixed(1), Colors.deepPurple),
+                    _miniStat(l10n.reportMiniMeals, _convert(totalMeals.toStringAsFixed(1)), Colors.deepPurple),
                   if (totalExpense > 0)
-                    _miniStat(l10n.reportMiniExpense, '৳${totalExpense.toStringAsFixed(0)}', Colors.orange.shade700),
+                    _miniStat(l10n.reportMiniExpense, _convert('৳${totalExpense.toStringAsFixed(0)}'), Colors.orange.shade700),
                   if (totalDeposit > 0)
-                    _miniStat(l10n.reportMiniDeposit, '৳${totalDeposit.toStringAsFixed(0)}', Colors.green.shade700),
+                    _miniStat(l10n.reportMiniDeposit, _convert('৳${totalDeposit.toStringAsFixed(0)}'), Colors.green.shade700),
                 ],
               ),
             ],

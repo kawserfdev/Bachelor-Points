@@ -3,6 +3,7 @@ import 'package:bachelorpoints/modules/tolet/property_post/property_post_control
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import '../../../core/localization/number_converter.dart';
 
 class PropertyPostView extends GetView<PropertyPostController> {
   const PropertyPostView({super.key});
@@ -817,6 +818,11 @@ class _CounterRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isBangla =
+        Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
@@ -846,7 +852,7 @@ class _CounterRow extends StatelessWidget {
               child: child,
             ),
             child: Text(
-              '$value',
+              convert('$value'),
               key: ValueKey(value),
               style: const TextStyle(
                 fontSize: 17,

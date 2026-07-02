@@ -4,6 +4,7 @@ import 'package:bachelorpoints/l10n/app_localizations.dart';
 import '../../../shared/helpers/navigation_helper.dart';
 import '../../../data/models/notification_model.dart';
 import '../providers/notification_providers.dart';
+import '../../../core/localization/number_converter.dart';
 
 enum NotificationFilter { all, unread, read }
 
@@ -16,6 +17,15 @@ class NotificationView extends ConsumerStatefulWidget {
 
 class _NotificationViewState extends ConsumerState<NotificationView> {
   NotificationFilter _selectedFilter = NotificationFilter.all;
+
+  /// Whether the current locale is Bangla.
+  bool get _isBangla =>
+      Localizations.localeOf(context).languageCode == 'bn';
+
+  /// Converts ASCII digits in [text] to Bangla digits when the current
+  /// locale is Bangla; otherwise returns [text] unchanged.
+  String _convert(String text) =>
+      _isBangla ? NumberConverter.englishToBangla(text) : text;
 
   @override
   Widget build(BuildContext context) {
@@ -244,10 +254,10 @@ class _NotificationViewState extends ConsumerState<NotificationView> {
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
-                                        notif.createdAt
+                                        _convert(notif.createdAt
                                             .toLocal()
                                             .toString()
-                                            .split('.')[0],
+                                            .split('.')[0]),
                                         style: theme.textTheme.bodySmall
                                             ?.copyWith(
                                               color: colorScheme
@@ -379,7 +389,7 @@ class _NotificationViewState extends ConsumerState<NotificationView> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          notif.createdAt.toLocal().toString().split('.')[0],
+                          _convert(notif.createdAt.toLocal().toString().split('.')[0]),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                           ),

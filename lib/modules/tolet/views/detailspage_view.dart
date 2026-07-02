@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/models/toletItem_model.dart';
+import '../../../core/localization/number_converter.dart';
 
 class DetailsPage extends StatelessWidget {
   final ToletItem item;
@@ -9,6 +10,11 @@ class DetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isBangla =
+        Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
@@ -64,7 +70,7 @@ class DetailsPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           const Text('MONTHLY / মাসিক', style: TextStyle(fontSize: 10, color: Colors.grey)),
-                          Text('৳ ${item.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E3A8A))),
+                          Text(convert('৳ ${item.price.toStringAsFixed(0)}'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E3A8A))),
                          Text('+ Utilities (বিদ্যুৎ বিল আলাদা)', style: TextStyle(fontSize: 10, color: Colors.grey), textAlign: TextAlign.right),
                         ],
                       )
@@ -211,7 +217,7 @@ class DetailsPage extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(color: const Color(0xFF10B981), borderRadius: BorderRadius.circular(4)),
-                        child: Text('${item.totalSeats - item.occupiedSeats} LEFT', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                        child: Text(convert('${item.totalSeats - item.occupiedSeats} LEFT'), style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                       )
                     ],
                   ),
@@ -224,7 +230,7 @@ class DetailsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '${item.occupiedSeats} of ${item.totalSeats} seats occupied (${item.totalSeats}টির মধ্যে ${item.occupiedSeats}টি বুকড)',
+                    convert('${item.occupiedSeats} of ${item.totalSeats} seats occupied (${item.totalSeats}টির মধ্যে ${item.occupiedSeats}টি বুকড)'),
                     style: const TextStyle(color: Colors.white70, fontSize: 12),
                   )
                 ],

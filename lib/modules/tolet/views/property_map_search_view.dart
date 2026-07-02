@@ -4,6 +4,7 @@ import 'package:bachelorpoints/modules/tolet/widgets/desktop/property_map_panel.
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/localization/number_converter.dart';
 
 /// Map-based property search with radius/nearby filters.
 class PropertyMapSearchView extends GetView<PropertySearchController> {
@@ -33,6 +34,11 @@ class PropertyMapSearchView extends GetView<PropertySearchController> {
   // Mobile / tablet body — preserves the original Stack layout
   // ─────────────────────────────────────────────────────────────────────────
   Widget _buildMobileBody(BuildContext context) {
+    final isBangla =
+        Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
+
     return Stack(
       children: [
         Container(color: Colors.grey[200], child: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -45,7 +51,7 @@ class PropertyMapSearchView extends GetView<PropertySearchController> {
           const Text('Radius:', style: TextStyle(fontWeight: FontWeight.w500)),
           const SizedBox(width: 8),
           Expanded(child: Obx(() => SegmentedButton<double>(
-            segments: PropertySearchController.radiusOptions.map((r) => ButtonSegment<double>(value: r, label: Text('${r.toInt()} KM'))).toList(),
+            segments: PropertySearchController.radiusOptions.map((r) => ButtonSegment<double>(value: r, label: Text(convert('${r.toInt()} KM')))).toList(),
             selected: {controller.searchRadius.value},
             onSelectionChanged: (v) { controller.searchRadius.value = v.first; controller.searchNearby(); },
           ))),
@@ -59,7 +65,7 @@ class PropertyMapSearchView extends GetView<PropertySearchController> {
           }).toList()))),
         ])))),
         Positioned(bottom: 24, left: 12, right: 12, child: Obx(() => Card(child: Padding(padding: const EdgeInsets.all(16), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text('${controller.properties.length} properties found', style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(convert('${controller.properties.length} properties found'), style: const TextStyle(fontWeight: FontWeight.w600)),
           FilledButton(onPressed: () => context.pop(), child: const Text('View List')),
         ]))))),
       ],

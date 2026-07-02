@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../core/localization/number_converter.dart';
 
 class ToletChatView extends StatefulWidget {
   const ToletChatView({super.key});
@@ -213,6 +214,10 @@ class _MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isBangla =
+        Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Column(
@@ -270,7 +275,7 @@ class _MessageBubble extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _formatTime(message.createdAt),
+                  convert(_formatTime(message.createdAt)),
                   style: TextStyle(fontSize: 11, color: Colors.grey[500]),
                 ),
                 if (isMe && message.isSeen == true) ...[

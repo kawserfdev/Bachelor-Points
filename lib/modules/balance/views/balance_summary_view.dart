@@ -10,6 +10,7 @@ import '../widgets/desktop/deposit_charts.dart';
 import '../widgets/desktop/deposit_member_table.dart';
 import '../widgets/desktop/deposit_summary_cards.dart';
 import 'package:bachelorpoints/l10n/app_localizations.dart';
+import '../../../core/localization/number_converter.dart';
 
 /// Responsive Balance/Deposit summary screen.
 ///
@@ -37,6 +38,15 @@ class _BalanceSummaryViewState extends State<BalanceSummaryView> {
 
   /// Local-only desktop search query.
   String _searchQuery = '';
+
+  /// Whether the current locale is Bangla.
+  bool get _isBangla =>
+      Localizations.localeOf(context).languageCode == 'bn';
+
+  /// Converts ASCII digits in [text] to Bangla digits when the current
+  /// locale is Bangla; otherwise returns [text] unchanged.
+  String _convert(String text) =>
+      _isBangla ? NumberConverter.englishToBangla(text) : text;
 
   @override
   void initState() {
@@ -270,9 +280,9 @@ class _BalanceSummaryViewState extends State<BalanceSummaryView> {
           onPressed: () => controller.changeMonth(-1),
         ),
         Obx(() => Text(
-              DateFormat('MMMM yyyy',
+              _convert(DateFormat('MMMM yyyy',
                       Localizations.localeOf(context).languageCode)
-                  .format(controller.selectedMonth.value),
+                  .format(controller.selectedMonth.value)),
               style: const TextStyle(
                   fontSize: 16, fontWeight: FontWeight.bold),
             )),
@@ -297,6 +307,9 @@ class _DesktopMonthNav extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final controller = Get.find<BalanceController>();
+    final isBangla = Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -311,8 +324,8 @@ class _DesktopMonthNav extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Obx(() => Text(
-                  DateFormat('MMMM yyyy', locale)
-                      .format(controller.selectedMonth.value),
+                  convert(DateFormat('MMMM yyyy', locale)
+                      .format(controller.selectedMonth.value)),
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: cs.onSurface,
@@ -383,6 +396,9 @@ class _GlobalMetricsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<BalanceController>();
     final local = AppLocalizations.of(context)!;
+    final isBangla = Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -421,7 +437,7 @@ class _GlobalMetricsCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Obx(() => Text(
-                          '৳${controller.mealRate.value.toStringAsFixed(2)}',
+                          convert('৳${controller.mealRate.value.toStringAsFixed(2)}'),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 28,
@@ -444,7 +460,7 @@ class _GlobalMetricsCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Obx(() => Text(
-                          controller.globalTotalMeals.value.toStringAsFixed(1),
+                          convert(controller.globalTotalMeals.value.toStringAsFixed(1)),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 24,
@@ -478,7 +494,7 @@ class _GlobalMetricsCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Obx(() => Text(
-                            '৳${controller.globalTotalBazar.value.toStringAsFixed(0)}',
+                            convert('৳${controller.globalTotalBazar.value.toStringAsFixed(0)}'),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 14,
@@ -509,7 +525,7 @@ class _GlobalMetricsCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Obx(() => Text(
-                            '৳${controller.globalTotalFixed.value.toStringAsFixed(0)}',
+                            convert('৳${controller.globalTotalFixed.value.toStringAsFixed(0)}'),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 14,
@@ -537,6 +553,9 @@ class _MemberBalanceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool getsMoney = member.balance >= 0;
     final local = AppLocalizations.of(context)!;
+    final isBangla = Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
 
     return Card(
       elevation: 0,
@@ -574,9 +593,9 @@ class _MemberBalanceCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    getsMoney
+                    convert(getsMoney
                         ? local.getsLabel(member.balance.toStringAsFixed(0))
-                        : local.owesLabel(member.balance.abs().toStringAsFixed(0)),
+                        : local.owesLabel(member.balance.abs().toStringAsFixed(0))),
                     style: TextStyle(
                       color: getsMoney ? Colors.green.shade700 : Colors.red.shade700,
                       fontWeight: FontWeight.bold,
@@ -593,10 +612,10 @@ class _MemberBalanceCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildStatItem(local.meals, member.totalMeals.toStringAsFixed(1)),
-                _buildStatItem(local.deposits, '৳${member.totalDeposits.toStringAsFixed(0)}'),
-                _buildStatItem(local.mealCost, '৳${member.mealCost.toStringAsFixed(0)}'),
-                _buildStatItem(local.fixedCost, '৳${member.fixedCost.toStringAsFixed(0)}'),
+                _buildStatItem(local.meals, convert(member.totalMeals.toStringAsFixed(1))),
+                _buildStatItem(local.deposits, convert('৳${member.totalDeposits.toStringAsFixed(0)}')),
+                _buildStatItem(local.mealCost, convert('৳${member.mealCost.toStringAsFixed(0)}')),
+                _buildStatItem(local.fixedCost, convert('৳${member.fixedCost.toStringAsFixed(0)}')),
               ],
             )
           ],

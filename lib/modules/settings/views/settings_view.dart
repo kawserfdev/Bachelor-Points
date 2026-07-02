@@ -14,6 +14,7 @@ import '../widgets/desktop/settings_language_card.dart';
 import '../widgets/desktop/settings_account_card.dart';
 import '../widgets/desktop/settings_subscription_card.dart';
 import '../widgets/desktop/settings_admin_card.dart';
+import '../../../core/localization/number_converter.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({super.key});
@@ -30,6 +31,11 @@ class _SettingsViewState extends State<SettingsView> {
     super.initState();
     controller = Get.find<SettingsController>();
   }
+
+  bool get _isBangla =>
+      Localizations.localeOf(context).languageCode == 'bn';
+  String _convert(String text) =>
+      _isBangla ? NumberConverter.englishToBangla(text) : text;
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +155,7 @@ class _SettingsViewState extends State<SettingsView> {
           ListTile(
             title: Text(local.mealCutoffTime),
             subtitle: Text(
-              '${local.current}: ${controller.messSettings.value?.mealCutoffTime ?? local.notSet}',
+              '${local.current}: ${_convert(controller.messSettings.value?.mealCutoffTime ?? local.notSet)}',
             ),
             trailing: const Icon(Icons.access_time),
             onTap: () async {
@@ -458,7 +464,7 @@ class _SettingsViewState extends State<SettingsView> {
                   leading: const CircleAvatar(child: Icon(Icons.shopping_bag)),
                   title: Text(schedule.userName ?? 'Unknown User'),
                   subtitle: Text(
-                    schedule.date.toLocal().toString().split(' ')[0],
+                    _convert(schedule.date.toLocal().toString().split(' ')[0]),
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
@@ -728,7 +734,7 @@ class _SettingsViewState extends State<SettingsView> {
             border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)),
           ),
           child: Text(
-            val.toStringAsFixed(1),
+            _convert(val.toStringAsFixed(1)),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -801,7 +807,7 @@ class _SettingsViewState extends State<SettingsView> {
                                   const Text('Start Date', style: TextStyle(fontSize: 10, color: Colors.grey)),
                                   const SizedBox(height: 2),
                                   Text(
-                                    "${tempStart.day}/${tempStart.month}/${tempStart.year}",
+                                    _convert("${tempStart.day}/${tempStart.month}/${tempStart.year}"),
                                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
                                   ),
                                 ],
@@ -837,7 +843,7 @@ class _SettingsViewState extends State<SettingsView> {
                                   const Text('End Date', style: TextStyle(fontSize: 10, color: Colors.grey)),
                                   const SizedBox(height: 2),
                                   Text(
-                                    "${tempEnd.day}/${tempEnd.month}/${tempEnd.year}",
+                                    _convert("${tempEnd.day}/${tempEnd.month}/${tempEnd.year}"),
                                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
                                   ),
                                 ],
@@ -957,7 +963,7 @@ class _SettingsViewState extends State<SettingsView> {
           children: options.map((option) {
             final isSelected = currentValue == option;
             return ChoiceChip(
-              label: Text(option.toString()),
+              label: Text(_convert(option.toString())),
               selected: isSelected,
               onSelected: (selected) {
                 if (selected) {

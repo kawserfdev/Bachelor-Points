@@ -14,6 +14,7 @@ import '../widgets/desktop/expense_search.dart';
 import '../widgets/desktop/expense_summary_cards.dart';
 import '../widgets/desktop/expense_table.dart';
 import 'package:bachelorpoints/l10n/app_localizations.dart';
+import '../../../core/localization/number_converter.dart';
 
 /// Responsive Expense list screen.
 ///
@@ -44,6 +45,15 @@ class _ExpenseListViewState extends State<ExpenseListView> {
 
   /// Local-only desktop category filter (`'all'` = no filter).
   String _selectedCategory = 'all';
+
+  /// Whether the current locale is Bangla.
+  bool get _isBangla =>
+      Localizations.localeOf(context).languageCode == 'bn';
+
+  /// Converts ASCII digits in [text] to Bangla digits when the current
+  /// locale is Bangla; otherwise returns [text] unchanged.
+  String _convert(String text) =>
+      _isBangla ? NumberConverter.englishToBangla(text) : text;
 
   @override
   void initState() {
@@ -163,14 +173,14 @@ class _ExpenseListViewState extends State<ExpenseListView> {
                           Text(expense.description!,
                               style: const TextStyle(fontSize: 12)),
                         Text(
-                          "${DateFormat('MMM dd, yyyy', Localizations.localeOf(context).languageCode).format(expense.date)} • ${local.addedByLabel(expense.addedByName ?? local.unknownMember)}",
+                          _convert("${DateFormat('MMM dd, yyyy', Localizations.localeOf(context).languageCode).format(expense.date)} • ${local.addedByLabel(expense.addedByName ?? local.unknownMember)}"),
                           style:
                               TextStyle(fontSize: 11, color: Colors.grey[600]),
                         ),
                       ],
                     ),
                     trailing: Text(
-                      '৳${expense.amount.toStringAsFixed(2)}',
+                      _convert('৳${expense.amount.toStringAsFixed(2)}'),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -334,9 +344,9 @@ class _ExpenseListViewState extends State<ExpenseListView> {
           onPressed: () => controller.changeMonth(-1),
         ),
         Obx(() => Text(
-              DateFormat('MMMM yyyy',
+              _convert(DateFormat('MMMM yyyy',
                       Localizations.localeOf(context).languageCode)
-                  .format(controller.selectedMonth.value),
+                  .format(controller.selectedMonth.value)),
               style: const TextStyle(
                   fontSize: 16, fontWeight: FontWeight.bold),
             )),
@@ -401,6 +411,9 @@ class _TabletExpenseCard extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final locale = Localizations.localeOf(context).languageCode;
+    final isBangla = Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
 
     Color categoryColor(String category) {
       switch (category) {
@@ -487,7 +500,7 @@ class _TabletExpenseCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 Text(
-                  '${DateFormat('MMM dd, yyyy', locale).format(expense.date)} • ${expense.addedByName ?? local.unknownMember}',
+                  convert('${DateFormat('MMM dd, yyyy', locale).format(expense.date)} • ${expense.addedByName ?? local.unknownMember}'),
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: cs.onSurfaceVariant,
                   ),
@@ -499,7 +512,7 @@ class _TabletExpenseCard extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            '৳${expense.amount.toStringAsFixed(2)}',
+            convert('৳${expense.amount.toStringAsFixed(2)}'),
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w800,
               color: cs.primary,

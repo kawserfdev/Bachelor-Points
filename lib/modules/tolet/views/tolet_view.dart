@@ -9,6 +9,7 @@ import 'package:bachelorpoints/modules/tolet/widgets/desktop/property_search_bar
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/localization/number_converter.dart';
 
 class ToletView extends StatefulWidget {
   const ToletView({super.key});
@@ -53,6 +54,11 @@ class _ToletViewState extends State<ToletView>
     _shimmerController.dispose();
     super.dispose();
   }
+
+  bool get _isBangla =>
+      Localizations.localeOf(context).languageCode == 'bn';
+  String _convert(String text) =>
+      _isBangla ? NumberConverter.englishToBangla(text) : text;
 
   @override
   Widget build(BuildContext context) {
@@ -292,14 +298,14 @@ class _ToletViewState extends State<ToletView>
                       theme,
                       icon: Icons.list_alt_rounded,
                       label: 'Total Listings',
-                      value: '${all.length}',
+                      value: _convert('${all.length}'),
                     ),
                     const SizedBox(height: 8),
                     _buildStatRow(
                       theme,
                       icon: Icons.local_fire_department_rounded,
                       label: 'Featured',
-                      value: '${boosted.length}',
+                      value: _convert('${boosted.length}'),
                       accent: Colors.deepOrange,
                     ),
                   ],
@@ -944,6 +950,10 @@ class _BoostedCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isBangla =
+        Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
     return GestureDetector(
       onTap: () => context.push('/tolet/property?id=${property.id}'),
       child: Container(
@@ -1004,7 +1014,7 @@ class _BoostedCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '৳${property.price.toStringAsFixed(0)}/mo',
+                    convert('৳${property.price.toStringAsFixed(0)}/mo'),
                     style: theme.textTheme.labelLarge?.copyWith(
                       color: AppTheme.primary,
                       fontWeight: FontWeight.w800,
@@ -1049,6 +1059,10 @@ class _PropertyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isBangla =
+        Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
@@ -1116,7 +1130,7 @@ class _PropertyCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '৳${property.price.toStringAsFixed(0)}',
+                          convert('৳${property.price.toStringAsFixed(0)}'),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -1201,17 +1215,17 @@ class _PropertyCard extends StatelessWidget {
                     children: [
                       _InfoChip(
                         icon: Icons.bed_rounded,
-                        label: '${property.bedrooms ?? 0} Bed',
+                        label: convert('${property.bedrooms ?? 0} Bed'),
                       ),
                       _VertDivider(),
                       _InfoChip(
                         icon: Icons.bathtub_rounded,
-                        label: '${property.bathrooms ?? 0} Bath',
+                        label: convert('${property.bathrooms ?? 0} Bath'),
                       ),
                       _VertDivider(),
                       _InfoChip(
                         icon: Icons.layers_rounded,
-                        label: 'Floor ${property.floor ?? 'N/A'}',
+                        label: convert('Floor ${property.floor ?? 'N/A'}'),
                       ),
                     ],
                   ),

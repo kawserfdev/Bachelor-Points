@@ -4,6 +4,7 @@ import 'package:bachelorpoints/modules/tolet/listing_management/listing_manageme
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/localization/number_converter.dart';
 
 class ListingManagementView extends StatelessWidget {
   const ListingManagementView({super.key});
@@ -220,6 +221,10 @@ class _PropertyCard extends StatelessWidget {
         (property.images != null && property.images!.isNotEmpty)
             ? property.images!.first
             : null;
+    final isBangla =
+        Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
@@ -279,7 +284,7 @@ class _PropertyCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '৳${property.price ?? '-'} · ${property.area ?? ''}, ${property.district ?? ''}',
+                          convert('৳${property.price ?? '-'} · ${property.area ?? ''}, ${property.district ?? ''}'),
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.grey[600],

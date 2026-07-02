@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../data/models/property_model.dart';
+import '../../../core/localization/number_converter.dart';
 
 /// Property search screen with filter chips and list view.
 class PropertySearchView extends GetView<PropertySearchController> {
@@ -53,6 +54,11 @@ class PropertySearchView extends GetView<PropertySearchController> {
     ThemeData theme,
     ColorScheme colorScheme,
   ) {
+    final isBangla =
+        Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
+
     return Column(
       children: [
         Padding(
@@ -79,7 +85,7 @@ class PropertySearchView extends GetView<PropertySearchController> {
               const SizedBox(width: 8),
               _buildFilterChip(context, controller.propertyType.value.isEmpty ? 'Type' : controller.propertyType.value.capitalize!, () => _pickOption(context, 'Type', PropertySearchController.propertyTypes, (v) { controller.propertyType.value = v; controller.search(); })),
               const SizedBox(width: 8),
-              _buildFilterChip(context, '₹${controller.minPrice.value.toInt()}-₹${controller.maxPrice.value.toInt()}', () => _showPriceDialog(context)),
+              _buildFilterChip(context, convert('₹${controller.minPrice.value.toInt()}-₹${controller.maxPrice.value.toInt()}'), () => _showPriceDialog(context)),
             ],
           ),
         ),
@@ -137,6 +143,10 @@ class PropertySearchView extends GetView<PropertySearchController> {
   }
 
   void _showPriceDialog(BuildContext context) {
+    final isBangla =
+        Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
     RangeValues values = RangeValues(controller.minPrice.value, controller.maxPrice.value);
     showDialog(
       context: context,
@@ -144,8 +154,8 @@ class PropertySearchView extends GetView<PropertySearchController> {
         builder: (context, setState) => AlertDialog(
           title: const Text('Price Range'),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
-            RangeSlider(values: values, min: 0, max: 100000, divisions: 100, labels: RangeLabels('₹${values.start.toInt()}', '₹${values.end.toInt()}'), onChanged: (v) => setState(() => values = v)),
-            Text('₹${values.start.toInt()} - ₹${values.end.toInt()}'),
+            RangeSlider(values: values, min: 0, max: 100000, divisions: 100, labels: RangeLabels(convert('₹${values.start.toInt()}'), convert('₹${values.end.toInt()}')), onChanged: (v) => setState(() => values = v)),
+            Text(convert('₹${values.start.toInt()} - ₹${values.end.toInt()}')),
           ]),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
@@ -158,6 +168,10 @@ class PropertySearchView extends GetView<PropertySearchController> {
 
   Widget _buildPropertyCard(BuildContext context, PropertyModel p) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isBangla =
+        Localizations.localeOf(context).languageCode == 'bn';
+    String convert(String text) =>
+        isBangla ? NumberConverter.englishToBangla(text) : text;
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       clipBehavior: Clip.antiAlias,
@@ -181,15 +195,15 @@ class PropertySearchView extends GetView<PropertySearchController> {
                   Text('${p.area}, ${p.district}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                   const Spacer(),
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Text('₹${p.price.toInt()}/mo', style: Theme.of(context).textTheme.titleSmall?.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w700)),
+                    Text(convert('₹${p.price.toInt()}/mo'), style: Theme.of(context).textTheme.titleSmall?.copyWith(color: colorScheme.primary, fontWeight: FontWeight.w700)),
                     if (p.isBoosted) Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: Colors.orange.shade100, borderRadius: BorderRadius.circular(4)), child: const Text('Boosted', style: TextStyle(fontSize: 10, color: Colors.orange))),
                   ]),
                   Row(children: [
-                    _buildInfoChip(Icons.bed, '${p.bedrooms}'),
+                    _buildInfoChip(Icons.bed, convert('${p.bedrooms}')),
                     const SizedBox(width: 8),
-                    _buildInfoChip(Icons.bathtub, '${p.bathrooms}'),
+                    _buildInfoChip(Icons.bathtub, convert('${p.bathrooms}')),
                     const SizedBox(width: 8),
-                    _buildInfoChip(Icons.square_foot, '${p.areaSqft.toInt()}sqft'),
+                    _buildInfoChip(Icons.square_foot, convert('${p.areaSqft.toInt()}sqft')),
                   ]),
                 ]),
               ),

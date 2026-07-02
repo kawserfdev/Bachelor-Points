@@ -11,6 +11,7 @@ import '../../../data/models/shopping_list_model.dart';
 import '../widgets/desktop/shopping_checklist.dart';
 import '../widgets/desktop/shopping_reminder_card.dart';
 import '../widgets/desktop/shopping_table.dart';
+import '../../../core/localization/number_converter.dart';
 
 /// Responsive Shopping screen.
 ///
@@ -41,6 +42,11 @@ class _ShoppingListViewState extends State<ShoppingListView> {
     super.initState();
     controller = Get.find<ShoppingController>();
   }
+
+  bool get _isBangla =>
+      Localizations.localeOf(context).languageCode == 'bn';
+  String _convert(String text) =>
+      _isBangla ? NumberConverter.englishToBangla(text) : text;
 
   @override
   Widget build(BuildContext context) {
@@ -440,7 +446,7 @@ class _ShoppingListViewState extends State<ShoppingListView> {
                       const SizedBox(height: 4),
                       if (list.startDate != null && list.endDate != null) ...[
                         Text(
-                          'Period: ${DateFormat('d MMM yyyy').format(list.startDate!)} - ${DateFormat('d MMM yyyy').format(list.endDate!)}',
+                          _convert('Period: ${DateFormat('d MMM yyyy').format(list.startDate!)} - ${DateFormat('d MMM yyyy').format(list.endDate!)}'),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: colorScheme.secondary,
                             fontWeight: FontWeight.w500,
@@ -449,7 +455,7 @@ class _ShoppingListViewState extends State<ShoppingListView> {
                         const SizedBox(height: 2),
                       ],
                       Text(
-                        'Created: ${DateFormat('d MMM yyyy').format(list.createdAt)}',
+                        _convert('Created: ${DateFormat('d MMM yyyy').format(list.createdAt)}'),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: Colors.grey[600],
                         ),
@@ -488,7 +494,7 @@ class _ShoppingListViewState extends State<ShoppingListView> {
                     ),
                   ),
                   Text(
-                    '$purchased / $total Items',
+                    _convert('$purchased / $total Items'),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: colorScheme.primary,
@@ -759,7 +765,7 @@ class _ShoppingListViewState extends State<ShoppingListView> {
                       ],
                     ),
                     Text(
-                      DateFormat('MMM d, h:mm a').format(item.createdAt),
+                      _convert(DateFormat('MMM d, h:mm a').format(item.createdAt)),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: Colors.grey[500],
                       ),
@@ -951,7 +957,7 @@ class _ShoppingListViewState extends State<ShoppingListView> {
                               child: Text(
                                 selectedDateRange == null
                                     ? 'Select Date Range'
-                                    : '${DateFormat('d MMM yyyy').format(selectedDateRange!.start)} - ${DateFormat('d MMM yyyy').format(selectedDateRange!.end)}',
+                                    : _convert('${DateFormat('d MMM yyyy').format(selectedDateRange!.start)} - ${DateFormat('d MMM yyyy').format(selectedDateRange!.end)}'),
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: selectedDateRange == null
                                       ? colorScheme.onSurfaceVariant
@@ -1186,7 +1192,7 @@ class _ShoppingListViewState extends State<ShoppingListView> {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          '${DateFormat('d MMM yyyy').format(list.startDate!)} - ${DateFormat('d MMM yyyy').format(list.endDate!)}',
+                          _convert('${DateFormat('d MMM yyyy').format(list.startDate!)} - ${DateFormat('d MMM yyyy').format(list.endDate!)}'),
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w500,
@@ -1197,7 +1203,7 @@ class _ShoppingListViewState extends State<ShoppingListView> {
                     const SizedBox(height: 4),
                   ],
                   Text(
-                    'Created: ${DateFormat('d MMM yyyy, h:mm a').format(list.createdAt)}',
+                    _convert('Created: ${DateFormat('d MMM yyyy, h:mm a').format(list.createdAt)}'),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: Colors.grey[600],
                     ),
@@ -1403,7 +1409,7 @@ class _ShoppingListViewState extends State<ShoppingListView> {
                       const SizedBox(height: 4),
                       if (list.startDate != null && list.endDate != null)
                         Text(
-                          'Period: ${DateFormat('d MMM yyyy').format(list.startDate!)} - ${DateFormat('d MMM yyyy').format(list.endDate!)}',
+                          _convert('Period: ${DateFormat('d MMM yyyy').format(list.startDate!)} - ${DateFormat('d MMM yyyy').format(list.endDate!)}'),
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: colorScheme.secondary,
                             fontWeight: FontWeight.w500,
@@ -1411,7 +1417,7 @@ class _ShoppingListViewState extends State<ShoppingListView> {
                         ),
                       const SizedBox(height: 2),
                       Text(
-                        'Created on: ${DateFormat('d MMM yyyy').format(list.createdAt)}',
+                        _convert('Created on: ${DateFormat('d MMM yyyy').format(list.createdAt)}'),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: Colors.grey,
                         ),

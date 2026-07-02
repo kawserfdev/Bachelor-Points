@@ -6,6 +6,7 @@ import '../../../core/responsive/responsive.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import 'package:bachelorpoints/l10n/app_localizations.dart';
+import '../../../core/localization/number_converter.dart';
 
 /// Responsive Add Deposit form.
 ///
@@ -30,6 +31,15 @@ class _AddDepositViewState extends State<AddDepositView> {
   final amountController = TextEditingController();
   String selectedPaymentMethod = 'cash';
   DateTime selectedDate = DateTime.now();
+
+  /// Whether the current locale is Bangla.
+  bool get _isBangla =>
+      Localizations.localeOf(context).languageCode == 'bn';
+
+  /// Converts ASCII digits in [text] to Bangla digits when the current
+  /// locale is Bangla; otherwise returns [text] unchanged.
+  String _convert(String text) =>
+      _isBangla ? NumberConverter.englishToBangla(text) : text;
 
   @override
   void dispose() {
@@ -248,7 +258,7 @@ class _AddDepositViewState extends State<AddDepositView> {
                 Icon(Icons.calendar_today, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 12),
                 Text(
-                  DateFormat('MMMM dd, yyyy', Localizations.localeOf(context).languageCode).format(selectedDate),
+                  _convert(DateFormat('MMMM dd, yyyy', Localizations.localeOf(context).languageCode).format(selectedDate)),
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ],
