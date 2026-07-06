@@ -43,3 +43,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Combined web build output (Vercel deployment)
+/public/
+
+# Next.js static export output
+/web-landing_page/out/
+/web-landing_page/.next/

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "bash scripts/build_web.sh",
+  "outputDirectory": "public",
+  "framework": null,
+  "rewrites": [
+    { "source": "/app/(.*)", "destination": "/app/index.html" }
+  ],
+  "redirects": [
+    { "source": "/login", "destination": "/app/login", "permanent": true },
+    { "source": "/signup", "destination": "/app/signup", "permanent": true },
+    { "source": "/home", "destination": "/app/", "permanent": true }
+  ],
+  "headers": [
+    {
+      "source": "/app/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    }
+  ]
+}

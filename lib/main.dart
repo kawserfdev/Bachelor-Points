@@ -14,6 +14,7 @@ import 'services/fcm_service.dart';
 import 'services/realtime_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
+import 'core/utils/web_auth_observer.dart';
 //Read Existing Schema then plan it
 
 void main() async {
@@ -57,6 +58,8 @@ Future<void> initServices() async {
   Get.put<AuthService>(authService);
   try {
     await authService.init();
+    // Bridge auth state to the web landing page (no-op on mobile).
+    WebAuthObserver(authService).start();
   } catch (e) {
     debugPrint("AuthService init failed: $e");
   }

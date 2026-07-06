@@ -1,0 +1,9 @@
+{
+  "name": "bachelorpoints-notification-api",
+  "version": "1.0.0",
+  "description": "Vercel API for FCM Notifications",
+  "main": "api/send.js",
+  "dependencies": {
+    "firebase-admin": "^12.1.0"
+  }
+}
