@@ -49,5 +49,5 @@ app.*.map.json
 /public/
 
 # Next.js static export output
-/web-landing_page/out/
-/web-landing_page/.next/
+# /web-landing_page/out/
+# /web-landing_page/.next/
