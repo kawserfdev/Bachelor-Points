@@ -404,31 +404,32 @@ class _DashboardTopBar extends StatelessWidget {
             ),
           ),
           // Search hint (desktop only)
-          if (context.deviceType == DeviceType.desktop)
-            Container(
-              width: 240,
-              height: 40,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: cs.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.search_rounded,
-                      size: 18, color: cs.onSurfaceVariant),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Search...',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (context.deviceType == DeviceType.desktop) const SizedBox(width: 12),
-          // Notifications
+          // if (context.deviceType == DeviceType.desktop)
+          //   Container(
+          //     width: 240,
+          //     height: 40,
+          //     padding: const EdgeInsets.symmetric(horizontal: 12),
+          //     decoration: BoxDecoration(
+          //       color: cs.surfaceContainerHighest,
+          //       borderRadius: BorderRadius.circular(12),
+          //     ),
+          //     child: Row(
+          //       children: [
+          //         Icon(Icons.search_rounded,
+          //             size: 18, color: cs.onSurfaceVariant),
+          //         const SizedBox(width: 8),
+          //         Text(
+          //           'Search...',
+          //           style: theme.textTheme.bodySmall?.copyWith(
+          //             color: cs.onSurfaceVariant,
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+          //   ),
+            
+          //   if (context.deviceType == DeviceType.desktop) const SizedBox(width: 12),
+          // // Notifications
           Consumer(
             builder: (context, ref, child) {
               final unreadCount = ref.watch(unreadNotificationsCountProvider);

@@ -124,10 +124,20 @@ class AppAuthService {
   /// Sign out
   Future<void> signOut() async {
     debugPrint('AppAuthService.signOut');
-    await Future.wait([
-      _auth.signOut(),
-      _googleSignIn.signOut(),
-    ]);
+    try {
+      await Future.wait([
+        _auth.signOut(),
+        _googleSignIn.signOut().timeout(
+          const Duration(seconds: 2),
+          onTimeout: () {
+            debugPrint('AppAuthService.signOut: Google Sign-In signOut timed out');
+            return null;
+          },
+        ),
+      ]);
+    } catch (e) {
+      debugPrint('AppAuthService.signOut error (non-fatal): $e');
+    }
   }
 
   /// Check whether a user profile exists in Firestore

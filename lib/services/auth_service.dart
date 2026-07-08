@@ -1,5 +1,6 @@
 import 'package:bachelorpoints/services/storage_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -143,6 +144,7 @@ class AuthService extends GetxService {
     }
   }
 
+  
   /// Signs out the current user and wipes ALL local state:
   ///   - Firebase Auth session
   ///   - Google Sign-In session
@@ -157,7 +159,14 @@ class AuthService extends GetxService {
 
     // 2. Sign out of Google (no-op if not signed in via Google)
     try {
-      await GoogleSignIn.instance.signOut();
+      debugPrint('Attempting to sign out of Google Sign-In');
+      await GoogleSignIn.instance.signOut().timeout(
+        const Duration(seconds: 2),
+        onTimeout: () {
+          debugPrint('Google Sign-In signOut timed out');
+          return null;
+        },
+      );
       debugPrint('Google Sign-In session cleared');
     } catch (e) {
       debugPrint('Google Sign-In clear error (non-fatal): $e');
@@ -166,19 +175,21 @@ class AuthService extends GetxService {
     // 3. Sign out of Firebase Auth
     await _auth.signOut();
 
-    // 4. Reset current user observable in this service
-    currentUser.value = null;
-
-    // 5. Delete all non-permanent GetX controllers
-    //    Lazy controllers (mess, balance, profile, etc.) are destroyed;
-    //    permanent services (auth, storage, theme, etc.) survive.
-    Get.deleteAll();
-
-    // 6. Navigate to login and clear the entire navigation stack
+    // 4. Navigate to login and clear the entire navigation stack
     //    Use GoRouter.go() so the redirect guard sends the user to login
     AppNavigation.go(AppRoutes.login);
 
-    debugPrint('AuthService signOut — all state wiped, redirected to login');
+    // 5. Defer resetting currentUser and deleting non-permanent GetX controllers
+    //    to the next frame to allow GoRouter to unmount authenticated screens
+    //    (like HomeView) before their controllers are destroyed.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      currentUser.value = null;
+
+      // Lazy controllers (mess, balance, profile, etc.) are destroyed;
+      // permanent services (auth, storage, theme, etc.) survive.
+      Get.deleteAll();
+      debugPrint('AuthService signOut — all state wiped, redirected to login');
+    });
   }
 
   bool get isLoggedIn => currentUser.value != null;
