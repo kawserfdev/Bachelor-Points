@@ -47,7 +47,7 @@ export function AppScreenshots() {
             viewport={{ once: true }}
             className="text-3xl md:text-5xl font-bold mb-4"
           >
-            Experience the Future of Mess Management
+            Experience the Future of BachelorPoints
           </motion.h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             আমাদের মোবাইল এবং ওয়েব ইন্টারফেস ডিজাইন করা হয়েছে ব্যাসেলরদের লাইফস্টাইল মাথায় রেখে।
@@ -62,9 +62,8 @@ export function AppScreenshots() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
-              className={`flex flex-col ${
-                index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"
-              } gap-12 items-center`}
+              className={`flex flex-col ${index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"
+                } gap-12 items-center`}
             >
               {/* Text Side */}
               <div className="flex-1 space-y-6">
@@ -89,14 +88,14 @@ export function AppScreenshots() {
                 <div className="relative group">
                   <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 to-purple-500/20 blur-2xl opacity-50 group-hover:opacity-75 transition-opacity" />
                   <div className="relative rounded-2xl border border-border/50 bg-card overflow-hidden shadow-2xl aspect-video bg-zinc-900 flex items-center justify-center">
-                     {/* Using a placeholder SVG-like UI for now */}
-                     <div className="w-full h-full p-8 flex flex-col gap-4">
-                        <div className="h-8 w-1/3 bg-white/10 rounded-md" />
-                        <div className="flex-1 grid grid-cols-2 gap-4">
-                           <div className="bg-white/5 rounded-xl border border-white/10" />
-                           <div className="bg-white/5 rounded-xl border border-white/10" />
-                        </div>
-                     </div>
+                    {/* Using a placeholder SVG-like UI for now */}
+                    <div className="w-full h-full p-8 flex flex-col gap-4">
+                      <div className="h-8 w-1/3 bg-white/10 rounded-md" />
+                      <div className="flex-1 grid grid-cols-2 gap-4">
+                        <div className="bg-white/5 rounded-xl border border-white/10" />
+                        <div className="bg-white/5 rounded-xl border border-white/10" />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

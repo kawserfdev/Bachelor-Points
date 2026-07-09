@@ -59,7 +59,7 @@ export function ProblemSolution() {
                 <span className="text-emerald-500">The Solution</span>
               </h2>
               <p className="text-muted-foreground text-lg">
-                Mess Manager-এর মাধ্যমে আপনার মেস লাইফকে করুন আরও স্মার্ট এবং ঝামেলামুক্ত।
+                BachelorPoints-এর মাধ্যমে আপনার মেস লাইফকে করুন আরও স্মার্ট এবং ঝামেলামুক্ত।
               </p>
             </div>
             <ul className="space-y-4">

@@ -3,7 +3,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,8 +18,8 @@ const geistMono = Geist_Mono({
 import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
-  title: "Mess Manager - Simplify Your Mess Life",
-  description: "The ultimate mess management and meal expense tracking platform for bachelor messes and hostels.",
+  title: "BachelorPoints - Simplify Your Mess Life",
+  description: "The ultimate BachelorPoints and meal expense tracking platform for bachelor messes and hostels.",
 };
 
 export default function RootLayout({
@@ -39,7 +39,8 @@ export default function RootLayout({
             Runs synchronously before hydration to avoid a flash of the landing.
             Uses location.replace() so the landing page is not kept in history,
             keeping the browser Back button clean. */}
-        <script dangerouslySetInnerHTML={{ __html: `
+        <script dangerouslySetInnerHTML={{
+          __html: `
           (function () {
             try {
               if (localStorage.getItem('bp_authed') === 'true') {

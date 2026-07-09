@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Calculator, 
-  Calendar, 
-  MessageSquare, 
-  Bell, 
-  Users, 
-  Home, 
+import {
+  Calculator,
+  Calendar,
+  MessageSquare,
+  Bell,
+  Users,
+  Home,
   TrendingUp,
   ShoppingBag,
   Wallet,
@@ -26,7 +26,7 @@ const categories = [
     description: "মেসের দৈনন্দিন অপারেশন ও মিল ট্র্যাকিংয়ের জন্য অত্যন্ত আধুনিক ও সুসংগঠিত সব ফিচার।",
     features: [
       {
-        title: "Mess Management",
+        title: "BachelorPoints",
         subtitle: "👥 মেস গ্রুপ ও সদস্য পরিচালনা",
         description: "ইনস্ট্যান্ট মেস তৈরি করুন এবং মেম্বারদের ইনভাইট কোড দিয়ে অ্যাড করুন। কার কি রোল হবে তা সহজে সেট করুন।",
         icon: Users,
@@ -281,11 +281,10 @@ export function Features() {
               <button
                 key={category.id}
                 onClick={() => setActiveCategory(category.id)}
-                className={`relative px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 ${
-                  isActive 
-                    ? "text-primary-foreground font-semibold" 
+                className={`relative px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 ${isActive
+                    ? "text-primary-foreground font-semibold"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                  }`}
               >
                 {isActive && (
                   <motion.div
@@ -340,7 +339,7 @@ export function Features() {
                     >
                       {/* Background Glow */}
                       <div className="absolute -right-4 -top-4 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors duration-500" />
-                      
+
                       <div>
                         {/* Header icon and badge */}
                         <div className="flex justify-between items-start mb-6">
@@ -353,7 +352,7 @@ export function Features() {
                             </span>
                           )}
                         </div>
-                        
+
                         <span className="text-xs font-semibold text-primary/80 uppercase tracking-wider block mb-2">{feature.subtitle}</span>
                         <h3 className="text-2xl font-black mb-3 relative z-10 group-hover:text-primary transition-colors duration-300">{feature.title}</h3>
                         <p className="text-muted-foreground leading-relaxed mb-6 text-sm">

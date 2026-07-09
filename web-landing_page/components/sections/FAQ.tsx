@@ -10,8 +10,8 @@ import { motion } from "framer-motion";
 
 const faqs = [
   {
-    question: "Mess Manager কি ফ্রি?",
-    answer: "হ্যাঁ! বেসিক ফিচারের জন্য Mess Manager একদম ফ্রি। তবে আমরা ভবিষ্যতে কিছু প্রিমিয়াম ফিচার নিয়ে আসবো যা আপনার মেস লাইফকে আরও সহজ করবে।",
+    question: "BachelorPoints কি ফ্রি?",
+    answer: "হ্যাঁ! বেসিক ফিচারের জন্য BachelorPoints একদম ফ্রি। তবে আমরা ভবিষ্যতে কিছু প্রিমিয়াম ফিচার নিয়ে আসবো যা আপনার মেস লাইফকে আরও সহজ করবে।",
   },
   {
     question: "কিভাবে শুরু করবো?",

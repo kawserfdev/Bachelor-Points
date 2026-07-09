@@ -1,6 +1,6 @@
-# Mess Manager Landing Page
+# BachelorPoints Landing Page
 
-A premium, conversion-focused SaaS landing page for the **Mess Manager** platform. Built with a modern tech stack and "Stripe/Linear" inspired design patterns.
+A premium, conversion-focused SaaS landing page for the **BachelorPoints** platform. Built with a modern tech stack and "Stripe/Linear" inspired design patterns.
 
 ## 🚀 Tech Stack
 - **Next.js 15 (App Router)**

@@ -23,7 +23,7 @@ export function CTA() {
             আজই আপনার মেসের হিসাব সহজ করুন
           </h2>
           <p className="text-primary-foreground/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
-            হাজারো ব্যাসেলর অলরেডি Mess Manager ব্যবহার করে তাদের লাইফ সহজ করে ফেলেছে। আপনি কেন পিছিয়ে থাকবেন?
+            হাজারো ব্যাসেলর অলরেডি BachelorPoints ব্যবহার করে তাদের লাইফ সহজ করে ফেলেছে। আপনি কেন পিছিয়ে থাকবেন?
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button asChild size="lg" variant="secondary" className="rounded-full px-8 h-14 text-lg group bg-white text-primary hover:bg-zinc-100 border-none">
