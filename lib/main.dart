@@ -24,6 +24,9 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Ensure that imperative navigation (context.push) updates the browser URL on web
+  GoRouter.optionURLReflectsImperativeAPIs = true;
+
   // 1. Load Environment Variables
   await dotenv.load(fileName: ".env");
 

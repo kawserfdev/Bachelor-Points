@@ -102,8 +102,10 @@ class _SaasSidebarState extends ConsumerState<SaasSidebar> {
     final router = GoRouter.of(context);
     if (_router != router) {
       _router?.routerDelegate.removeListener(_onRouteChanged);
+      _router?.routeInformationProvider.removeListener(_onRouteChanged);
       _router = router;
       router.routerDelegate.addListener(_onRouteChanged);
+      router.routeInformationProvider.addListener(_onRouteChanged);
     }
   }
 
@@ -120,6 +122,7 @@ class _SaasSidebarState extends ConsumerState<SaasSidebar> {
   @override
   void dispose() {
     _router?.routerDelegate.removeListener(_onRouteChanged);
+    _router?.routeInformationProvider.removeListener(_onRouteChanged);
     super.dispose();
   }
 
@@ -145,7 +148,15 @@ class _SaasSidebarState extends ConsumerState<SaasSidebar> {
 
   /// Returns the current full route path, e.g. `/home` or `/meal-entry`.
   String get _currentLocation {
-    return GoRouterState.of(context).matchedLocation;
+    try {
+      return GoRouter.of(context).routeInformationProvider.value.uri.path;
+    } catch (_) {
+      try {
+        return GoRouterState.of(context).matchedLocation;
+      } catch (_) {
+        return '/home';
+      }
+    }
   }
 
   @override
@@ -188,17 +199,18 @@ class _SaasSidebarState extends ConsumerState<SaasSidebar> {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 children: [
                   for (final item in items)
-                      _SaasSidebarTile(
-                        item: item,
-                        selected: _isSelected(item, location),
-                        collapsed: _collapsed,
-                        selectedColor: widget.selectedColor,
-                        badge: item.route == AppRoutes.notifications &&
-                                unreadCount > 0
-                            ? unreadCount
-                            : null,
-                        onTap: () => _handleTap(context, item),
-                      ),
+                    _SaasSidebarTile(
+                      item: item,
+                      selected: _isSelected(item, location),
+                      collapsed: _collapsed,
+                      selectedColor: widget.selectedColor,
+                      badge:
+                          item.route == AppRoutes.notifications &&
+                              unreadCount > 0
+                          ? unreadCount
+                          : null,
+                      onTap: () => _handleTap(context, item),
+                    ),
                 ],
               ),
             ),
@@ -257,10 +269,7 @@ class _SaasSidebarState extends ConsumerState<SaasSidebar> {
         icon: Icons.savings_rounded,
         label: local.deposits,
         route: AppRoutes.addDeposit,
-        matchPrefixes: const [
-          AppRoutes.addDeposit,
-          AppRoutes.balanceSummary,
-        ],
+        matchPrefixes: const [AppRoutes.addDeposit, AppRoutes.balanceSummary],
       ),
       _SaasSidebarItem(
         icon: Icons.shopping_cart_checkout_rounded,
@@ -324,6 +333,9 @@ class _SaasSidebarState extends ConsumerState<SaasSidebar> {
   /// * All other items use [context.push] so the user can navigate back.
   /// * Logout is handled separately via [_showLogoutDialog].
   void _handleTap(BuildContext context, _SaasSidebarItem item) {
+    debugPrint(
+      'SaasSidebar: Tapped item "${item.label}" navigating to "${item.route}"',
+    );
     if (item.route == AppRoutes.home) {
       context.go(item.route);
     } else {
@@ -335,9 +347,7 @@ class _SaasSidebarState extends ConsumerState<SaasSidebar> {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(local.logoutTitle),
         content: Text(local.logoutConfirm),
         actions: [
@@ -350,9 +360,7 @@ class _SaasSidebarState extends ConsumerState<SaasSidebar> {
               Navigator.of(ctx).pop();
               Get.find<HomeController>().logout();
             },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: Text(local.logoutBtn),
           ),
         ],
@@ -514,9 +522,7 @@ class _CollapseIconButton extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Material(
       color: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -687,7 +693,14 @@ class _SaasSidebarTileState extends State<_SaasSidebarTile> {
           child: widget.collapsed
               ? _buildCollapsed(cs, accent, iconColor, selected)
               : _buildExpanded(
-                  theme, cs, accent, iconColor, labelColor, labelWeight, selected),
+                  theme,
+                  cs,
+                  accent,
+                  iconColor,
+                  labelColor,
+                  labelWeight,
+                  selected,
+                ),
         ),
       ),
     );
@@ -705,7 +718,11 @@ class _SaasSidebarTileState extends State<_SaasSidebarTile> {
 
   /// Icon-only layout for collapsed mode.
   Widget _buildCollapsed(
-      ColorScheme cs, Color accent, Color iconColor, bool selected) {
+    ColorScheme cs,
+    Color accent,
+    Color iconColor,
+    bool selected,
+  ) {
     return Stack(
       clipBehavior: Clip.none,
       alignment: Alignment.center,
@@ -729,18 +746,16 @@ class _SaasSidebarTileState extends State<_SaasSidebarTile> {
           ),
         Center(
           child: Icon(
-            selected ? (widget.item.selectedIcon ?? widget.item.icon) : widget.item.icon,
+            selected
+                ? (widget.item.selectedIcon ?? widget.item.icon)
+                : widget.item.icon,
             size: 22,
             color: iconColor,
           ),
         ),
         // Notification badge.
         if (widget.badge != null)
-          Positioned(
-            right: -2,
-            top: -2,
-            child: _Badge(count: widget.badge!),
-          ),
+          Positioned(right: -2, top: -2, child: _Badge(count: widget.badge!)),
       ],
     );
   }
