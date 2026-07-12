@@ -21,7 +21,7 @@ export function Hero() {
           transition={{ duration: 0.5 }}
         >
           <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primary border border-primary/20 mb-8">
-            মেস ম্যানেজমেন্ট এখন একদম সহজ ✨
+            মেস ম্যানেজমেন্ট এখন একদম সহজ
           </span>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
             Stop Fighting Over <br />
@@ -44,9 +44,11 @@ export function Hero() {
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </a>
             </Button>
-            <Button size="lg" variant="outline" className="rounded-full px-8 h-14 text-lg">
-              <PlayCircle className="mr-2 h-5 w-5" />
-              Watch Demo
+            <Button asChild size="lg" variant="outline" className="rounded-full px-8 h-14 text-lg">
+              <a href="#how-it-works">
+                <PlayCircle className="mr-2 h-5 w-5" />
+                See How It Works
+              </a>
             </Button>
           </div>
         </motion.div>

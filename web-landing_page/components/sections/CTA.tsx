@@ -23,7 +23,7 @@ export function CTA() {
             আজই আপনার মেসের হিসাব সহজ করুন
           </h2>
           <p className="text-primary-foreground/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
-            হাজারো ব্যাসেলর অলরেডি BachelorPoints ব্যবহার করে তাদের লাইফ সহজ করে ফেলেছে। আপনি কেন পিছিয়ে থাকবেন?
+            অসংখ্য ব্যাসেলর BachelorPoints ব্যবহার করে তাদের মেস লাইফ সহজ করে ফেলেছে। আপনি কেন পিছিয়ে থাকবেন?
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button asChild size="lg" variant="secondary" className="rounded-full px-8 h-14 text-lg group bg-white text-primary hover:bg-zinc-100 border-none">
@@ -32,8 +32,8 @@ export function CTA() {
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </a>
             </Button>
-            <Button size="lg" variant="outline" className="rounded-full px-8 h-14 text-lg border-white/20 text-white hover:bg-white/10">
-              Contact Sales
+            <Button asChild size="lg" variant="outline" className="rounded-full px-8 h-14 text-lg border-white/20 text-white hover:bg-white/10">
+              <a href="#features">Explore Features</a>
             </Button>
           </div>
         </motion.div>
