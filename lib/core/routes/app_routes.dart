@@ -9,6 +9,7 @@ abstract class AppRoutes {
   static const forgotPassword = '/forgot-password';
   static const verifyEmail    = '/verify-email';
   static const createProfile  = '/create-profile';
+  static const authLoading    = '/auth-loading';
 
   // ── Main Shell (bottom nav tabs) ──
   static const home    = '/home';

@@ -1,6 +1,20 @@
 # Build artifacts — Vercel rebuilds these in the cloud
 build/
 .dart_tool/
+public/
+.kilo/
+
+# Archive files
+*.zip
+*.tar
+*.tar.gz
+*.tar.xz
+web-landing_page.zip
+
+# Node modules & Next.js cache (installed/built on Vercel)
+web-landing_page/node_modules/
+web-landing_page/.next/
+web-landing_page/out/
 
 # Native platform directories (not needed for web deploy)
 android/

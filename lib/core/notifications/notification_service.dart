@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -5,7 +6,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
 import '../../modules/notifications/data/notification_repository.dart';
 import '../providers/auth_providers.dart';
 import '../../shared/helpers/navigation_helper.dart';
@@ -33,72 +33,90 @@ class NotificationService {
   Future<void> init() async {
     debugPrint('Initializing NotificationService...');
 
-    // 1. Timezone database initialization (for scheduled reminders)
-    tz.initializeTimeZones();
+    try {
+      if (!kIsWeb) {
+        // 1. Timezone database initialization (for scheduled reminders on mobile)
+        tz.initializeTimeZones();
 
-    // 2. Initialize Local Notifications
-    const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    const DarwinInitializationSettings iosSettings =
-        DarwinInitializationSettings(
-          requestAlertPermission: false,
-          requestBadgePermission: false,
-          requestSoundPermission: false,
+        // 2. Initialize Local Notifications
+        const AndroidInitializationSettings androidSettings =
+            AndroidInitializationSettings('@mipmap/ic_launcher');
+        const DarwinInitializationSettings iosSettings =
+            DarwinInitializationSettings(
+              requestAlertPermission: false,
+              requestBadgePermission: false,
+              requestSoundPermission: false,
+            );
+
+        const InitializationSettings initSettings = InitializationSettings(
+          android: androidSettings,
+          iOS: iosSettings,
         );
 
-    const InitializationSettings initSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
+        await _localNotifications.initialize(
+          initSettings,
+          onDidReceiveNotificationResponse: _onLocalNotificationTapped,
+        );
 
-    await _localNotifications.initialize(
-      initSettings,
-      onDidReceiveNotificationResponse: _onLocalNotificationTapped,
-    );
+        // 3. Android High Importance Channel creation
+        if (Platform.isAndroid) {
+          const AndroidNotificationChannel channel = AndroidNotificationChannel(
+            _androidChannelId,
+            _androidChannelName,
+            description: _androidChannelDescription,
+            importance: Importance.high,
+          );
 
-    // 3. Android High Importance Channel creation
-    if (Platform.isAndroid) {
-      const AndroidNotificationChannel channel = AndroidNotificationChannel(
-        _androidChannelId,
-        _androidChannelName,
-        description: _androidChannelDescription,
-        importance: Importance.high,
-      );
+          await _localNotifications
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >()
+              ?.createNotificationChannel(channel);
+        }
+      }
 
-      await _localNotifications
-          .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >()
-          ?.createNotificationChannel(channel);
+      // 4. Request FCM permissions
+      await _fcm.requestPermission(alert: true, badge: true, sound: true);
+
+      // 5. Setup Token Refresh Listener
+      _fcm.onTokenRefresh.listen((token) {
+        _syncToken(token);
+      });
+
+      // 6. Foreground message handler
+      FirebaseMessaging.onMessage.listen(_onForegroundMessageReceived);
+
+      // 7. Background message opened app listener (app in background -> user clicks notif)
+      FirebaseMessaging.onMessageOpenedApp.listen(_onPushNotificationTapped);
+
+      // 8. Terminated state (cold start -> user clicks notif) - non-blocking
+      _fcm.getInitialMessage().then((initialMessage) {
+        if (initialMessage != null) {
+          _handleDeepLink(initialMessage);
+        }
+      }).catchError((e) {
+        debugPrint('Error checking initial FCM message: $e');
+      });
+
+      // 9. Sync token in background if user is authenticated
+      final authState = _ref.read(authStateProvider);
+      if (authState == AuthState.authenticated) {
+        unawaited(_fetchAndSyncToken());
+      }
+    } catch (e) {
+      debugPrint('Error initializing NotificationService: $e');
     }
+  }
 
-    // 4. Request FCM permissions
-    await _fcm.requestPermission(alert: true, badge: true, sound: true);
-
-    // 5. Setup Token Refresh Listener
-    _fcm.onTokenRefresh.listen((token) {
-      _syncToken(token);
-    });
-
-    // 6. Foreground message handler
-    FirebaseMessaging.onMessage.listen(_onForegroundMessageReceived);
-
-    // 7. Background message opened app listener (app in background -> user clicks notif)
-    FirebaseMessaging.onMessageOpenedApp.listen(_onPushNotificationTapped);
-
-    // 8. Terminated state (cold start -> user clicks notif)
-    final initialMessage = await _fcm.getInitialMessage();
-    if (initialMessage != null) {
-      _handleDeepLink(initialMessage);
-    }
-
-    // 9. Sync token immediately if user is already authenticated
-    final authState = _ref.read(authStateProvider);
-    if (authState == AuthState.authenticated) {
+  /// Helper to fetch and sync FCM token in background.
+  Future<void> _fetchAndSyncToken() async {
+    try {
       final token = await _fcm.getToken();
       if (token != null) {
         await _syncToken(token);
       }
+    } catch (e) {
+      debugPrint('Error fetching FCM token: $e');
     }
   }
 

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:bachelorpoints/firebase_options.dart';
 import 'package:bachelorpoints/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -21,86 +22,239 @@ import 'core/localization/locale_controller.dart';
 /// Global navigator key for use outside the widget tree (e.g., FCM)
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Ensure that imperative navigation (context.push) updates the browser URL on web
   GoRouter.optionURLReflectsImperativeAPIs = true;
 
-  // 1. Load Environment Variables
-  await dotenv.load(fileName: ".env");
+  // Run app wrapped with Riverpod ProviderScope and BootShell immediately
+  runApp(const ProviderScope(child: BootShell()));
+}
 
-  // 2. Initialize Local Storage
-  await GetStorage.init();
+/// Lightweight startup shell widget.
+/// Shows an instant splash UI while heavy async initialization tasks run in the background.
+class BootShell extends StatefulWidget {
+  const BootShell({super.key});
 
-  // 3. Initialize Firebase
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  } catch (e) {
-    debugPrint("Firebase init failed (maybe no config provided): $e");
+  @override
+  State<BootShell> createState() => _BootShellState();
+}
+
+class _BootShellState extends State<BootShell> {
+  bool _isInitialized = false;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _startInitialization();
   }
 
-  // 4. Initialize Firebase App Check
-  try {
-    await FirebaseAppCheck.instance.activate(
-      // Debug providers for development — allows Firebase to work on
-      // emulators and non-distribution builds without real attestation.
-      // Switch to AndroidProvider.playIntegrity / AppleProvider.appAttest
-      // for production.
-      androidProvider: AndroidProvider.debug,
-      appleProvider: AppleProvider.debug,
-      webProvider: ReCaptchaV3Provider(
-        '6Lf-TiQrAAAAAMjFh0k6sDgMZ7dYPZ0gUvo0GVmI',
+  Future<void> _startInitialization() async {
+    if (_errorMessage != null) {
+      setState(() {
+        _errorMessage = null;
+      });
+    }
+
+    try {
+      await AppInitializer.initialize();
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    } catch (e, stackTrace) {
+      debugPrint("Startup error: $e\n$stackTrace");
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isInitialized) {
+      return const MyApp();
+    }
+
+    if (_errorMessage != null) {
+      return MaterialApp(
+        title: 'Bachelor Points',
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 60),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Initialization Failed',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _errorMessage!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: _startInitialization,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return MaterialApp(
+      title: 'Bachelor Points',
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      debugShowCheckedModeBanner: false,
+      home: const Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 44,
+                height: 44,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                ),
+              ),
+              SizedBox(height: 24),
+              Text(
+                'Bachelor Points',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
-    debugPrint('Firebase App Check activated');
-  } catch (e) {
-    debugPrint("Firebase App Check init failed: $e");
   }
-
-  // 5. Inject Global Services (GetX-based during migration)
-  await initServices();
-
-  // 6. Run app wrapped with Riverpod ProviderScope
-  runApp(const ProviderScope(child: MyApp()));
 }
 
-Future<void> initServices() async {
-  debugPrint('Starting services initialization...');
+/// Service and environment initializer that parallelizes independent tasks.
+class AppInitializer {
+  static Future<void> initialize() async {
+    debugPrint('Starting optimized background initialization...');
 
-  final storageService = StorageService();
-  // permanent: true — survives logout so ThemeController can still read
-  Get.put<StorageService>(storageService, permanent: true);
-  try {
-    await storageService.init();
-  } catch (e) {
-    debugPrint("StorageService init failed: $e");
+    // Execute independent tracks concurrently via Future.wait()
+    await Future.wait([
+      _initEnvironmentAndStorage(),
+      _initFirebaseAndServices(),
+    ]);
+
+    debugPrint('All background services started successfully.');
   }
 
-  final authService = AuthService();
-  Get.put<AuthService>(authService, permanent: true);
-  try {
-    await authService.init();
-  } catch (e) {
-    debugPrint("AuthService init failed: $e");
+  /// Track 1: Environment variables & Local Storage initialization
+  static Future<void> _initEnvironmentAndStorage() async {
+    await Future.wait([
+      _initDotenv(),
+      _initStorage(),
+    ]);
   }
 
-  // FcmService has been removed. Riverpod-managed NotificationService takes its place.
-
-  final realtimeService = RealtimeService();
-  Get.put<RealtimeService>(realtimeService, permanent: true);
-  try {
-    await realtimeService.init();
-  } catch (e) {
-    debugPrint("RealtimeService init failed: $e");
+  static Future<void> _initDotenv() async {
+    try {
+      await dotenv.load(fileName: ".env");
+      debugPrint('Dotenv loaded successfully');
+    } catch (e) {
+      debugPrint("dotenv load failed (non-fatal): $e");
+    }
   }
 
-  // ThemeController is now managed by Riverpod and initialized on demand.
+  static Future<void> _initStorage() async {
+    try {
+      await GetStorage.init();
+      final storageService = StorageService();
+      // permanent: true — survives logout so ThemeController can still read
+      storageService.init();
+      Get.put<StorageService>(storageService, permanent: true);
+      debugPrint('StorageService initialized successfully');
+    } catch (e) {
+      debugPrint("StorageService init failed: $e");
+    }
+  }
 
-  debugPrint('All services started...');
+  /// Track 2: Firebase core, App Check, and dependent services
+  static Future<void> _initFirebaseAndServices() async {
+    try {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      debugPrint('Firebase Core initialized successfully');
+    } catch (e) {
+      debugPrint("Firebase init failed: $e");
+    }
+
+    // Launch App Check attestation in background (fire-and-forget) immediately after Firebase Core init
+    // so reCAPTCHA/attestation network loading does not block the critical startup path.
+    unawaited(_initAppCheck());
+
+    // Synchronously register AuthService & lazy-register RealtimeService (0ms startup overhead)
+    _initAuthService();
+    _initRealtimeService();
+  }
+
+  static Future<void> _initAppCheck() async {
+    try {
+      await FirebaseAppCheck.instance.activate(
+        androidProvider: AndroidProvider.debug,
+        appleProvider: AppleProvider.debug,
+        webProvider: ReCaptchaV3Provider(
+          '6Lf-TiQrAAAAAMjFh0k6sDgMZ7dYPZ0gUvo0GVmI',
+        ),
+      );
+      debugPrint('Firebase App Check activated');
+    } catch (e) {
+      debugPrint("Firebase App Check init failed: $e");
+    }
+  }
+
+  static void _initAuthService() {
+    try {
+      final authService = AuthService();
+      authService.init();
+      Get.put<AuthService>(authService, permanent: true);
+      debugPrint('AuthService initialized successfully');
+    } catch (e) {
+      debugPrint("AuthService init failed: $e");
+    }
+  }
+
+  static void _initRealtimeService() {
+    try {
+      // Lazy-registered on first access when mess/meal/balance features open
+      Get.lazyPut<RealtimeService>(() => RealtimeService()..init(), fenix: true);
+      debugPrint('RealtimeService lazy-registered');
+    } catch (e) {
+      debugPrint("RealtimeService init failed: $e");
+    }
+  }
 }
+
 
 class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
@@ -113,8 +267,10 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   void initState() {
     super.initState();
-    // Initialize Notification Service on startup
-    ref.read(notificationServiceProvider).init();
+    // Initialize Notification Service post-frame to avoid blocking initial render
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(notificationServiceProvider).init();
+    });
   }
 
   @override

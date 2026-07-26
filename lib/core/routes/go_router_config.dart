@@ -1,21 +1,13 @@
-import 'package:bachelorpoints/modules/tolet/bindings/tolet_binding.dart';
-import 'package:bachelorpoints/modules/tolet/views/property_search_view.dart';
-import 'package:bachelorpoints/modules/tolet/views/tolet_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../main.dart';
-import '../../modules/tolet/views/credit_balance_view.dart';
-import '../../modules/tolet/views/listing_management_view.dart';
-import '../../modules/tolet/views/need_based_post_view.dart';
-import '../../modules/tolet/views/property_detail_view.dart';
-import '../../modules/tolet/views/property_map_search_view.dart';
-import '../../modules/tolet/views/property_post_view.dart';
-import '../../modules/tolet/views/referral_view.dart';
-import '../../modules/tolet/views/tolet_chat_view.dart';
 import '../../wrapper.dart';
 import '../providers/auth_providers.dart';
 import '../auth/auth_gate.dart';
+import '../auth/auth_loading_view.dart';
+
+// ── Auth Views & Bindings (Synchronous for fast auth) ──
 import '../../modules/auth/login/login_view.dart';
 import '../../modules/auth/login/login_binding.dart';
 import '../../modules/auth/signup/signup_view.dart';
@@ -26,9 +18,19 @@ import '../../modules/auth/verify_email/verify_email_view.dart';
 import '../../modules/home/home_view.dart';
 import '../../modules/home/home_binding.dart';
 import '../../modules/profile/profile_view.dart';
+import '../../modules/profile/profile_binding.dart';
+import '../../modules/profile/create_profile_view.dart';
+import '../../modules/profile/create_profile_binding.dart';
+import '../../modules/profile/user_profile_detail_binding.dart';
+import '../../modules/profile/user_profile_detail_view.dart';
+import '../../modules/profile/edit_profile_binding.dart';
+import '../../modules/profile/edit_profile_view.dart';
+
+// ── Core Mess & Features (Synchronous) ──
 import '../../modules/mess/create_mess_view.dart';
 import '../../modules/mess/join_mess_view.dart';
 import '../../modules/mess/mess_binding.dart';
+import '../../modules/mess/views/members_view.dart';
 import '../../modules/meal/meal_entry_view.dart';
 import '../../modules/meal/meal_binding.dart';
 import '../../modules/expense/views/expense_list_view.dart';
@@ -40,30 +42,108 @@ import '../../modules/balance/balance_binding.dart';
 import '../../modules/requests/views/approval_view.dart';
 import '../../modules/requests/request_binding.dart';
 import '../../modules/notifications/views/notification_view.dart';
-import '../../modules/chat/views/chat_view.dart';
-import '../../modules/chat/chat_binding.dart';
-import '../../modules/mess/views/members_view.dart';
-import '../../modules/report/views/report_view.dart';
-import '../../modules/report/report_binding.dart';
-import '../../modules/settings/views/settings_view.dart';
-import '../../modules/settings/settings_binding.dart';
-import '../../modules/shopping/views/shopping_list_view.dart';
-import '../../modules/shopping/views/add_shopping_item_view.dart';
-import '../../modules/shopping/shopping_binding.dart';
-import '../../modules/profile/profile_binding.dart';
-import '../../modules/profile/create_profile_view.dart';
-import '../../modules/profile/create_profile_binding.dart';
-import '../../modules/profile/user_profile_detail_binding.dart';
-import '../../modules/profile/user_profile_detail_view.dart';
-import '../../modules/profile/edit_profile_binding.dart';
-import '../../modules/profile/edit_profile_view.dart';
-import '../../modules/tolet/property_search/property_search_binding.dart';
-import '../../modules/tolet/bindings/property_post_binding.dart';
-import '../../modules/tolet/bindings/property_detail_binding.dart';
-import '../../modules/tolet/bindings/need_based_post_binding.dart';
-import '../../modules/tolet/bindings/credit_binding.dart';
-import '../../modules/tolet/bindings/tolet_chat_binding.dart';
-import '../../modules/tolet/bindings/listing_management_binding.dart';
+
+// ── Deferred Heavy Modules (Web Bundle Size Optimization) ──
+import '../../modules/chat/views/chat_view.dart' deferred as chat_view;
+import '../../modules/chat/chat_binding.dart' deferred as chat_binding;
+
+import '../../modules/report/views/report_view.dart' deferred as report_view;
+import '../../modules/report/report_binding.dart' deferred as report_binding;
+
+import '../../modules/settings/views/settings_view.dart' deferred as settings_view;
+import '../../modules/settings/settings_binding.dart' deferred as settings_binding;
+
+import '../../modules/shopping/views/shopping_list_view.dart' deferred as shopping_list_view;
+import '../../modules/shopping/views/add_shopping_item_view.dart' deferred as add_shopping_item_view;
+import '../../modules/shopping/shopping_binding.dart' deferred as shopping_binding;
+
+import '../../modules/tolet/views/tolet_view.dart' deferred as tolet_view;
+import '../../modules/tolet/bindings/tolet_binding.dart' deferred as tolet_binding;
+import '../../modules/tolet/views/property_search_view.dart' deferred as property_search_view;
+import '../../modules/tolet/property_search/property_search_binding.dart' deferred as property_search_binding;
+import '../../modules/tolet/views/property_map_search_view.dart' deferred as property_map_search_view;
+import '../../modules/tolet/views/property_detail_view.dart' deferred as property_detail_view;
+import '../../modules/tolet/bindings/property_detail_binding.dart' deferred as property_detail_binding;
+import '../../modules/tolet/views/property_post_view.dart' deferred as property_post_view;
+import '../../modules/tolet/bindings/property_post_binding.dart' deferred as property_post_binding;
+import '../../modules/tolet/views/listing_management_view.dart' deferred as listing_management_view;
+import '../../modules/tolet/bindings/listing_management_binding.dart' deferred as listing_management_binding;
+import '../../modules/tolet/views/need_based_post_view.dart' deferred as need_based_post_view;
+import '../../modules/tolet/bindings/need_based_post_binding.dart' deferred as need_based_post_binding;
+import '../../modules/tolet/views/tolet_chat_view.dart' deferred as tolet_chat_view;
+import '../../modules/tolet/bindings/tolet_chat_binding.dart' deferred as tolet_chat_binding;
+import '../../modules/tolet/views/credit_balance_view.dart' deferred as credit_balance_view;
+import '../../modules/tolet/bindings/credit_binding.dart' deferred as credit_binding;
+import '../../modules/tolet/views/referral_view.dart' deferred as referral_view;
+
+/// Helper widget to lazy-load deferred Dart libraries and display a loading indicator.
+class DeferredLoader extends StatefulWidget {
+  final Future<void> Function() loader;
+  final Widget Function() builder;
+
+  const DeferredLoader({
+    super.key,
+    required this.loader,
+    required this.builder,
+  });
+
+  @override
+  State<DeferredLoader> createState() => _DeferredLoaderState();
+}
+
+class _DeferredLoaderState extends State<DeferredLoader> {
+  late Future<void> _loadFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFuture = widget.loader();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<void>(
+      future: _loadFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.hasError) {
+            return Scaffold(
+              body: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Failed to load module: ${snapshot.error}',
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+          return widget.builder();
+        }
+
+        return const Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 44,
+              height: 44,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Route path constants — single source of truth for all route strings.
@@ -79,6 +159,7 @@ class GoRoutes {
   static const forgotPassword = '/forgot-password';
   static const verifyEmail   = '/verify-email';
   static const createProfile = '/create-profile';
+  static const authLoading   = '/auth-loading';
 
   // ── Main Shell (bottom nav tabs) ──
   static const home    = '/home';
@@ -158,19 +239,37 @@ const _protectedAppRoutes = {
   GoRoutes.referral,
 };
 
+/// Listenable bridging Riverpod auth/profile state changes to GoRouter's refreshListenable.
+/// Triggers in-place redirect evaluation without destroying/recreating the GoRouter instance.
+class RouterListenable extends ChangeNotifier {
+  RouterListenable(Ref ref) {
+    ref.listen<AuthState>(authStateProvider, (previous, next) {
+      notifyListeners();
+    });
+    ref.listen<AsyncValue<bool>>(hasProfileProvider, (previous, next) {
+      notifyListeners();
+    });
+    ref.listen<AsyncValue<dynamic>>(authUserStreamProvider, (previous, next) {
+      notifyListeners();
+    });
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Build the GoRouter instance, wired to Riverpod auth + profile providers.
 // ─────────────────────────────────────────────────────────────────────────────
 GoRouter buildGoRouter(Ref ref) {
-  final authState      = ref.watch(authStateProvider);
-  final hasProfileAsync = ref.watch(hasProfileProvider);
-  final authUserAsync   = ref.watch(authUserStreamProvider);
+  final refreshListenable = RouterListenable(ref);
 
   return GoRouter(
     navigatorKey: navigatorKey,
     initialLocation: GoRoutes.splash,
+    refreshListenable: refreshListenable,
     redirect: (context, state) {
-      final location = state.matchedLocation;
+      final authState       = ref.read(authStateProvider);
+      final hasProfileAsync = ref.read(hasProfileProvider);
+      final authUserAsync   = ref.read(authUserStreamProvider);
+      final location        = state.matchedLocation;
 
       debugPrint('══════════════════════════════════');
       debugPrint('[Router] location      : $location');
@@ -185,6 +284,7 @@ GoRouter buildGoRouter(Ref ref) {
       }
 
       final isSplash        = location == GoRoutes.splash;
+      final isAuthLoading   = location == GoRoutes.authLoading;
       final isPublicAuth    = location == GoRoutes.login ||
                               location == GoRoutes.signup ||
                               location == GoRoutes.forgotPassword;
@@ -212,22 +312,25 @@ GoRouter buildGoRouter(Ref ref) {
       // ── 3. Fully authenticated ───────────────────────────────────────────
       // From here authState == AuthState.authenticated.
 
-      // 3a. On public auth routes or verify-email → send to app.
-      if (isPublicAuth || isVerifyEmail) {
-        if (hasProfileAsync.isLoading) return null; // wait for profile check
+      // 3a. On public auth routes, splash, or verify-email → send to auth-loading or home
+      if (isPublicAuth || isVerifyEmail || isSplash) {
+        if (hasProfileAsync.isLoading) {
+          debugPrint('[Router] Authenticated on auth route, profile loading → /auth-loading');
+          return GoRoutes.authLoading;
+        }
         final hasProfile = hasProfileAsync.asData?.value;
-        if (hasProfile == null) return null;          // provider error → stay
+        if (hasProfile == null) return GoRoutes.authLoading;
         debugPrint('[Router] Authenticated on auth route → '
             '${hasProfile ? GoRoutes.home : GoRoutes.createProfile}');
         return hasProfile ? GoRoutes.home : GoRoutes.createProfile;
       }
 
-      // 3b. On splash → route to correct first screen.
-      if (isSplash) {
-        if (hasProfileAsync.isLoading) return null;
+      // 3b. On auth-loading page → wait for profile then send to home/create-profile
+      if (isAuthLoading) {
+        if (hasProfileAsync.isLoading) return null; // stay on /auth-loading while checking
         final hasProfile = hasProfileAsync.asData?.value;
-        if (hasProfile == null) return null;
-        debugPrint('[Router] Splash → '
+        if (hasProfile == null) return null; // stay on /auth-loading
+        debugPrint('[Router] Profile resolved on /auth-loading → '
             '${hasProfile ? GoRoutes.home : GoRoutes.createProfile}');
         return hasProfile ? GoRoutes.home : GoRoutes.createProfile;
       }
@@ -269,6 +372,10 @@ GoRouter buildGoRouter(Ref ref) {
       GoRoute(
         path: GoRoutes.splash,
         builder: (context, state) => const AuthGate(),
+      ),
+      GoRoute(
+        path: GoRoutes.authLoading,
+        builder: (context, state) => const AuthLoadingView(),
       ),
 
       // ── Auth Routes ───────────────────────────────────────────────────────
@@ -319,10 +426,16 @@ GoRouter buildGoRouter(Ref ref) {
           ),
           GoRoute(
             path: GoRoutes.tolet,
-            builder: (context, state) {
-              ToletBinding().dependencies();
-              return const ToletView();
-            },
+            builder: (context, state) => DeferredLoader(
+              loader: () async {
+                await tolet_binding.loadLibrary();
+                await tolet_view.loadLibrary();
+              },
+              builder: () {
+                tolet_binding.ToletBinding().dependencies();
+                return tolet_view.ToletView();
+              },
+            ),
           ),
           GoRoute(
             path: GoRoutes.profile,
@@ -421,103 +534,187 @@ GoRouter buildGoRouter(Ref ref) {
           ),
           GoRoute(
             path: GoRoutes.chat,
-            builder: (context, state) {
-              ChatBinding().dependencies();
-              return const ChatView();
-            },
+            builder: (context, state) => DeferredLoader(
+              loader: () async {
+                await chat_binding.loadLibrary();
+                await chat_view.loadLibrary();
+              },
+              builder: () {
+                chat_binding.ChatBinding().dependencies();
+                return chat_view.ChatView();
+              },
+            ),
           ),
           GoRoute(
             path: GoRoutes.report,
-            builder: (context, state) {
-              ReportBinding().dependencies();
-              return const ReportView();
-            },
+            builder: (context, state) => DeferredLoader(
+              loader: () async {
+                await report_binding.loadLibrary();
+                await report_view.loadLibrary();
+              },
+              builder: () {
+                report_binding.ReportBinding().dependencies();
+                return report_view.ReportView();
+              },
+            ),
           ),
           GoRoute(
             path: GoRoutes.shoppingList,
-            builder: (context, state) {
-              ShoppingBinding().dependencies();
-              return const ShoppingListView();
-            },
+            builder: (context, state) => DeferredLoader(
+              loader: () async {
+                await shopping_binding.loadLibrary();
+                await shopping_list_view.loadLibrary();
+              },
+              builder: () {
+                shopping_binding.ShoppingBinding().dependencies();
+                return shopping_list_view.ShoppingListView();
+              },
+            ),
           ),
           GoRoute(
             path: GoRoutes.addShoppingItem,
-            builder: (context, state) {
-              ShoppingBinding().dependencies();
-              return const AddShoppingItemView();
-            },
+            builder: (context, state) => DeferredLoader(
+              loader: () async {
+                await shopping_binding.loadLibrary();
+                await add_shopping_item_view.loadLibrary();
+              },
+              builder: () {
+                shopping_binding.ShoppingBinding().dependencies();
+                return add_shopping_item_view.AddShoppingItemView();
+              },
+            ),
           ),
           GoRoute(
             path: GoRoutes.settings,
-            builder: (context, state) {
-              SettingsBinding().dependencies();
-              return const SettingsView();
-            },
+            builder: (context, state) => DeferredLoader(
+              loader: () async {
+                await settings_binding.loadLibrary();
+                await settings_view.loadLibrary();
+              },
+              builder: () {
+                settings_binding.SettingsBinding().dependencies();
+                return settings_view.SettingsView();
+              },
+            ),
           ),
 
           // ── Tolet Feature (now part of shell) ────────────────────────────────
           GoRoute(
             path: GoRoutes.propertySearch,
-            builder: (context, state) {
-              PropertySearchBinding().dependencies();
-              return const PropertySearchView();
-            },
+            builder: (context, state) => DeferredLoader(
+              loader: () async {
+                await property_search_binding.loadLibrary();
+                await property_search_view.loadLibrary();
+              },
+              builder: () {
+                property_search_binding.PropertySearchBinding().dependencies();
+                return property_search_view.PropertySearchView();
+              },
+            ),
           ),
           GoRoute(
             path: GoRoutes.propertyMapSearch,
-            builder: (context, state) {
-              PropertySearchBinding().dependencies();
-              return const PropertyMapSearchView();
-            },
+            builder: (context, state) => DeferredLoader(
+              loader: () async {
+                await property_search_binding.loadLibrary();
+                await property_map_search_view.loadLibrary();
+              },
+              builder: () {
+                property_search_binding.PropertySearchBinding().dependencies();
+                return property_map_search_view.PropertyMapSearchView();
+              },
+            ),
           ),
           GoRoute(
             path: GoRoutes.propertyDetail,
-            builder: (context, state) {
-              PropertyDetailBinding().dependencies();
-              return const PropertyDetailView();
-            },
+            builder: (context, state) => DeferredLoader(
+              loader: () async {
+                await property_detail_binding.loadLibrary();
+                await property_detail_view.loadLibrary();
+              },
+              builder: () {
+                property_detail_binding.PropertyDetailBinding().dependencies();
+                return property_detail_view.PropertyDetailView();
+              },
+            ),
           ),
           GoRoute(
             path: GoRoutes.propertyPost,
-            builder: (context, state) {
-              PropertyPostBinding().dependencies();
-              return const PropertyPostView();
-            },
+            builder: (context, state) => DeferredLoader(
+              loader: () async {
+                await property_post_binding.loadLibrary();
+                await property_post_view.loadLibrary();
+              },
+              builder: () {
+                property_post_binding.PropertyPostBinding().dependencies();
+                return property_post_view.PropertyPostView();
+              },
+            ),
           ),
           GoRoute(
             path: GoRoutes.myListings,
-            builder: (context, state) {
-              ListingManagementBinding().dependencies();
-              return const ListingManagementView();
-            },
+            builder: (context, state) => DeferredLoader(
+              loader: () async {
+                await listing_management_binding.loadLibrary();
+                await listing_management_view.loadLibrary();
+              },
+              builder: () {
+                listing_management_binding.ListingManagementBinding().dependencies();
+                return listing_management_view.ListingManagementView();
+              },
+            ),
           ),
           GoRoute(
             path: GoRoutes.needBasedPost,
-            builder: (context, state) {
-              NeedBasedPostBinding().dependencies();
-              return const NeedBasedPostView();
-            },
+            builder: (context, state) => DeferredLoader(
+              loader: () async {
+                await need_based_post_binding.loadLibrary();
+                await need_based_post_view.loadLibrary();
+              },
+              builder: () {
+                need_based_post_binding.NeedBasedPostBinding().dependencies();
+                return need_based_post_view.NeedBasedPostView();
+              },
+            ),
           ),
           GoRoute(
             path: GoRoutes.toletChat,
-            builder: (context, state) {
-              ToletChatBinding().dependencies();
-              return const ToletChatView();
-            },
+            builder: (context, state) => DeferredLoader(
+              loader: () async {
+                await tolet_chat_binding.loadLibrary();
+                await tolet_chat_view.loadLibrary();
+              },
+              builder: () {
+                tolet_chat_binding.ToletChatBinding().dependencies();
+                return tolet_chat_view.ToletChatView();
+              },
+            ),
           ),
           GoRoute(
             path: GoRoutes.creditBalance,
-            builder: (context, state) {
-              CreditBinding().dependencies();
-              return const CreditBalanceView();
-            },
+            builder: (context, state) => DeferredLoader(
+              loader: () async {
+                await credit_binding.loadLibrary();
+                await credit_balance_view.loadLibrary();
+              },
+              builder: () {
+                credit_binding.CreditBinding().dependencies();
+                return credit_balance_view.CreditBalanceView();
+              },
+            ),
           ),
           GoRoute(
             path: GoRoutes.referral,
-            builder: (context, state) {
-              CreditBinding().dependencies();
-              return const ReferralView();
-            },
+            builder: (context, state) => DeferredLoader(
+              loader: () async {
+                await credit_binding.loadLibrary();
+                await referral_view.loadLibrary();
+              },
+              builder: () {
+                credit_binding.CreditBinding().dependencies();
+                return referral_view.ReferralView();
+              },
+            ),
           ),
         ],
       ),

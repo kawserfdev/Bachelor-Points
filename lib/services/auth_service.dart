@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:bachelorpoints/services/storage_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -13,19 +14,22 @@ class AuthService extends GetxService {
   FirebaseFirestore get _firestore => FirebaseFirestore.instance;
 
   final Rx<User?> currentUser = Rx<User?>(null);
+  StreamSubscription<User?>? _authStateSubscription;
 
-  Future<AuthService> init() async {
-    debugPrint('AuthService init called');
+  void init() {
+    debugPrint('AuthService initialized');
     currentUser.value = _auth.currentUser;
 
-    // Keep auth state listener to update currentUser for backward
-    // compatibility with existing GetX controllers that read it.
-    // Navigation is handled by GoRouter (see go_router_config.dart).
-    _auth.authStateChanges().listen((User? user) {
+    _authStateSubscription?.cancel();
+    _authStateSubscription = _auth.authStateChanges().listen((User? user) {
       currentUser.value = user;
     });
+  }
 
-    return this;
+  @override
+  void onClose() {
+    _authStateSubscription?.cancel();
+    super.onClose();
   }
 
   /// Exposed for GoRouter redirect to check profile existence during migration.

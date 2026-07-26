@@ -58,7 +58,7 @@ final authStateProvider = Provider<AuthState>((ref) {
 /// Whether the current user has a Firestore profile document.
 /// Used by GoRouter redirect to route to createProfile if no profile exists.
 /// Watches the auth stream so it re-evaluates on sign-in/sign-out.
-final hasProfileProvider = StreamProvider.autoDispose<bool>((ref) {
+final hasProfileProvider = StreamProvider<bool>((ref) {
   final userAsync = ref.watch(authUserStreamProvider);
   final user = userAsync.asData?.value;
   if (user == null) return Stream.value(false);

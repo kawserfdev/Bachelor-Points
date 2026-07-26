@@ -5,10 +5,9 @@ import 'package:flutter/foundation.dart';
 class StorageService extends GetxService {
   late GetStorage _box;
 
-  Future<StorageService> init() async {
-    debugPrint('StorageService init called');
+  void init() {
+    debugPrint('StorageService initialized');
     _box = GetStorage();
-    return this;
   }
 
   void writeData(String key, dynamic value) {

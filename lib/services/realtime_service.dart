@@ -5,9 +5,8 @@ import 'package:flutter/foundation.dart';
 class RealtimeService extends GetxService {
   FirebaseFirestore get _firestore => FirebaseFirestore.instance;
 
-  Future<RealtimeService> init() async {
-    debugPrint('RealtimeService init called');
-    return this;
+  void init() {
+    debugPrint('RealtimeService initialized');
   }
 
   Stream<List<Map<String, dynamic>>> streamMeals(String messId) {

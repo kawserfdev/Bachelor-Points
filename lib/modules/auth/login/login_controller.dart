@@ -77,10 +77,9 @@ class LoginController extends GetxController {
 
       debugPrint('[login] Login success');
 
-      // Navigate to home; GoRouter redirect will verify the user is
-      // authenticated/email-verified and route to /create-profile if
-      // no profile exists yet.
-      AppNavigation.go(AppRoutes.home);
+      // Navigate immediately to auth-loading; GoRouter will transition to /home
+      // or /create-profile as soon as the user profile check completes.
+      AppNavigation.go(AppRoutes.authLoading);
 
     } catch (e) {
       debugPrint('[login] Error: $e');
@@ -103,8 +102,9 @@ class LoginController extends GetxController {
       await _authService.signInWithGoogle();
       debugPrint('[googleSignIn] Success');
 
-      // Navigate to home; GoRouter redirect will handle profile check
-      AppNavigation.go(AppRoutes.home);
+      // Navigate immediately to auth-loading; GoRouter will transition to /home
+      // or /create-profile as soon as the user profile check completes.
+      AppNavigation.go(AppRoutes.authLoading);
     } catch (e) {
       debugPrint('[googleSignIn] Error: $e');
       AppNavigation.showSnackBar(
