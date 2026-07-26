@@ -1,60 +1,116 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Quote } from "lucide-react";
+import { Star, Quote } from "lucide-react";
 
 const testimonials = [
   {
     name: "Tanvir Ahmed",
-    role: "University Student",
-    text: "আগে মেসের হিসাব নিয়ে প্রতিদিন ঝগড়া হতো। BachelorPoints আসার পর থেকে আমাদের মেসের পরিবেশ এখন অনেক শান্ত। অটোমেটিক ক্যালকুলেশন জাস্ট অসাম!",
+    role: "University Student, Dhaka",
+    text: "We used to argue every month about who ate what. BachelorPoints made everything automatic — the meal rate, the balance, all of it. Our mess life is actually peaceful now.",
+    rating: 5,
+    avatar: "TA",
+    color: "bg-primary/10 text-primary",
   },
   {
     name: "Sajid Hasan",
     role: "Job Holder, Shared Flat",
-    text: "মাসের শেষে মিল রেট বের করা ছিল সবচেয়ে বড় প্যারা। এখন অ্যাপেই সব রেডি থাকে। মেসের ম্যানেজারের জন্য এটি একটি লাইফ সেভার অ্যাপ!",
+    text: "As a mess manager, calculating the meal rate at month end was my biggest headache. Now the app does it in one click. This is a genuine lifesaver for anyone managing a mess.",
+    rating: 5,
+    avatar: "SH",
+    color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
   },
   {
     name: "Rifat Jahan",
-    role: "Hostel Resident",
-    text: "টু-লেট পোস্ট করার ফিচারটা দারুণ। আমাদের মেসের খালি সিটগুলো এখন খুব সহজেই পূরণ হয়ে যায়। UI খুবই ক্লিন এবং ইউজার ফ্রেন্ডলি।",
+    role: "Hostel Resident, Chittagong",
+    text: "The to-post feature is brilliant. We had two empty seats and filled them within a day through the app. The UI is clean, fast, and actually enjoyable to use.",
+    rating: 5,
+    avatar: "RJ",
+    color: "bg-accent/10 text-accent",
   },
 ];
 
 export function Testimonials() {
   return (
-    <section className="py-24 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
+    <section id="testimonials" className="py-20 lg:py-28 relative">
+      <div className="max-w-6xl mx-auto px-5 sm:px-8">
+        {/* Section header - left aligned */}
+        <div className="max-w-2xl mb-14">
+          <motion.span
+            initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl md:text-5xl font-bold mb-4"
+            className="text-[11px] font-bold uppercase tracking-widest text-primary"
           >
-            মেস মেম্বাররা যা বলছে
+            Testimonials
+          </motion.span>
+          <motion.h2
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.05 }}
+            className="text-3xl sm:text-4xl font-extrabold tracking-[-0.02em] mt-4 mb-3 leading-[1.1]"
+          >
+            Trusted by thousands
+            <br />
+            of mess members.
           </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-muted-foreground text-[15px] leading-relaxed"
+          >
+            Real feedback from students, job holders, and hostel residents across
+            Bangladesh.
+          </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Testimonial cards */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {testimonials.map((t, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              className="p-8 rounded-3xl border border-border/50 bg-card/50 backdrop-blur-sm relative"
+              transition={{ duration: 0.4, delay: index * 0.08 }}
+              className="p-6 rounded-xl border border-border/40 bg-card flex flex-col justify-between"
             >
-              <Quote className="absolute top-6 right-8 w-10 h-10 text-primary/10" />
-              <p className="text-lg italic mb-6 leading-relaxed">"{t.text}"</p>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary">
-                  {t.name[0]}
+              <div>
+                {/* Quote icon */}
+                <Quote className="w-5 h-5 text-primary/20 mb-3" />
+
+                {/* Rating */}
+                <div className="flex items-center gap-0.5 mb-4">
+                  {[...Array(t.rating)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className="w-3.5 h-3.5 fill-primary text-primary"
+                    />
+                  ))}
+                </div>
+
+                <p className="text-[13px] sm:text-sm leading-relaxed text-foreground/80 font-medium mb-6">
+                  &ldquo;{t.text}&rdquo;
+                </p>
+              </div>
+
+              {/* Author */}
+              <div className="flex items-center gap-3 pt-4 border-t border-border/30">
+                <div
+                  className={`w-9 h-9 rounded-full ${t.color} flex items-center justify-center font-bold text-[11px]`}
+                >
+                  {t.avatar}
                 </div>
                 <div>
-                  <p className="font-bold">{t.name}</p>
-                  <p className="text-sm text-muted-foreground">{t.role}</p>
+                  <p className="text-[13px] font-bold text-foreground">
+                    {t.name}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground font-medium">
+                    {t.role}
+                  </p>
                 </div>
               </div>
             </motion.div>

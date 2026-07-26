@@ -6,35 +6,49 @@ import { ArrowRight } from "lucide-react";
 
 export function CTA() {
   return (
-    <section className="py-24 relative overflow-hidden">
-      <div className="absolute inset-0 bg-primary/5 -z-10" />
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-20 lg:py-28 relative">
+      <div className="max-w-6xl mx-auto px-5 sm:px-8">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="bg-primary rounded-[3rem] p-12 md:p-20 text-center text-primary-foreground relative overflow-hidden shadow-2xl shadow-primary/20"
+          transition={{ duration: 0.5 }}
+          className="relative rounded-2xl border border-border/40 bg-card overflow-hidden"
         >
-          {/* Decorative circles */}
-          <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />
-          <div className="absolute bottom-0 right-0 w-64 h-64 bg-white/10 rounded-full translate-x-1/2 translate-y-1/2 blur-3xl" />
+          {/* Subtle background accents */}
+          <div className="absolute inset-0 subtle-grid opacity-40 pointer-events-none" />
+          <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-primary/[0.04] blur-[80px] rounded-full pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-[250px] h-[250px] bg-accent/[0.03] blur-[80px] rounded-full pointer-events-none" />
 
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">
-            আজই আপনার মেসের হিসাব সহজ করুন
-          </h2>
-          <p className="text-primary-foreground/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
-            অসংখ্য ব্যাসেলর BachelorPoints ব্যবহার করে তাদের মেস লাইফ সহজ করে ফেলেছে। আপনি কেন পিছিয়ে থাকবেন?
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild size="lg" variant="secondary" className="rounded-full px-8 h-14 text-lg group bg-white text-primary hover:bg-zinc-100 border-none">
-              <a href="/app/login">
-                Get Started for Free
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </a>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="rounded-full px-8 h-14 text-lg border-white/20 text-white hover:bg-white/10">
-              <a href="#features">Explore Features</a>
-            </Button>
+          <div className="relative px-8 py-16 sm:px-16 sm:py-20 text-center">
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-[-0.02em] mb-4 leading-[1.1]">
+              Ready to simplify your mess life?
+            </h2>
+            <p className="text-muted-foreground text-[15px] leading-relaxed max-w-lg mx-auto mb-8">
+              Join thousands of bachelor messes across Bangladesh who&apos;ve already
+              replaced confusion with clarity. Start free — no strings attached.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Button
+                asChild
+                size="lg"
+                className="rounded-lg px-6 h-11 text-[14px] font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+              >
+                <a href="/app/login">
+                  Get Started for Free
+                  <ArrowRight className="ml-1.5 h-4 w-4" />
+                </a>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="ghost"
+                className="rounded-lg px-5 h-11 text-[14px] font-medium text-muted-foreground hover:text-foreground"
+              >
+                <a href="#features">Explore Features</a>
+              </Button>
+            </div>
           </div>
         </motion.div>
       </div>

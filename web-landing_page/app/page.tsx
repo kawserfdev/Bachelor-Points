@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Hero } from "@/components/sections/Hero";
-import { Features } from "@/components/sections/Features";
 import { ProblemSolution } from "@/components/sections/ProblemSolution";
+import { Features } from "@/components/sections/Features";
 import { AppScreenshots } from "@/components/sections/AppScreenshots";
 import { DownloadApp } from "@/components/sections/DownloadApp";
 import { HowItWorks } from "@/components/sections/HowItWorks";

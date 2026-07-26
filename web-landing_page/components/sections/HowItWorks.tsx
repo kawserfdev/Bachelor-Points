@@ -5,68 +5,103 @@ import { motion } from "framer-motion";
 const steps = [
   {
     number: "01",
-    title: "Create Group",
-    description: "মেস ম্যানেজার হিসেবে একটি গ্রুপ ক্রিয়েট করুন এবং মেম্বারদের ইনভাইট লিংক পাঠিয়ে দিন।",
+    title: "Create your mess group",
+    description:
+      "Sign up, create a group, and invite members using a unique 6-digit code.",
   },
   {
     number: "02",
-    title: "Add Members",
-    description: "মেম্বাররা ইনভাইট লিংকে ক্লিক করে আপনার গ্রুপে জয়েন করবে। আপনি তাদের পারমিশন সেট করতে পারবেন।",
+    title: "Members join instantly",
+    description:
+      "Members enter the invite code to join. You set roles and permissions.",
   },
   {
     number: "03",
-    title: "Start Tracking",
-    description: "প্রতিদিনের মিল এবং বাজার খরচ এন্ট্রি করা শুরু করুন। অ্যাপ অটোমেটিক সব হিসাব আপডেট রাখবে।",
+    title: "Track meals & expenses daily",
+    description:
+      "Log meals, add bazar expenses, and let the app handle the math automatically.",
   },
   {
     number: "04",
-    title: "Review & Settle",
-    description: "মাসের শেষে মিল রেট এবং সবার ব্যালেন্স দেখে পেমেন্ট সেটেল করুন। কোনো কনফিউশন ছাড়াই!",
+    title: "Review & settle at month end",
+    description:
+      "See who owes, who paid, and download a PDF report. Zero confusion.",
   },
 ];
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-24 bg-zinc-50 dark:bg-zinc-950/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
+    <section id="how-it-works" className="py-20 lg:py-28 relative">
+      <div className="max-w-6xl mx-auto px-5 sm:px-8">
+        {/* Section header */}
+        <div className="max-w-2xl mb-14">
+          <motion.span
+            initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl md:text-5xl font-bold mb-4"
+            className="text-[11px] font-bold uppercase tracking-widest text-primary"
           >
-            কিভাবে কাজ করে?
+            How It Works
+          </motion.span>
+          <motion.h2
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.05 }}
+            className="text-3xl sm:text-4xl font-extrabold tracking-[-0.02em] mt-4 mb-3 leading-[1.1]"
+          >
+            Four steps to a
+            <br />
+            peaceful mess life.
           </motion.h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            মাত্র ৪টি সহজ ধাপে আপনার মেস লাইফকে ডিজিটাল করে ফেলুন।
-          </p>
+          <motion.p
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-muted-foreground text-[15px] leading-relaxed"
+          >
+            Getting started takes less than 2 minutes. No setup fees, no
+            complicated onboarding.
+          </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-          {steps.map((step, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              className="relative"
-            >
-              <div className="text-6xl font-black text-primary/10 absolute -top-10 -left-4">
-                {step.number}
-              </div>
-              <div className="relative z-10">
-                <h3 className="text-xl font-bold mb-4">{step.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  {step.description}
-                </p>
-              </div>
-              {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-6 -right-6 w-12 border-t-2 border-dashed border-border/50" />
-              )}
-            </motion.div>
-          ))}
+        {/* Timeline */}
+        <div className="relative">
+          {/* Vertical line */}
+          <div className="absolute left-[19px] sm:left-[23px] top-0 bottom-0 w-px bg-border/50" />
+
+          <div className="space-y-1">
+            {steps.map((step, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: index * 0.08 }}
+                className="relative flex gap-5 sm:gap-6"
+              >
+                {/* Step number circle */}
+                <div className="relative z-10 shrink-0">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-card border-2 border-primary/20 flex items-center justify-center shadow-sm">
+                    <span className="text-[11px] sm:text-xs font-extrabold text-primary">
+                      {step.number}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Step content */}
+                <div className="pt-1.5 sm:pt-2.5 pb-8">
+                  <h3 className="text-[15px] sm:text-base font-bold text-foreground mb-1.5">
+                    {step.title}
+                  </h3>
+                  <p className="text-muted-foreground text-[13px] sm:text-sm leading-relaxed max-w-md">
+                    {step.description}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
