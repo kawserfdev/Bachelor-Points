@@ -52,3 +52,7 @@ web/google-services.json
 .env.production.env
 .vercel
 .env*
+
+# Zips & Archives
+*.zip
+web-landing_page.zip
