@@ -1,122 +1,181 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { X, Check } from "lucide-react";
-
-const problems = [
-  "Manual ledger calculations that waste hours every month",
-  "Endless arguments over who ate what and how much",
-  "No real-time visibility into who paid and who owes",
-  "Confusion when calculating monthly meal rates",
-];
-
-const solutions = [
-  "Fully digital mess management — one tap to track everything",
-  "Automatic meal rate and balance calculations, zero errors",
-  "Transparent records so everyone trusts the process",
-  "Live updates from any device, anytime, anywhere",
-];
+import { XCircle, CheckCircle2, BookOpen, Calculator, MessageSquareX, SearchX } from "lucide-react";
 
 export function ProblemSolution() {
+  const painPoints = [
+    {
+      icon: BookOpen,
+      badge: "📒 Manual হিসাব",
+      title: "Notebook & Calculator Chaos",
+      desc: "Pages torn, handwriting unreadable, and manual calculator mistakes that take hours to resolve at month end.",
+    },
+    {
+      icon: Calculator,
+      badge: "🧮 Complex Calculations",
+      title: "Meal Rate & Math Headaches",
+      desc: "Splitting individual meal rates, guest meals, fixed utility bills, and bazar expenses without an automated formula.",
+    },
+    {
+      icon: MessageSquareX,
+      badge: "💬 Endless Arguments",
+      title: '"আমি এত টাকা কেন দেব?"',
+      desc: "Late-night disputes in the dining room over who ate what, who skipped meals, and who was wrongly charged.",
+    },
+    {
+      icon: SearchX,
+      badge: "🔎 No Financial Transparency",
+      title: "Lost Receipts & Unsettled Dues",
+      desc: "Nobody knows how much money is currently left in the mess fund or who owes overdue deposits.",
+    },
+  ];
+
+  const beforeItems = [
+    "Khata (খাতা) & physical paper records that get lost",
+    "Manual calculator math prone to human error",
+    "Mess group arguments on WhatsApp and Messenger",
+    "Guest meals and portion fractions forgotten",
+    "Unverified bazar receipts with no photo proof",
+    "Confusing manual calculations at the end of each month",
+  ];
+
+  const afterItems = [
+    "Instant digital meal logging with 0.5 to 2.0 portions",
+    "100% automated meal rate and member balance calculations",
+    "Clear, transparent balance sheets visible to all members",
+    "Automated 8:00 AM bazar duty notifications & schedules",
+    "Digital receipt uploads with manager verification queue",
+    "One-click monthly PDF statement download and sharing",
+  ];
+
   return (
     <section className="py-20 lg:py-28 relative">
-      <div className="max-w-6xl mx-auto px-5 sm:px-8">
-        {/* Section header - left aligned for editorial feel */}
-        <div className="max-w-2xl mb-14">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Title */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
           <motion.span
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-[11px] font-bold uppercase tracking-widest text-primary"
+            className="text-xs font-bold uppercase tracking-widest text-[#8B3DFF] bg-[#8B3DFF]/10 px-3.5 py-1.5 rounded-full border border-[#8B3DFF]/20"
           >
-            The Problem vs. The Solution
+            The Traditional Problem
           </motion.span>
           <motion.h2
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.05 }}
-            className="text-3xl sm:text-4xl font-extrabold tracking-[-0.02em] mt-4 mb-3 leading-[1.1]"
+            className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight mt-4 mb-4 text-balance"
           >
-            Mess life shouldn&apos;t feel
-            <br />
-            like a full-time job.
+            Mess Management Shouldn&apos;t Be This Hard.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-muted-foreground text-[15px] leading-relaxed"
+            className="text-muted-foreground text-base sm:text-lg leading-relaxed font-normal"
           >
-            Bachelor messes in Bangladesh have relied on pen-and-paper for too
-            long. Here&apos;s what changes when you go digital.
+            For decades, bachelor messes and student flats in Bangladesh have struggled with
+            paper notebooks, lost receipts, and painful monthly calculations.
           </motion.p>
         </div>
 
-        {/* Two-column comparison */}
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Problem card */}
+        {/* 4 Problem Cards Grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-20">
+          {painPoints.map((point, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: index * 0.08 }}
+              className="p-6 rounded-2xl bg-secondary/30 border border-border/60 hover:border-rose-500/30 transition-all flex flex-col justify-between"
+            >
+              <div>
+                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-500 bg-rose-500/10 px-2.5 py-1 rounded-lg mb-4">
+                  <span>{point.badge}</span>
+                </div>
+                <h3 className="text-base font-bold text-foreground mb-2">
+                  {point.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  {point.desc}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Transition Header */}
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <span className="text-xs font-bold text-[#A855F7] tracking-wider uppercase">
+            The Modern Solution
+          </span>
+          <h3 className="text-2xl sm:text-3xl font-extrabold text-foreground mt-1">
+            BachelorPoints Changes Everything.
+          </h3>
+        </div>
+
+        {/* Before vs After Comparison Grid */}
+        <div className="grid lg:grid-cols-2 gap-6 max-w-5xl mx-auto">
+          {/* Before Card */}
           <motion.div
-            initial={{ opacity: 0, y: 25 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="rounded-xl border border-red-500/10 bg-red-500/[0.02] p-6 sm:p-8"
+            className="rounded-2xl border border-rose-500/20 bg-rose-500/[0.03] p-6 sm:p-8 relative overflow-hidden"
           >
-            <div className="flex items-center gap-2.5 mb-6">
-              <div className="w-7 h-7 rounded-md bg-red-500/10 flex items-center justify-center">
-                <X className="w-3.5 h-3.5 text-red-500" />
+            <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-rose-500/15">
+              <div className="w-8 h-8 rounded-lg bg-rose-500/15 flex items-center justify-center">
+                <XCircle className="w-4 h-4 text-rose-500" />
               </div>
-              <h3 className="text-[13px] font-bold uppercase tracking-wider text-red-500">
-                Before BachelorPoints
-              </h3>
+              <div>
+                <h4 className="text-sm font-bold text-rose-500 uppercase tracking-wider">
+                  BEFORE — The Old Way
+                </h4>
+                <p className="text-xs text-muted-foreground">Notebooks, calculator, and confusion</p>
+              </div>
             </div>
+
             <ul className="space-y-3">
-              {problems.map((p, i) => (
-                <li
-                  key={i}
-                  className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border/30"
-                >
-                  <div className="w-5 h-5 rounded-full bg-red-500/8 border border-red-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                    <X className="w-2.5 h-2.5 text-red-500" />
-                  </div>
-                  <span className="text-[13px] font-medium text-muted-foreground leading-snug">
-                    {p}
-                  </span>
+              {beforeItems.map((item, i) => (
+                <li key={i} className="flex items-start gap-3 text-xs sm:text-sm text-muted-foreground">
+                  <span className="text-rose-500 font-bold shrink-0 mt-0.5">✕</span>
+                  <span className="leading-snug">{item}</span>
                 </li>
               ))}
             </ul>
           </motion.div>
 
-          {/* Solution card */}
+          {/* After Card */}
           <motion.div
-            initial={{ opacity: 0, y: 25 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="rounded-xl border border-primary/15 bg-primary/[0.02] p-6 sm:p-8"
+            transition={{ duration: 0.5 }}
+            className="rounded-2xl border border-[#8B3DFF]/30 bg-[#8B3DFF]/[0.04] p-6 sm:p-8 relative overflow-hidden shadow-[0_0_40px_rgba(139,61,255,0.1)]"
           >
-            <div className="flex items-center gap-2.5 mb-6">
-              <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
-                <Check className="w-3.5 h-3.5 text-primary" />
+            <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-[#8B3DFF]/20">
+              <div className="w-8 h-8 rounded-lg bg-[#8B3DFF]/20 flex items-center justify-center">
+                <CheckCircle2 className="w-4 h-4 text-[#8B3DFF]" />
               </div>
-              <h3 className="text-[13px] font-bold uppercase tracking-wider text-primary">
-                After BachelorPoints
-              </h3>
+              <div>
+                <h4 className="text-sm font-bold text-[#8B3DFF] uppercase tracking-wider">
+                  AFTER — With BachelorPoints
+                </h4>
+                <p className="text-xs text-muted-foreground">Automated, transparent, and peaceful</p>
+              </div>
             </div>
+
             <ul className="space-y-3">
-              {solutions.map((s, i) => (
-                <li
-                  key={i}
-                  className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border/30"
-                >
-                  <div className="w-5 h-5 rounded-full bg-primary/8 border border-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                    <Check className="w-2.5 h-2.5 text-primary" />
-                  </div>
-                  <span className="text-[13px] font-medium text-foreground leading-snug">
-                    {s}
-                  </span>
+              {afterItems.map((item, i) => (
+                <li key={i} className="flex items-start gap-3 text-xs sm:text-sm text-foreground font-medium">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <span className="leading-snug">{item}</span>
                 </li>
               ))}
             </ul>

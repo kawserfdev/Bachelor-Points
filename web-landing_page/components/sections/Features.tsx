@@ -1,285 +1,483 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
-  Users,
-  Calendar,
+  Receipt,
   ShoppingBag,
-  MessageSquare,
-  TrendingUp,
   Wallet,
-  Inbox,
   Calculator,
-  Home,
-  Coins,
-  KeyRound,
-  Sliders,
+  WifiOff,
   Bell,
+  FileText,
   Check,
+  Sparkles,
+  Download,
 } from "lucide-react";
 
-const categories = [
-  {
-    id: "mess-meals",
-    label: "Mess & Meals",
-    description: "Daily operations and meal tracking for your mess.",
-    features: [
-      {
-        title: "Mess Groups",
-        icon: Users,
-        color: "text-primary",
-        bg: "bg-primary/8",
-        description: "Create a mess group and invite members with a unique 6-digit code. Set roles, manage members, and handle join requests.",
-        bullets: ["Unique invite codes", "Join request approval", "Role management (Admin, Manager, Member)"],
-      },
-      {
-        title: "Meal Tracking",
-        icon: Calendar,
-        color: "text-emerald-600 dark:text-emerald-400",
-        bg: "bg-emerald-500/8",
-        description: "Track daily meals with customizable portions. Guest meals, flexible closures, and auto-lock at cut-off time.",
-        bullets: ["Custom portions (0.5 to 2.0 plates)", "Guest meal entries", "Cut-off time auto-lock"],
-      },
-      {
-        title: "Shopping & Bazar",
-        icon: ShoppingBag,
-        color: "text-orange-600 dark:text-orange-400",
-        bg: "bg-orange-500/8",
-        description: "Create bazar lists, assign duty on a calendar, and get push reminders on duty day at 8 AM.",
-        bullets: ["Bazar list with approvals", "Calendar-based duty assignment", "Push reminders"],
-      },
-      {
-        title: "Chat Room",
-        icon: MessageSquare,
-        color: "text-pink-600 dark:text-pink-400",
-        bg: "bg-pink-500/8",
-        description: "Built-in real-time group chat. Discuss mess matters without switching to another app.",
-        bullets: ["Real-time messaging", "Timestamp logs", "Active member presence"],
-      },
-    ],
-  },
-  {
-    id: "finances",
-    label: "Finances",
-    description: "Balance sheets, expenses, and automatic PDF reports.",
-    features: [
-      {
-        title: "Expense Logger",
-        icon: TrendingUp,
-        color: "text-rose-600 dark:text-rose-400",
-        bg: "bg-rose-500/8",
-        description: "Log bazar expenses with receipts. Categorize as Shopping, Rent, Utilities, or Others. Manager approval before balance sheet update.",
-        bullets: ["Receipt image attachments", "Category-based tracking", "Approval queue"],
-      },
-      {
-        title: "Deposits & Balance",
-        icon: Wallet,
-        color: "text-cyan-600 dark:text-cyan-400",
-        bg: "bg-cyan-500/8",
-        description: "Track deposits via cash or mobile banking (Bkash, Nagad, Rocket). Manager verification and instant balance calculation.",
-        bullets: ["MFS and cash deposit log", "Manager verification", "Instant balance view"],
-      },
-      {
-        title: "Manager Inbox",
-        icon: Inbox,
-        color: "text-violet-600 dark:text-violet-400",
-        bg: "bg-violet-500/8",
-        description: "A unified dashboard for managers to approve expenses, deposits, join requests, and role changes.",
-        bullets: ["Join & exit requests", "Expense & deposit approvals", "Role change permissions"],
-      },
-      {
-        title: "Monthly Reports",
-        icon: Calculator,
-        color: "text-primary",
-        bg: "bg-primary/8",
-        description: "Auto-calculate meal rate, per-member cost, and generate a clean PDF report for transparency.",
-        bullets: ["Meal rate formula built-in", "Per-member cost breakdown", "PDF export & share"],
-      },
-    ],
-  },
-  {
-    id: "marketplace",
-    label: "Marketplace",
-    description: "To-let listings and in-app virtual credit economy.",
-    features: [
-      {
-        title: "To-Let Listings",
-        icon: Home,
-        color: "text-indigo-600 dark:text-indigo-400",
-        bg: "bg-indigo-500/8",
-        description: "Post and discover bachelor flats, sublets, and mess seats. Location maps, video tours, and KYC-verified badges.",
-        bullets: ["Map-based listings", "Photo & video support", "KYC verification badges"],
-      },
-      {
-        title: "Credits System",
-        icon: Coins,
-        color: "text-amber-600 dark:text-amber-400",
-        bg: "bg-amber-500/8",
-        description: "Virtual credits to unlock contact info, boost listings, and create property posts. Referral income tracking.",
-        bullets: ["Contact unlock: 5 credits", "Boost listing: 50 credits", "Referral income ledger"],
-      },
-    ],
-  },
-  {
-    id: "security",
-    label: "Security",
-    description: "Secure login, custom settings, and real-time push alerts.",
-    features: [
-      {
-        title: "Secure Auth",
-        icon: KeyRound,
-        color: "text-teal-600 dark:text-teal-400",
-        bg: "bg-teal-500/8",
-        description: "Email verification gate, Google Sign-In, and secure password reset flow.",
-        bullets: ["Email verification gate", "Google Sign-In", "Forgot password flow"],
-      },
-      {
-        title: "Profile & Settings",
-        icon: Sliders,
-        color: "text-slate-600 dark:text-slate-400",
-        bg: "bg-slate-500/8",
-        description: "Update profile, configure cut-off time, leave request, and toggle dark/light theme.",
-        bullets: ["Profile & contact info", "Cut-off time config", "Dark & light theme"],
-      },
-      {
-        title: "Push Notifications",
-        icon: Bell,
-        color: "text-yellow-600 dark:text-yellow-400",
-        bg: "bg-yellow-500/8",
-        description: "FCM-powered real-time notifications for expenses, deposits, meal closures, and bazar duty alerts.",
-        bullets: ["FCM serverless integration", "Expense & deposit alerts", "Bazar duty push reminders"],
-      },
-    ],
-  },
-];
-
 export function Features() {
-  const [activeCategory, setActiveCategory] = useState(categories[0].id);
-  const current = categories.find((c) => c.id === activeCategory)!;
+  const [calcMeals, setCalcMeals] = useState<number>(30);
+  const [calcRate, setCalcRate] = useState<number>(45);
+  const [calcDeposit, setCalcDeposit] = useState<number>(2000);
+
+  const calcCost = calcMeals * calcRate;
+  const calcBalance = calcDeposit - calcCost;
 
   return (
-    <section id="features" className="py-20 lg:py-28 relative">
-      <div className="max-w-6xl mx-auto px-5 sm:px-8">
-        {/* Section header */}
-        <div className="max-w-2xl mb-10">
+    <section id="features" className="py-20 lg:py-32 relative">
+      {/* Background decoration */}
+      <div className="absolute top-1/3 left-0 w-96 h-96 bg-[#8B3DFF]/10 blur-[140px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-10 right-0 w-96 h-96 bg-[#A855F7]/10 blur-[140px] rounded-full pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
           <motion.span
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-[11px] font-bold uppercase tracking-widest text-primary"
+            className="text-xs font-bold uppercase tracking-widest text-[#8B3DFF] bg-[#8B3DFF]/10 px-3.5 py-1.5 rounded-full border border-[#8B3DFF]/20"
           >
-            Features
+            Feature Showcase
           </motion.span>
           <motion.h2
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.05 }}
-            className="text-3xl sm:text-4xl font-extrabold tracking-[-0.02em] mt-4 mb-3 leading-[1.1]"
+            className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight mt-4 mb-4"
           >
-            Everything you need,
-            <br />
-            nothing you don&apos;t.
+            Everything Your Mess Needs.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-muted-foreground text-[15px] leading-relaxed"
+            className="text-muted-foreground text-base sm:text-lg leading-relaxed font-normal"
           >
-            From daily meal tracking to finding a new seat — one app covers the
-            full spectrum of bachelor mess life.
+            From today&apos;s meal count to the end-of-month settlement, BachelorPoints handles it all.
           </motion.p>
         </div>
 
-        {/* Tab selector */}
-        <div className="flex gap-1 mb-10 p-1 rounded-lg bg-muted/50 border border-border/40 w-fit">
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`relative px-4 py-2 rounded-md text-[13px] font-semibold transition-colors ${
-                cat.id === activeCategory
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {cat.id === activeCategory && (
-                <motion.div
-                  layoutId="feature-tab"
-                  className="absolute inset-0 bg-card rounded-md border border-border/40 shadow-sm"
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                />
-              )}
-              <span className="relative z-10">{cat.label}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Category description */}
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={activeCategory}
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            transition={{ duration: 0.15 }}
-            className="text-muted-foreground text-[13px] mb-8 font-medium"
-          >
-            {current.description}
-          </motion.p>
-        </AnimatePresence>
-
-        {/* Features grid */}
-        <AnimatePresence mode="wait">
+        {/* Feature Grid - Large 8 Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* FEATURE 01 — MEAL MANAGEMENT */}
           <motion.div
-            key={activeCategory}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.25 }}
-            className="grid sm:grid-cols-2 gap-4"
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="rounded-2xl bg-card border border-border/70 p-6 sm:p-7 flex flex-col justify-between hover:border-[#8B3DFF]/40 transition-all shadow-sm"
           >
-            {current.features.map((feature) => {
-              const Icon = feature.icon;
-              return (
-                <div
-                  key={feature.title}
-                  className="group p-5 rounded-xl border border-border/40 bg-card hover:border-border/60 transition-all"
-                >
-                  <div className="flex items-start gap-3.5 mb-3.5">
-                    <div
-                      className={`w-9 h-9 rounded-lg ${feature.bg} flex items-center justify-center shrink-0`}
-                    >
-                      <Icon className={`w-4 h-4 ${feature.color}`} />
-                    </div>
-                    <div>
-                      <h3 className="text-[14px] font-bold text-foreground">
-                        {feature.title}
-                      </h3>
-                      <p className="text-[12px] text-muted-foreground leading-relaxed mt-0.5">
-                        {feature.description}
-                      </p>
-                    </div>
-                  </div>
-                  <ul className="space-y-1.5 ml-[3.25rem]">
-                    {feature.bullets.map((bullet, i) => (
-                      <li
-                        key={i}
-                        className="flex items-center gap-2 text-[12px] text-muted-foreground"
-                      >
-                        <Check className="w-3 h-3 text-primary/60 shrink-0" />
-                        {bullet}
-                      </li>
+            <div>
+              <div className="w-12 h-12 rounded-xl bg-[#8B3DFF]/15 text-[#8B3DFF] flex items-center justify-center mb-5 text-xl">
+                🍛
+              </div>
+              <span className="text-[11px] font-bold text-[#8B3DFF] uppercase tracking-wider block mb-1">
+                Feature 01
+              </span>
+              <h3 className="text-xl font-bold text-foreground mb-2">
+                Meals, Made Simple.
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-4">
+                Add breakfast, lunch, dinner, and guest meals in seconds. Flexible portions with automatic cut-off locking.
+              </p>
+
+              <div className="p-3 rounded-xl bg-secondary/60 border border-border/40 space-y-2 mb-4">
+                <div className="flex items-center justify-between text-xs font-semibold">
+                  <span className="text-muted-foreground">Supported Portions:</span>
+                  <div className="flex gap-1">
+                    {["0.5", "1.0", "1.5", "2.0"].map((p) => (
+                      <span key={p} className="px-1.5 py-0.5 rounded bg-background text-[11px] font-bold text-[#8B3DFF]">
+                        {p}
+                      </span>
                     ))}
-                  </ul>
+                  </div>
                 </div>
-              );
-            })}
+                <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
+                  <span>Guest meals supported</span>
+                  <span className="text-emerald-500 font-bold">✓ Active</span>
+                </div>
+                <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
+                  <span>Auto-lock at cutoff</span>
+                  <span className="text-foreground font-semibold">10:00 PM</span>
+                </div>
+              </div>
+            </div>
+
+            <ul className="space-y-1.5 pt-2 border-t border-border/40 text-xs text-muted-foreground">
+              <li className="flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-[#8B3DFF]" /> Custom portion sizes per meal
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-[#8B3DFF]" /> Separate breakfast, lunch & dinner
+              </li>
+            </ul>
           </motion.div>
-        </AnimatePresence>
+
+          {/* FEATURE 02 — EXPENSE MANAGEMENT */}
+          <motion.div
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="rounded-2xl bg-card border border-border/70 p-6 sm:p-7 flex flex-col justify-between hover:border-rose-500/40 transition-all shadow-sm"
+          >
+            <div>
+              <div className="w-12 h-12 rounded-xl bg-rose-500/15 text-rose-500 flex items-center justify-center mb-5">
+                <Receipt className="w-6 h-6" />
+              </div>
+              <span className="text-[11px] font-bold text-rose-500 uppercase tracking-wider block mb-1">
+                Feature 02
+              </span>
+              <h3 className="text-xl font-bold text-foreground mb-2">
+                Every Taka, Accounted For.
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-4">
+                Record bazar, house rent, WiFi bills, and other shared expenses with complete receipts and transparency.
+              </p>
+
+              <div className="p-3 rounded-xl bg-secondary/60 border border-border/40 space-y-2 mb-4">
+                <div className="flex items-center justify-between text-xs font-semibold">
+                  <span>Oil, Dal & Fish</span>
+                  <span className="text-rose-500 font-extrabold font-mono">৳1,450</span>
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                  <span>By Zahid Hasan • Bazar</span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                    Approved
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <ul className="space-y-1.5 pt-2 border-t border-border/40 text-xs text-muted-foreground">
+              <li className="flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-rose-500" /> Category-based tagging (Bazar, Utilities, Rent)
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-rose-500" /> Manager review and approval queue
+              </li>
+            </ul>
+          </motion.div>
+
+          {/* FEATURE 03 — BAZAR MANAGEMENT */}
+          <motion.div
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="rounded-2xl bg-card border border-border/70 p-6 sm:p-7 flex flex-col justify-between hover:border-amber-500/40 transition-all shadow-sm"
+          >
+            <div>
+              <div className="w-12 h-12 rounded-xl bg-amber-500/15 text-amber-500 flex items-center justify-center mb-5">
+                <ShoppingBag className="w-6 h-6" />
+              </div>
+              <span className="text-[11px] font-bold text-amber-500 uppercase tracking-wider block mb-1">
+                Feature 03
+              </span>
+              <h3 className="text-xl font-bold text-foreground mb-2">
+                Never Forget Your Bazar Duty.
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-4">
+                Assign bazar duty on an automated calendar. Know what to buy, know who&apos;s going, and know when.
+              </p>
+
+              <div className="p-3 rounded-xl bg-secondary/60 border border-border/40 space-y-1.5 mb-4">
+                <div className="flex items-center justify-between text-xs font-semibold text-foreground">
+                  <span>Assigned: Kawser Ahmed</span>
+                  <span className="text-amber-500 text-[11px]">18 August</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Reminder set for 8:00 AM on duty day
+                </p>
+                <div className="text-[10px] text-[#8B3DFF] font-semibold">
+                  Items: Rice, Potatoes, Eggs, Oil, Onion
+                </div>
+              </div>
+            </div>
+
+            <ul className="space-y-1.5 pt-2 border-t border-border/40 text-xs text-muted-foreground">
+              <li className="flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-amber-500" /> Interactive checklist for shopping items
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-amber-500" /> Push reminders on duty mornings
+              </li>
+            </ul>
+          </motion.div>
+
+          {/* FEATURE 04 — DEPOSIT & BALANCE */}
+          <motion.div
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="rounded-2xl bg-card border border-border/70 p-6 sm:p-7 flex flex-col justify-between hover:border-emerald-500/40 transition-all shadow-sm"
+          >
+            <div>
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center mb-5">
+                <Wallet className="w-6 h-6" />
+              </div>
+              <span className="text-[11px] font-bold text-emerald-500 uppercase tracking-wider block mb-1">
+                Feature 04
+              </span>
+              <h3 className="text-xl font-bold text-foreground mb-2">
+                Know Who Paid. Know Who Owes.
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-4">
+                Track deposits via Cash, bKash, or Nagad. Instant ledger shows exact credit balance or pending dues.
+              </p>
+
+              <div className="p-3 rounded-xl bg-secondary/60 border border-border/40 space-y-2 mb-4">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-foreground">Kawser Ahmed</span>
+                  <span className="font-bold text-emerald-500 font-mono">+৳750 (Credit)</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-foreground">Zahid Hasan</span>
+                  <span className="font-bold text-rose-500 font-mono">-৳425 (Due)</span>
+                </div>
+              </div>
+            </div>
+
+            <ul className="space-y-1.5 pt-2 border-t border-border/40 text-xs text-muted-foreground">
+              <li className="flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-emerald-500" /> Green for credit, Red for due
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-emerald-500" /> Cash & Mobile Financial Services (MFS) logs
+              </li>
+            </ul>
+          </motion.div>
+
+          {/* FEATURE 05 — AUTOMATIC CALCULATION (Interactive Math Widget) */}
+          <motion.div
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="rounded-2xl bg-card border border-[#8B3DFF]/40 p-6 sm:p-7 flex flex-col justify-between hover:border-[#8B3DFF] transition-all shadow-[0_0_30px_rgba(139,61,255,0.1)] md:col-span-2 lg:col-span-2"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-[#8B3DFF]/15 text-[#8B3DFF] flex items-center justify-center">
+                    <Calculator className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-bold text-[#8B3DFF] uppercase tracking-wider block">
+                      Feature 05 • Core Formula
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-extrabold text-foreground">
+                      You Enter the Data. We Do the Math.
+                    </h3>
+                  </div>
+                </div>
+                <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-bold bg-[#8B3DFF]/10 text-[#8B3DFF] px-2.5 py-1 rounded-full">
+                  <Sparkles className="w-3 h-3" /> Live Simulator
+                </span>
+              </div>
+
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-5">
+                Every calculation is fully automatic, deterministic, and 100% transparent. Test the live formula below:
+              </p>
+
+              {/* Interactive Calculation Simulator Box */}
+              <div className="p-4 sm:p-5 rounded-xl bg-secondary/50 border border-border/50 space-y-4 mb-4">
+                <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
+                  <div>
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">
+                      Your Meals
+                    </label>
+                    <input
+                      type="number"
+                      value={calcMeals}
+                      onChange={(e) => setCalcMeals(Number(e.target.value) || 0)}
+                      className="w-full text-center py-1.5 font-bold text-base bg-background border border-border/60 rounded-lg text-foreground"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">
+                      Meal Rate (৳)
+                    </label>
+                    <input
+                      type="number"
+                      value={calcRate}
+                      onChange={(e) => setCalcRate(Number(e.target.value) || 0)}
+                      className="w-full text-center py-1.5 font-bold text-base bg-background border border-border/60 rounded-lg text-foreground"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">
+                      Your Deposit (৳)
+                    </label>
+                    <input
+                      type="number"
+                      value={calcDeposit}
+                      onChange={(e) => setCalcDeposit(Number(e.target.value) || 0)}
+                      className="w-full text-center py-1.5 font-bold text-base bg-background border border-border/60 rounded-lg text-foreground"
+                    />
+                  </div>
+                </div>
+
+                {/* Mathematical Formula Display */}
+                <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-bold pt-2 border-t border-border/40 font-mono">
+                  <span className="text-muted-foreground">({calcMeals} meals × ৳{calcRate}) = ৳{calcCost} cost</span>
+                  <span className="text-[#8B3DFF]">➔</span>
+                  <span className="text-muted-foreground">Deposit ৳{calcDeposit} − ৳{calcCost} =</span>
+                  <span className={`px-2 py-0.5 rounded ${calcBalance >= 0 ? "bg-emerald-500/15 text-emerald-500" : "bg-rose-500/15 text-rose-500"}`}>
+                    {calcBalance >= 0 ? `+৳${calcBalance}` : `-৳${Math.abs(calcBalance)}`}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/40 text-xs text-muted-foreground">
+              <span>Formula: Total Expenses ÷ Total Meals = Meal Rate</span>
+              <span className="text-[#8B3DFF] font-semibold">Zero rounding discrepancies</span>
+            </div>
+          </motion.div>
+
+          {/* FEATURE 06 — ONLINE + OFFLINE */}
+          <motion.div
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="rounded-2xl bg-card border border-border/70 p-6 sm:p-7 flex flex-col justify-between hover:border-cyan-500/40 transition-all shadow-sm"
+          >
+            <div>
+              <div className="w-12 h-12 rounded-xl bg-cyan-500/15 text-cyan-500 flex items-center justify-center mb-5">
+                <WifiOff className="w-6 h-6" />
+              </div>
+              <span className="text-[11px] font-bold text-cyan-500 uppercase tracking-wider block mb-1">
+                Feature 06
+              </span>
+              <h3 className="text-xl font-bold text-foreground mb-2">
+                No Internet? No Problem.
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-4">
+                Continue logging your meals even when offline. As soon as you reconnect, data syncs automatically to the cloud.
+              </p>
+
+              {/* Sync Pipeline Visual */}
+              <div className="p-3 rounded-xl bg-secondary/60 border border-border/40 space-y-1.5 mb-4 text-[11px] font-mono">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <span>📱 Offline</span>
+                  <span>➔</span>
+                  <span>💾 Local Data</span>
+                </div>
+                <div className="flex items-center gap-2 text-cyan-500 font-bold">
+                  <span>🌐 Connected</span>
+                  <span>➔</span>
+                  <span>☁️ Auto Cloud Sync</span>
+                </div>
+              </div>
+            </div>
+
+            <ul className="space-y-1.5 pt-2 border-t border-border/40 text-xs text-muted-foreground">
+              <li className="flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-cyan-500" /> Offline meal entries preserved safely
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-cyan-500" /> Instant background synchronization
+              </li>
+            </ul>
+          </motion.div>
+
+          {/* FEATURE 07 — REAL-TIME NOTIFICATIONS */}
+          <motion.div
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="rounded-2xl bg-card border border-border/70 p-6 sm:p-7 flex flex-col justify-between hover:border-[#A855F7]/40 transition-all shadow-sm"
+          >
+            <div>
+              <div className="w-12 h-12 rounded-xl bg-[#A855F7]/15 text-[#A855F7] flex items-center justify-center mb-5">
+                <Bell className="w-6 h-6" />
+              </div>
+              <span className="text-[11px] font-bold text-[#A855F7] uppercase tracking-wider block mb-1">
+                Feature 07
+              </span>
+              <h3 className="text-xl font-bold text-foreground mb-2">
+                Everyone Stays Updated.
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-4">
+                Instant push alerts whenever meals change, deposits get approved, or bazar expenses are recorded.
+              </p>
+
+              <div className="p-2.5 rounded-xl bg-secondary/60 border border-border/40 space-y-1.5 mb-4 text-[11px]">
+                <div className="flex items-center gap-1.5 text-foreground font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#8B3DFF]" />
+                  <span>Kawser updated Lunch from 1.0 ➔ 1.5</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-foreground font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span>Tanvir deposited ৳2,000</span>
+                </div>
+              </div>
+            </div>
+
+            <ul className="space-y-1.5 pt-2 border-t border-border/40 text-xs text-muted-foreground">
+              <li className="flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-[#A855F7]" /> Push notifications for all major mess events
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-[#A855F7]" /> Real-time Firebase Cloud Messaging
+              </li>
+            </ul>
+          </motion.div>
+
+          {/* FEATURE 08 — MONTHLY REPORT */}
+          <motion.div
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="rounded-2xl bg-card border border-border/70 p-6 sm:p-7 flex flex-col justify-between hover:border-emerald-500/40 transition-all shadow-sm"
+          >
+            <div>
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center mb-5">
+                <FileText className="w-6 h-6" />
+              </div>
+              <span className="text-[11px] font-bold text-emerald-500 uppercase tracking-wider block mb-1">
+                Feature 08
+              </span>
+              <h3 className="text-xl font-bold text-foreground mb-2">
+                Your Entire Month. One Report.
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-4">
+                Export complete monthly balance sheets into clean, shareable PDF reports with one single click.
+              </p>
+
+              <div className="p-3 rounded-xl bg-secondary/60 border border-border/40 flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-emerald-500" />
+                  <div>
+                    <span className="text-xs font-bold text-foreground block">
+                      August_2026_Report.pdf
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">
+                      Full mess ledger & meal rate
+                    </span>
+                  </div>
+                </div>
+                <span className="p-1.5 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                  <Download className="w-4 h-4" />
+                </span>
+              </div>
+            </div>
+
+            <ul className="space-y-1.5 pt-2 border-t border-border/40 text-xs text-muted-foreground">
+              <li className="flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-emerald-500" /> Breakdown of meals, bazar & fixed bills
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-emerald-500" /> One-click share to WhatsApp group
+              </li>
+            </ul>
+          </motion.div>
+        </div>
       </div>
     </section>
   );
