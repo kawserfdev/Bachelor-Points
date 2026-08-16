@@ -25,9 +25,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
   @override
   void initState() {
     super.initState();
-    // Auto-poll every 5 seconds. The moment the user clicks the verification
-    // link in their inbox, the next poll will detect it and navigate them
-    // forward — no manual button press needed.
+    // Auto-poll every 5 seconds.
     _autoCheckTimer = Timer.periodic(
       const Duration(seconds: 5),
       (_) => _checkVerificationStatus(silent: true),
@@ -40,13 +38,6 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
     super.dispose();
   }
 
-  /// Reload the current user and check if the email has been verified.
-  /// When [silent] is true (auto-poll), no snackbar is shown on failure.
-  ///
-  /// We navigate DIRECTLY to the correct destination instead of relying on
-  /// GoRouter redirect, which has a timing race: the redirect may fire before
-  /// idTokenChanges() re-emits the updated auth state, causing the user to
-  /// bounce back to /verify-email.
   Future<void> _checkVerificationStatus({bool silent = false}) async {
     if (_isChecking) return;
     setState(() => _isChecking = true);
@@ -54,12 +45,10 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
-      // Reload fetches the latest emailVerified state from Firebase servers.
       await user.reload();
       final refreshedUser = FirebaseAuth.instance.currentUser;
 
       if (refreshedUser == null || !refreshedUser.emailVerified) {
-        // Not verified yet — show snackbar only if user pressed button.
         if (!silent && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -70,14 +59,9 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
         return;
       }
 
-      // ✅ Email is verified — stop polling.
       _autoCheckTimer?.cancel();
       debugPrint('[VerifyEmail] Email verified for ${refreshedUser.uid}');
 
-      // Check whether a profile document already exists in Firestore.
-      // We do this directly here so we can navigate to the exact destination
-      // without waiting for Riverpod providers to re-evaluate after the
-      // idTokenChanges() stream re-emits (which would cause the timing race).
       final profileDoc = await FirebaseFirestore.instance
           .collection('profiles')
           .doc(refreshedUser.uid)
@@ -104,7 +88,6 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
     }
   }
 
-  /// Resend the verification email to the current user.
   Future<void> _resendVerificationEmail() async {
     setState(() => _isResending = true);
     try {
@@ -142,61 +125,117 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
   @override
   Widget build(BuildContext context) {
     final local = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final currentUserEmail = FirebaseAuth.instance.currentUser?.email ?? '';
+
     return AuthScaffold(
-      appBar: AppBar(
-        title: Text(local.verifyEmailTitle),
-      ),
+      brandHeadline: 'Verify Your Email Address.',
+      brandSubtitle: 'We have sent a verification link to confirm your account security.',
       centered: true,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Icon(
-            Icons.mark_email_unread_outlined,
-            size: 100,
-            color: Colors.blue,
-          ),
-          const SizedBox(height: 24),
-          Text(
-            local.checkYourEmail,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+          Center(
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: cs.primary.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+                border: Border.all(color: cs.primary.withValues(alpha: 0.25), width: 2),
+              ),
+              child: Icon(
+                Icons.mark_email_unread_rounded,
+                size: 40,
+                color: cs.primary,
+              ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
+
+          Text(
+            local.checkYourEmail,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 10),
+
+          if (currentUserEmail.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E1E2A) : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0),
+                ),
+              ),
+              child: Text(
+                currentUserEmail,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: cs.primary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+
           Text(
             local.verificationLinkSentDesc,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16),
+            style: TextStyle(
+              fontSize: 14,
+              color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF64748B),
+              height: 1.4,
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
+
           Text(
             local.afterVerifyingDesc,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark ? const Color(0xFF71717A) : const Color(0xFF94A3B8),
+            ),
           ),
           const SizedBox(height: 32),
 
-          // "I've verified" button — reloads user and checks emailVerified
+          // "I've verified" primary action button
           ElevatedButton(
-            onPressed: _isChecking ? null : _checkVerificationStatus,
+            onPressed: _isChecking ? null : () => _checkVerificationStatus(silent: false),
             style: ElevatedButton.styleFrom(
               minimumSize: const Size(double.infinity, 50),
+              backgroundColor: cs.primary,
+              foregroundColor: Colors.white,
+              elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
             child: _isChecking
                 ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
                   )
-                : Text(local.iveVerifiedEmail),
+                : Text(
+                    local.iveVerifiedEmail,
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                  ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
-          // Resend verification email
+          // Resend email button
           OutlinedButton.icon(
             onPressed: _isResending ? null : _resendVerificationEmail,
             icon: _isResending
@@ -205,10 +244,16 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                     height: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Icon(Icons.refresh),
-            label: Text(local.resendVerificationEmail),
+                : const Icon(Icons.refresh_rounded, size: 18),
+            label: Text(
+              local.resendVerificationEmail,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            ),
             style: OutlinedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 50),
+              minimumSize: const Size(double.infinity, 48),
+              side: BorderSide(
+                color: isDark ? Colors.white.withValues(alpha: 0.15) : const Color(0xFFCBD5E1),
+              ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -216,14 +261,18 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
           ),
           const SizedBox(height: 16),
 
-          // Back to login — sign out fully via AuthService to clean up
-          // GetStorage, Google session, and GetX controllers.
+          // Back to login
           TextButton(
             onPressed: () async {
               await Get.find<AuthService>().signOut();
-              // signOut() already navigates to /login via AppNavigation.go
             },
-            child: Text(local.backToLogin),
+            style: TextButton.styleFrom(
+              foregroundColor: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF64748B),
+            ),
+            child: Text(
+              local.backToLogin,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),

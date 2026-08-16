@@ -8,7 +8,7 @@ import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import 'package:bachelorpoints/l10n/app_localizations.dart';
 
-/// ForgotPassword view migrated from GetX to Riverpod + GoRouter
+/// ForgotPassword view optimized for LargeScreen Web SaaS and Mobile apps
 class ForgotPasswordView extends ConsumerStatefulWidget {
   const ForgotPasswordView({super.key});
 
@@ -69,49 +69,62 @@ class _ForgotPasswordViewState extends ConsumerState<ForgotPasswordView> {
   @override
   Widget build(BuildContext context) {
     final local = AppLocalizations.of(context)!;
-    // Strip trailing question mark from button title for page header if it exists
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth >= 960;
+
     final headerTitle = local.forgotPasswordTitle.endsWith('?')
         ? local.forgotPasswordTitle.substring(0, local.forgotPasswordTitle.length - 1)
         : local.forgotPasswordTitle;
-         
+
     return AuthScaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Theme.of(context).primaryColor),
-          onPressed: () => context.pop(),
-        ),
-      ),
-      mobilePadding: const EdgeInsets.symmetric(horizontal: 24.0),
+      brandHeadline: 'Recover Your Account Access.',
+      brandSubtitle: 'Enter your verified email to receive secure password recovery instructions.',
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 40),
-            Icon(
-              Icons.lock_reset_rounded,
-              size: 80,
-              color: Theme.of(context).primaryColor,
+            Center(
+              child: Container(
+                width: 70,
+                height: 70,
+                decoration: BoxDecoration(
+                  color: cs.primary.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: cs.primary.withValues(alpha: 0.25), width: 2),
+                ),
+                child: Icon(
+                  Icons.lock_reset_rounded,
+                  size: 36,
+                  color: cs.primary,
+                ),
+              ),
             ),
             const SizedBox(height: 24),
+
             Text(
               headerTitle,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+              ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
+
             Text(
               local.forgotPasswordDesc,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF64748B),
+              ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: 32),
+
             CustomTextField(
               label: local.email,
               hint: local.enterEmail,
@@ -119,26 +132,28 @@ class _ForgotPasswordViewState extends ConsumerState<ForgotPasswordView> {
               controller: _emailController,
               validator: _validateEmail,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
+
             if (_isSuccess)
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color: Colors.green.withValues(alpha: 0.5)),
+                  color: Colors.green.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.green.withValues(alpha: 0.4)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.check_circle, color: Colors.green),
+                    const Icon(Icons.check_circle_rounded, color: Colors.green, size: 24),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         local.resetLinkSent,
                         style: const TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold),
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                   ],
@@ -150,6 +165,25 @@ class _ForgotPasswordViewState extends ConsumerState<ForgotPasswordView> {
                 isLoading: _isLoading,
                 onPressed: _resetPassword,
               ),
+
+            const SizedBox(height: 24),
+
+            Center(
+              child: TextButton.icon(
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go('/app/login');
+                  }
+                },
+                icon: const Icon(Icons.arrow_back_rounded, size: 16),
+                label: Text(local.backToLogin),
+                style: TextButton.styleFrom(
+                  foregroundColor: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF64748B),
+                ),
+              ),
+            ),
           ],
         ),
       ),
