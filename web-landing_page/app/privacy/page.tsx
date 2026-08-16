@@ -71,8 +71,8 @@ export default function PrivacyPage() {
                 </h2>
                 <p>
                   For questions regarding data privacy or to request account deletion, please email our team at{" "}
-                  <a href="mailto:support@bachelorpoints.com" className="text-[#8B3DFF] font-semibold underline">
-                    support@bachelorpoints.com
+                  <a href="mailto:bachelorpointsofficial@gmail.com" className="text-[#8B3DFF] font-semibold underline">
+                    bachelorpointsofficial@gmail.com
                   </a>.
                 </p>
               </section>

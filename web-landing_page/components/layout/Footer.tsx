@@ -122,7 +122,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="mailto:support@bachelorpoints.com" className="hover:text-foreground transition-colors">
+                <a href="mailto:bachelorpointsofficial@gmail.com" className="hover:text-foreground transition-colors">
                   Contact Support
                 </a>
               </li>
@@ -150,8 +150,8 @@ export function Footer() {
               Security
             </Link>
             <span>•</span>
-            <a href="mailto:support@bachelorpoints.com" className="hover:text-foreground transition-colors">
-              support@bachelorpoints.com
+            <a href="mailto:bachelorpointsofficial@gmail.com" className="hover:text-foreground transition-colors">
+              bachelorpointsofficial@gmail.com
             </a>
           </div>
         </div>
